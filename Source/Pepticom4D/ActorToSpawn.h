@@ -29,8 +29,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UParticleSystemComponent* ParticleComp;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UMaterialInstanceDynamic* DynamicMaterial;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	UFUNCTION()
+	void OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed);
 
 };

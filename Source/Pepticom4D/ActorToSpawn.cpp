@@ -24,11 +24,17 @@ void AActorToSpawn::Create() {
     StaticMeshComp->SetRelativeLocation(FVector(0.0, 0.0, -12.0f));
     StaticMeshComp->SetRelativeScale3D(FVector(0.25, 0.25, 0.25));
 
-    // Disable physics simulation for the actor
-    SetActorEnableCollision(false);
+    // Set collision to query only
+    StaticMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
+    // Block visibility trace response
+    StaticMeshComp->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+     
     // Force the actor to stay fixed
     StaticMeshComp->Mobility = EComponentMobility::Movable;
+
+    // Allow the actor to be clicked
+    StaticMeshComp->OnClicked.AddDynamic(this, &AActorToSpawn::OnMeshClicked);
 
     //Using Constructor Helpers to set our Static Mesh Comp with a Sphere Shape.
     static ConstructorHelpers::FObjectFinder<UStaticMesh>SphereMeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
@@ -38,7 +44,7 @@ void AActorToSpawn::Create() {
     static ConstructorHelpers::FObjectFinder<UMaterial> BaseMaterialAsset(TEXT("Material'/Game/Materials/BaseEmissiveMaterial.BaseEmissiveMaterial'"));
     if (BaseMaterialAsset.Succeeded()) {
         // Create a dynamic material instance for the mesh
-        UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterialAsset.Object, StaticMeshComp);
+        DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterialAsset.Object, StaticMeshComp);
         if (DynamicMaterial) {
 			// Set the emissive color of the material to be red
 			DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::White);
@@ -77,3 +83,7 @@ void AActorToSpawn::Tick(float DeltaTime)
 
 }
 
+void AActorToSpawn::OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed) {
+    // Highlight the actor by making it blue
+    DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Blue);
+}
