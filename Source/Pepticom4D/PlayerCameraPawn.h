@@ -31,7 +31,6 @@ protected:
 	FVector MovementInput;
 	FVector2D CameraInput;
 	float ZoomFactor;
-	float TargetZoomFactor;
 
 public:	
 	// Called every frame
@@ -49,6 +48,6 @@ private:
 	void ZoomIn(float AxisValue);
 
 	float MovementSpeed = 1000.0f;
-	float ZoomSpeed = 20.0f;
+	float ZoomSpeed = 100.0f;
 
 };

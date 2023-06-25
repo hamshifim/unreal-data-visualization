@@ -1,9 +1,11 @@
+#pragma once
+
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "SpatialDataStruct.generated.h"
 
 
-/** Please add a struct description */
+/* This struct represents spatial data points */
 USTRUCT(BlueprintType)
 struct FSpatialDataStruct : public FTableRowBase
 {
@@ -11,14 +13,14 @@ struct FSpatialDataStruct : public FTableRowBase
 
 public:
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "X", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x", MakeStructureDefaultValue = "0.000000"))
 	double X;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "Y", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y", MakeStructureDefaultValue = "0.000000"))
 	double Y;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "Z", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z", MakeStructureDefaultValue = "0.000000"))
 	double Z;
 };

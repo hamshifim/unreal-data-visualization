@@ -4,6 +4,7 @@
 #include "PlayerCameraPawn.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "DataInteractionPlayerController.h"
 
 // Sets default values
 APlayerCameraPawn::APlayerCameraPawn()
@@ -26,7 +27,9 @@ APlayerCameraPawn::APlayerCameraPawn()
     SpringArmComp->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 50.0f), FRotator(-60.0f, 0.0f, 0.0f));
     SpringArmComp->TargetArmLength = 400.f;
     SpringArmComp->bEnableCameraLag = true;
-    SpringArmComp->CameraLagSpeed = 3.0f;
+    SpringArmComp->CameraLagSpeed = 0.0f;
+    // Allow the camera to clip through objects
+    SpringArmComp->bDoCollisionTest = false;
 
 }
 
@@ -42,44 +45,51 @@ void APlayerCameraPawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (ZoomFactor != TargetZoomFactor)
+    // Control zoom by moving the camera along the forward vector (the direction the camera is facing)
+    FVector CurrentCameraLocation = CameraComp->GetComponentLocation();
+    // Calculate the new camera location
+    // Multiplying by DeltaTime makes the zoom frame rate independent
+    FVector TargetCameraLocation = CurrentCameraLocation + (CameraComp->GetForwardVector() * ZoomFactor * ZoomSpeed);
+    FVector NewCameraLocation = FMath::VInterpTo(CurrentCameraLocation, TargetCameraLocation, DeltaTime, ZoomSpeed);
+    // Set the new camera location
+    CameraComp->SetWorldLocation(NewCameraLocation);
+
+	ADataInteractionPlayerController* PlayerController = Cast<ADataInteractionPlayerController>(Controller);
+    // Make sure that the controller is of the correct type
+    if (PlayerController)
     {
-        ZoomFactor += ZoomSpeed * FMath::Sign(TargetZoomFactor - ZoomFactor) * DeltaTime;
+        if (PlayerController->bIsRightMouseDown)
+        {
+            // Rotate our actor's yaw, which will turn our camera because we're attached to it
+            {
+                FRotator NewRotation = GetActorRotation();
+                NewRotation.Yaw += CameraInput.X;
+                SetActorRotation(NewRotation);
+            }
+
+            // Rotate our camera's pitch, which will turn our camera because it's attached to the spring arm
+            {
+                FRotator NewRotation = SpringArmComp->GetComponentRotation();
+                NewRotation.Pitch += CameraInput.Y;
+                SpringArmComp->SetWorldRotation(NewRotation);
+            }
+		}
+
+        // Make sure that panning is enabled on the controller
+        if (PlayerController->bIsPanning) {
+            // Handle movement based on our X, Y, and Z inputs
+            if (!MovementInput.IsZero())
+            {
+                //Scale our movement input axis values by MovementSpeed units per second
+                MovementInput = MovementInput.GetSafeNormal() * MovementSpeed;
+                FVector NewLocation = GetActorLocation();
+                NewLocation += GetActorForwardVector() * MovementInput.X * DeltaTime;
+                NewLocation += GetActorRightVector() * MovementInput.Y * DeltaTime;
+                NewLocation += GetActorUpVector() * MovementInput.Z * DeltaTime;
+                SetActorLocation(NewLocation);
+            }
+        }
 	}
-    // Clamp the zoom value between 0 and 1
-    TargetZoomFactor = FMath::Clamp<float>(TargetZoomFactor, 0.0f, 1.0f);
-    // Blend our camera's FOV and our SpringArm's length based on ZoomFactor
-    CameraComp->FieldOfView = FMath::Lerp<float>(90.0f, 60.0f, ZoomFactor);
-    SpringArmComp->TargetArmLength = FMath::Lerp<float>(400.0f, 300.0f, ZoomFactor);
-
-    /*
-    //Rotate our actor's yaw, which will turn our camera because we're attached to it
-    {
-        FRotator NewRotation = GetActorRotation();
-        NewRotation.Yaw += CameraInput.X;
-        SetActorRotation(NewRotation);
-    }
-
-    //Rotate our camera's pitch, but limit it so we're always looking downward
-    {
-        FRotator NewRotation = SpringArmComp->GetComponentRotation();
-        NewRotation.Pitch = FMath::Clamp(NewRotation.Pitch + CameraInput.Y, -80.0f, -15.0f);
-        SpringArmComp->SetWorldRotation(NewRotation);
-    }
-    */
-
-    //Handle movement based on our X, Y, and Z inputs
-    if (!MovementInput.IsZero())
-    {
-        //Scale our movement input axis values by MovementSpeed units per second
-        MovementInput = MovementInput.GetSafeNormal() * MovementSpeed;
-        FVector NewLocation = GetActorLocation();
-        NewLocation += GetActorForwardVector() * MovementInput.X * DeltaTime;
-        NewLocation += GetActorRightVector() * MovementInput.Y * DeltaTime;
-        NewLocation += GetActorUpVector() * MovementInput.Z * DeltaTime;
-        SetActorLocation(NewLocation);
-    }
-
 }
 
 // Called to bind functionality to input
@@ -128,8 +138,6 @@ void APlayerCameraPawn::YawCamera(float AxisValue)
 
 void APlayerCameraPawn::ZoomIn(float AxisValue)
 {
-    TargetZoomFactor = ZoomFactor + AxisValue;
-    UE_LOG(LogTemp, Warning, TEXT("ZoomFactor: %f"), ZoomFactor);
-    UE_LOG(LogTemp, Warning, TEXT("TargetZoomFactor: %f"), TargetZoomFactor);
+    ZoomFactor = AxisValue;
 }
 

@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "SpatialDataStruct.h"
 #include "Engine/DataTable.h"
+#include "Engine/AssetManager.h"
 
 
 // Sets default values
@@ -35,7 +36,7 @@ void AActorSpawner::RefreshDataTable() {
 	UDataTable* DataTable = LoadObject<UDataTable>(NULL, TEXT("/Game/SpatialDataTable.SpatialDataTable"), NULL, LOAD_None, NULL);
 	// Make sure that we found the data table
 	if (DataTable) {
-		FString FileName = TEXT("C:/Users/Josh's PC/Documents/Pepticom/Internship/Pepticom 4D/sample_points.csv");
+		FString FileName = TEXT("C:/Users/Josh's PC/Documents/Pepticom/Internship/Pepticom 4D/star_spatial_data.csv");
 		// Make sure that the file exists
 		if (FPaths::FileExists(FileName)) {
 			FString FileContent;
@@ -56,7 +57,7 @@ void AActorSpawner::RefreshDataTable() {
 	}
 }
 
-void AActorSpawner::SpawnActorsFromDataTable() {
+void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 	/* Using data from the appropriate data table, actors are spawned in the world */
 	// Get the data table
 	UDataTable* DataTable = LoadObject<UDataTable>(NULL, TEXT("/Game/SpatialDataTable.SpatialDataTable"), NULL, LOAD_None, NULL);
@@ -70,8 +71,25 @@ void AActorSpawner::SpawnActorsFromDataTable() {
 			if (Row) {
 				// Spawn the actor
 				FVector SpawnLocation = FVector(Row->X, Row->Y, Row->Z);
-				SpawnActor(SpawnLocation);
+				ActorSpawnLocations.Enqueue(SpawnLocation);
 			}
+		}
+	}
+}
+
+void AActorSpawner::SpawnActorsFromQueue() {
+	/* Spawns actors from the queue */
+	for (int32 i = 0; i < SpawnActorsPerTick; ++i) {
+		// Make sure that there are actors to spawn
+		if (!ActorSpawnLocations.IsEmpty()) {
+			FVector SpawnLocation;
+			// Get the next spawn location
+			ActorSpawnLocations.Dequeue(SpawnLocation);
+			SpawnActor(SpawnLocation);
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Spawned all actors"));
+			break;
 		}
 	}
 }
@@ -85,10 +103,12 @@ void AActorSpawner::DestroySpawnedActors() {
 }
 
 void AActorSpawner::ForceRefresh() {
-	/* Forces a refresh of the data table, destroys spawned actors, and spawns new actors from the new data */
+	/* Forces a refresh of the data table, destroys spawned actors, and enqueues new actors to spawn from the new data */
 	RefreshDataTable();
 	DestroySpawnedActors();
-	SpawnActorsFromDataTable();
+	EnqueueSpawningActorsFromDataTable();
+	// TODO: This code will also need to generate configuration structs/view-perspective stucts, etc. and reload those data tables IF data has changed since last loaded.
+	// Best way to check for changes would be to store some kind of hash of parts of the data, so that the hash is not too large, and compare that to the hash of the current data.
 }
 
 // Called when the game starts or when spawned
@@ -103,5 +123,7 @@ void AActorSpawner::BeginPlay()
 void AActorSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	// Spawn actors from the queue if the queue is not empty
+	SpawnActorsFromQueue();
 }
 

@@ -26,7 +26,9 @@ void ADataInteractionPlayerController::BeginPlay()
     // Enable mouse cursor
     bShowMouseCursor = true;
     // Set input mode to game and UI
-    SetInputMode(FInputModeGameAndUI());
+    auto InputMode = FInputModeGameAndUI();
+    InputMode.SetHideCursorDuringCapture(false);
+    SetInputMode(InputMode);
 }
 
 void ADataInteractionPlayerController::SetupInputComponent()
@@ -42,6 +44,7 @@ void ADataInteractionPlayerController::SetupInputComponent()
 
 void ADataInteractionPlayerController::OnLeftClickPressed()
 {
+    bShowMouseCursor = true;
     FHitResult HitResult;
     GetHitResultUnderCursor(ECC_Pawn, true, HitResult);
     if (HitResult.bBlockingHit)

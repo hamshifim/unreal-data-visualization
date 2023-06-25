@@ -18,10 +18,10 @@ void AActorToSpawn::Create() {
     ParticleComp->AttachToComponent(StaticMeshComp, FAttachmentTransformRules::KeepRelativeTransform);
 
     //Setting the Sphere radius to be of a smaller size in line with the Static Mesh.
-    SphereComp->SetSphereRadius(16.0f);
+    SphereComp->SetSphereRadius(4.0f); // was 16
 
     //Setting the Static Mesh Scale and Location to fit the radius of the Sphere.
-    StaticMeshComp->SetRelativeLocation(FVector(0.0, 0.0, -12.0f));
+    StaticMeshComp->SetRelativeLocation(FVector(0.0, 0.0, -3.0f)); // was 0, 0, -12
     StaticMeshComp->SetRelativeScale3D(FVector(0.25, 0.25, 0.25));
 
     // Set collision to query only
@@ -80,7 +80,6 @@ void AActorToSpawn::BeginPlay()
 void AActorToSpawn::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
 }
 
 void AActorToSpawn::OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed) {

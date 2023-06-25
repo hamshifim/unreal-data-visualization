@@ -36,13 +36,14 @@ public:
 
     virtual void Tick(float DeltaSeconds) override;
 
+    bool bIsRightMouseDown = false;
+    bool bIsPanning = false;
+
 protected:
     virtual void BeginPlay() override;
 
 private:
     AActor* SelectedActor = nullptr;
-    bool bIsRightMouseDown = false;
-    bool bIsPanning = false;
     double MouseSensitivity = 1.0;
     FVector2D PreviousMousePosition = FVector2D(0.0, 0.0);
 };

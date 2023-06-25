@@ -23,7 +23,10 @@ public:
 	void RefreshDataTable();
 
 	UFUNCTION()
-	void SpawnActorsFromDataTable();
+	void EnqueueSpawningActorsFromDataTable();
+
+	UFUNCTION()
+	void SpawnActorsFromQueue();
 
 	UFUNCTION()
 	void DestroySpawnedActors();
@@ -44,5 +47,7 @@ public:
 
 private:
 	TArray<TWeakObjectPtr<AActorToSpawn>> SpawnedActors = TArray<TWeakObjectPtr<AActorToSpawn>>();
+	TQueue<FVector> ActorSpawnLocations = TQueue<FVector>();
+	int32 SpawnActorsPerTick = 5000; // adjust this value as needed to prevent lag
 
 };
