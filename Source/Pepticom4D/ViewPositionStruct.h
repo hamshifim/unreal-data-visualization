@@ -13,19 +13,19 @@ struct FViewPositionStruct : public FTableRowBase
 
 public:
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x", MakeStructureDefaultValue = 0.000000))
 	double X;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y", MakeStructureDefaultValue = 0.000000))
 	double Y;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z", MakeStructureDefaultValue = 0.000000))
 	double Z;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "view_number", MakeStructureDefaultValue = "1"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "view_number", MakeStructureDefaultValue = 1))
 	int VIEW_NUMBER;
 
 	/** Please add a variable description */

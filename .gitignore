@@ -56,6 +56,17 @@ Build/*
 # Starter Content Pack
 Content/StarterContent/*
 
+# JetBrains IDE Configuration Files
+Content/Scripts/.idea/*
+
+# Error/log files
+Content/Logs/*
+!Content/Logs/.gitkeep
+
+# Data files
+Content/Data/*
+!Content/Data/.gitkeep
+
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
 !Build/*/
 Build/*/**

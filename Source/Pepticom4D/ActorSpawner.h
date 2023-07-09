@@ -13,14 +13,13 @@ class PEPTICOM4D_API AActorSpawner : public AActor
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	AActorSpawner();
 
 	UFUNCTION()
 	void SpawnActor(FVector& SpawnLocation);
 
 	UFUNCTION()
-	void RefreshDataTable();
+	void RefreshSpatialDataTable();
 
 	UFUNCTION()
 	void EnqueueSpawningActorsFromDataTable();
@@ -30,6 +29,9 @@ public:
 
 	UFUNCTION()
 	void DestroySpawnedActors();
+
+	UFUNCTION()
+	void GenerateMetadata();
 
 	UFUNCTION()
 	void ForceRefresh();
@@ -46,8 +48,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	// Array of actors that have been spawned
 	TArray<TWeakObjectPtr<AActorToSpawn>> SpawnedActors = TArray<TWeakObjectPtr<AActorToSpawn>>();
-	TQueue<FVector> ActorSpawnLocations = TQueue<FVector>();
+	// Queue of locations at which to spawn actors
+	TQueue<FVector> ActorSpawnLocations = TQueue<FVector>(); 
+	// Number of actors to spawn per tick
 	int32 SpawnActorsPerTick = 5000; // adjust this value as needed to prevent lag
 
 };

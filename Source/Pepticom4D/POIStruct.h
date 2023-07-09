@@ -13,26 +13,26 @@ struct FPOIStruct : public FTableRowBase
 
 public:
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x_min", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x_min", MakeStructureDefaultValue = 0.000000))
 	double X_MIN;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x_max", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x_max", MakeStructureDefaultValue = 0.000000))
 	double X_MAX;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y_min", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y_min", MakeStructureDefaultValue = 0.000000))
 	double Y_MIN;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y_max", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y_max", MakeStructureDefaultValue = 0.000000))
 	double Y_MAX;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z_min", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z_min", MakeStructureDefaultValue = 0.000000))
 	double Z_MIN;
 
 	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z_max", MakeStructureDefaultValue = "0.000000"))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z_max", MakeStructureDefaultValue = 0.000000))
 	double Z_MAX;
 };

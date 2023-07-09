@@ -6,6 +6,7 @@
 #include "SpatialDataStruct.h"
 #include "Engine/DataTable.h"
 #include "Engine/AssetManager.h"
+#include "PythonScriptRunner.h"
 
 
 // Sets default values
@@ -30,18 +31,20 @@ void AActorSpawner::SpawnActor(FVector& SpawnLocation)
 	SpawnedActors.Add(Actor);
 }
 
-void AActorSpawner::RefreshDataTable() {
+void AActorSpawner::RefreshSpatialDataTable() {
 	/* Imports data from the source file into the data table */
 	// Get the data table
 	UDataTable* DataTable = LoadObject<UDataTable>(NULL, TEXT("/Game/SpatialDataTable.SpatialDataTable"), NULL, LOAD_None, NULL);
 	// Make sure that we found the data table
 	if (DataTable) {
-		FString FileName = TEXT("C:/Users/Josh's PC/Documents/Pepticom/Internship/Pepticom 4D/star_spatial_data.csv");
-		// Make sure that the file exists
-		if (FPaths::FileExists(FileName)) {
+		// Get the source file
+		FString SourceFile;
+		GConfig->GetString(TEXT("Data"), TEXT("SpatialDataFilePath"), SourceFile, GGameIni);
+		// Make sure that the source file exists
+		if (FPaths::FileExists(SourceFile)) {
+			// Read the file into a string and store problems, if any, in an array
 			FString FileContent;
-			// Read the file into a string
-			FFileHelper::LoadFileToString(FileContent, *FileName);
+			FFileHelper::LoadFileToString(FileContent, *SourceFile);
 			TArray<FString> problems = DataTable->CreateTableFromCSVString(FileContent);
 			// Make sure that there were no problems
 			if (problems.Num() > 0) {
@@ -79,17 +82,19 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 
 void AActorSpawner::SpawnActorsFromQueue() {
 	/* Spawns actors from the queue */
-	for (int32 i = 0; i < SpawnActorsPerTick; ++i) {
-		// Make sure that there are actors to spawn
-		if (!ActorSpawnLocations.IsEmpty()) {
-			FVector SpawnLocation;
-			// Get the next spawn location
-			ActorSpawnLocations.Dequeue(SpawnLocation);
-			SpawnActor(SpawnLocation);
-		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("Spawned all actors"));
-			break;
+	if (!ActorSpawnLocations.IsEmpty()) {
+		for (int32 i = 0; i < SpawnActorsPerTick; ++i) {
+			// Make sure that there are actors to spawn
+			if (!ActorSpawnLocations.IsEmpty()) {
+				FVector SpawnLocation;
+				// Get the next spawn location
+				ActorSpawnLocations.Dequeue(SpawnLocation);
+				SpawnActor(SpawnLocation);
+			}
+			else {
+				UE_LOG(LogTemp, Warning, TEXT("Spawned all actors"));
+				break;
+			}
 		}
 	}
 }
@@ -102,11 +107,28 @@ void AActorSpawner::DestroySpawnedActors() {
 	SpawnedActors.Empty();
 }
 
+void AActorSpawner::GenerateMetadata() {
+	/* Generates metadata for data in the data table */
+	// Configure the script to be run and the arguments to be passed to it
+	FString PythonPath;
+	GConfig->GetString(TEXT("Executables"), TEXT("PythonPath"), PythonPath, GGameIni);
+	FString SourceFile;
+	GConfig->GetString(TEXT("Data"), TEXT("SpatialDataFilePath"), SourceFile, GGameIni);
+	FString RootDirectory;
+	GConfig->GetString(TEXT("Data"), TEXT("RootDirectory"), RootDirectory, GGameIni);
+	FString ScriptPath = RootDirectory + TEXT("/Content/Scripts/poi_gen.py");
+	FString Arguments = TEXT("--input-csv-path \"") + SourceFile + TEXT("\" --output-json-path \"") + RootDirectory + TEXT("/Content/Data/poi_data.json\"");
+	UE_LOG(LogTemp, Warning, TEXT("Arguments: %s"), *Arguments);
+	// Run the script with the arguments. This will generate a JSON file containing metadata for the data in the data table
+	UPythonScriptRunner::RunPythonScript(PythonPath, ScriptPath, Arguments);
+}
+
 void AActorSpawner::ForceRefresh() {
 	/* Forces a refresh of the data table, destroys spawned actors, and enqueues new actors to spawn from the new data */
-	RefreshDataTable();
+	RefreshSpatialDataTable();
 	DestroySpawnedActors();
 	EnqueueSpawningActorsFromDataTable();
+	GenerateMetadata();
 	// TODO: This code will also need to generate configuration structs/view-perspective stucts, etc. and reload those data tables IF data has changed since last loaded.
 	// Best way to check for changes would be to store some kind of hash of parts of the data, so that the hash is not too large, and compare that to the hash of the current data.
 }
