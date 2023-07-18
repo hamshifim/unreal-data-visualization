@@ -5,12 +5,14 @@
 #include "Components/SphereComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "PlayerCameraPawn.h"
 
 void AActorToSpawn::Create() {
     //Creating our Default Components
     SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
     StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
     ParticleComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleComp"));
+    SetRootComponent(SphereComp);
 
     //Attaching the Components
     SphereComp->SetupAttachment(RootComponent);
@@ -18,7 +20,7 @@ void AActorToSpawn::Create() {
     ParticleComp->AttachToComponent(StaticMeshComp, FAttachmentTransformRules::KeepRelativeTransform);
 
     //Setting the Sphere radius to be of a smaller size in line with the Static Mesh.
-    SphereComp->SetSphereRadius(4.0f); // was 16
+    SphereComp->SetSphereRadius(Size); // was 16
 
     //Setting the Static Mesh Scale and Location to fit the radius of the Sphere.
     StaticMeshComp->SetRelativeLocation(FVector(0.0, 0.0, -3.0f)); // was 0, 0, -12
@@ -73,7 +75,6 @@ AActorToSpawn::AActorToSpawn()
 void AActorToSpawn::BeginPlay()
 {
     Super::BeginPlay();
-
 }
 
 // Called every frame
@@ -85,4 +86,38 @@ void AActorToSpawn::Tick(float DeltaTime)
 void AActorToSpawn::OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed) {
     // Highlight the actor by making it blue
     DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Blue);
+
+    // Get the player camera pawn
+    APlayerCameraPawn* PlayerCameraPawn = Cast<APlayerCameraPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
+    if (PlayerCameraPawn) {
+        // Move the camera to the actor
+        PlayerCameraPawn->MoveCameraToActor(this);
+    }
+    else {
+        UE_LOG(LogTemp, Warning, TEXT("Unable to get player camera pawn from actor to spawn"));
+    }
+}
+
+void AActorToSpawn::ChangeColor(FString ColorHex) {
+	/* Converts the hex string to a linear color and updates the actor's color. Hex string should be in the format #RRGGBB or RRGGBB */
+    UE_LOG(LogTemp, Warning, TEXT("Changing color to %s"), *ColorHex)
+    // Convert the hex string to a linear color
+    FColor Color = FColor::FromHex(ColorHex);
+	// Set the emissive color of the material to be the color
+	DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), Color);
+}
+
+void AActorToSpawn::ChangeSize(float NewSize) {
+    // PLACEHOLDER: Does not work yet
+
+	/* Updates the actor's size. Size can be any positive number. */
+    UE_LOG(LogTemp, Warning, TEXT("Changing size to %f"), NewSize)
+    // Scale the actor by the new size. Scale will not be between 0 and 1
+    SphereComp->SetSphereRadius(NewSize);
+
+    // TODO: Setting the Static Mesh Scale and Location to fit the radius of the Sphere.
+    // ...
+
+    // Update the size
+    Size = NewSize;
 }

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/PostProcessComponent.h"
+#include "SpatialMetadataStruct.h"
 #include "ActorToSpawn.generated.h"
 
 UCLASS()
@@ -15,6 +17,8 @@ public:
 	// Sets default values for this actor's properties
 	AActorToSpawn();
 	void Create();
+	void ChangeColor(FString ColorHex);
+	void ChangeSize(float NewSize);
 
 protected:
 	// Called when the game starts or when spawned
@@ -40,4 +44,5 @@ private:
 	UFUNCTION()
 	void OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed);
 
+	float Size = 4.0f;
 };

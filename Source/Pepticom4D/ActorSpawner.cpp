@@ -6,7 +6,6 @@
 #include "SpatialDataStruct.h"
 #include "Engine/DataTable.h"
 #include "Engine/AssetManager.h"
-#include "PythonScriptRunner.h"
 
 
 // Sets default values
@@ -21,75 +20,149 @@ AActorSpawner::AActorSpawner()
 
 }
 
-void AActorSpawner::SpawnActor(FVector& SpawnLocation)
-{
-	// Set actor rotation to be the same as the rotation of the spawner
-	FRotator SpawnRotation = GetActorRotation();
-	// Spawn the actor
-	AActorToSpawn* Actor = GetWorld()->SpawnActor<AActorToSpawn>(SpawnLocation, SpawnRotation);
-	// Add the spawned actor to the array of spawned actors
-	SpawnedActors.Add(Actor);
-}
-
-void AActorSpawner::RefreshSpatialDataTable() {
+void AActorSpawner::RefreshDataTable(FString DataTablePath, FString SourceFileName) {
 	/* Imports data from the source file into the data table */
 	// Get the data table
-	UDataTable* DataTable = LoadObject<UDataTable>(NULL, TEXT("/Game/SpatialDataTable.SpatialDataTable"), NULL, LOAD_None, NULL);
+	UDataTable* DataTable = LoadObject<UDataTable>(NULL, *DataTablePath, NULL, LOAD_None, NULL);
 	// Make sure that we found the data table
 	if (DataTable) {
 		// Get the source file
 		FString SourceFile;
-		GConfig->GetString(TEXT("Data"), TEXT("SpatialDataFilePath"), SourceFile, GGameIni);
+		GConfig->GetString(TEXT("Data"), *SourceFileName, SourceFile, GGameIni);
 		// Make sure that the source file exists
 		if (FPaths::FileExists(SourceFile)) {
 			// Read the file into a string and store problems, if any, in an array
 			FString FileContent;
 			FFileHelper::LoadFileToString(FileContent, *SourceFile);
-			TArray<FString> problems = DataTable->CreateTableFromCSVString(FileContent);
+			TArray<FString> problems = TArray<FString>();
+			// Check if the file is a CSV or JSON file and parse it accordingly
+			if (SourceFile.EndsWith(".csv")) {
+				problems = DataTable->CreateTableFromCSVString(FileContent);
+			} 
+			else if (SourceFile.EndsWith(".json")) {
+				problems = DataTable->CreateTableFromJSONString(FileContent);
+			}
+			else {
+				UE_LOG(LogTemp, Error, TEXT("File source for %s is not a CSV or JSON file: %s"), *DataTablePath, *SourceFile);
+				return;
+			}
 			// Make sure that there were no problems
 			if (problems.Num() > 0) {
-				UE_LOG(LogTemp, Warning, TEXT("There were problems importing the data table"));
+				UE_LOG(LogTemp, Warning, TEXT("There were problems importing %s"), *DataTablePath);
 				for (auto& problem : problems) {
 					UE_LOG(LogTemp, Warning, TEXT("%s"), *problem);
 				}
 			}
 			else {
-				UE_LOG(LogTemp, Warning, TEXT("Data table imported successfully"));
+				UE_LOG(LogTemp, Warning, TEXT("Data table %s imported successfully"), *DataTablePath);
 			}
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("File source for %s does not exist: %s"), *DataTablePath, *SourceFile);
 		}
 	}
 }
 
 void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 	/* Using data from the appropriate data table, actors are spawned in the world */
-	// Get the data table
-	UDataTable* DataTable = LoadObject<UDataTable>(NULL, TEXT("/Game/SpatialDataTable.SpatialDataTable"), NULL, LOAD_None, NULL);
+	// Get the spatial data table
+	FString SpatialDataTablePath = FString(TEXT("/Game/SpatialDataTable.SpatialDataTable"));
+	UDataTable* SpatialDataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
+	// Get the spatial metadata table
+	FString SpatialMetadataTablePath = FString(TEXT("/Game/SpatialMetadataTable.SpatialMetadataTable"));
+	UDataTable* SpatialMetadataTable = LoadObject<UDataTable>(NULL, *SpatialMetadataTablePath, NULL, LOAD_None, NULL);
 	// Make sure that we found the data table
-	if (DataTable) {
+	if (SpatialDataTable) {
 		// Get all of the row names
-		TArray<FName> RowNames = DataTable->GetRowNames();
-		for (auto& Name : RowNames) {
-			FSpatialDataStruct* Row = DataTable->FindRow<FSpatialDataStruct>(Name, TEXT(""));
-			// Make sure that we found the row
-			if (Row) {
-				// Spawn the actor
-				FVector SpawnLocation = FVector(Row->X, Row->Y, Row->Z);
-				ActorSpawnLocations.Enqueue(SpawnLocation);
+		TArray<FName> SpatialDataRowNames = SpatialDataTable->GetRowNames();
+		// Get the total number of rows
+		int32 NumSpatialDataRows = SpatialDataRowNames.Num();
+
+		// Make sure that we found the metadata table
+		if (SpatialMetadataTable) {
+			// Get all of the row names
+			TArray<FName> SpatialMetadataRowNames = SpatialMetadataTable->GetRowNames();
+			// Get the total number of rows
+			int32 NumSpatialMetadataRows = SpatialMetadataRowNames.Num();
+
+			// Make sure that there are the same number of rows in both tables
+			if (NumSpatialDataRows != NumSpatialMetadataRows) {
+				UE_LOG(LogTemp, Error, TEXT("The number of rows in the spatial data table (%d) does not match the number of rows in the spatial metadata table (%d)"), NumSpatialDataRows, NumSpatialMetadataRows);
+				return;
 			}
+
+			// Iterate through the rows while keeping track of the row index
+			for (int32 i = 0; i < NumSpatialDataRows; ++i) {
+				// Get the spatial data row name
+				FName SpatialDataRowName = SpatialDataRowNames[i];
+				FSpatialDataStruct* SpatialDataRow = SpatialDataTable->FindRow<FSpatialDataStruct>(SpatialDataRowName, TEXT(""));
+				// Get the corresponding metadata row
+				FName SpatialMetadataRowName = SpatialMetadataRowNames[i];
+				FSpatialMetadataStruct* SpatialMetadataRow = SpatialMetadataTable->FindRow<FSpatialMetadataStruct>(SpatialMetadataRowName, TEXT(""));
+				// Make sure that we found the rows
+				if (SpatialDataRow && SpatialMetadataRow) {
+					// Spawn the actor
+					FVector SpawnLocation = FVector(SpatialDataRow->X, SpatialDataRow->Y, SpatialDataRow->Z);
+					TPair<FSpatialMetadataStruct*, FVector> MetadataLocationPair = TPair<FSpatialMetadataStruct*, FVector>(SpatialMetadataRow, SpawnLocation);
+					ActorSpawnMetadataLocationPairQueue.Enqueue(MetadataLocationPair);
+				}
+				else {
+					UE_LOG(LogTemp, Error, TEXT("Could not find one or more rows in the spatial data table or spatial metadata table"));
+				}
+			}
+
 		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Could not find spatial metadata table: %s"), *SpatialMetadataTablePath);
+			return;
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Could not find spatial data table: %s"), *SpatialDataTablePath);
+		return;
 	}
 }
 
 void AActorSpawner::SpawnActorsFromQueue() {
 	/* Spawns actors from the queue */
-	if (!ActorSpawnLocations.IsEmpty()) {
+	if (!ActorSpawnMetadataLocationPairQueue.IsEmpty()) {
 		for (int32 i = 0; i < SpawnActorsPerTick; ++i) {
 			// Make sure that there are actors to spawn
-			if (!ActorSpawnLocations.IsEmpty()) {
-				FVector SpawnLocation;
+			if (!ActorSpawnMetadataLocationPairQueue.IsEmpty()) {
+				TPair<FSpatialMetadataStruct*, FVector> MetadataLocationPair;
 				// Get the next spawn location
-				ActorSpawnLocations.Dequeue(SpawnLocation);
-				SpawnActor(SpawnLocation);
+				ActorSpawnMetadataLocationPairQueue.Dequeue(MetadataLocationPair);
+				FSpatialMetadataStruct* Metadata = MetadataLocationPair.Key;
+				UStruct* MetadataType = FSpatialMetadataStruct::StaticStruct();
+				FVector SpawnLocation = MetadataLocationPair.Value;
+				// Spawn the actor
+				// Set actor rotation to be the same as the rotation of the spawner
+				FRotator SpawnRotation = GetActorRotation();
+				// Spawn the actor
+				AActorToSpawn* Actor = GetWorld()->SpawnActor<AActorToSpawn>(SpawnLocation, SpawnRotation);
+				if (Actor) {
+					// Check if the metadata has a COLOR property and set the actor's color to that color
+					FName ColorPropertyName = FName(TEXT("COLOR"));
+					FProperty* ColorProperty = MetadataType->FindPropertyByName(ColorPropertyName);
+					if (ColorProperty) {
+						FStrProperty* StrProp = CastField<FStrProperty>(ColorProperty);
+						FString ColorHex = StrProp->GetPropertyValue_InContainer(Metadata);
+						Actor->ChangeColor(ColorHex);
+					}
+					// Check if the metadata has a RADIUS property and set the actor's size to that radius
+					FName RadiusPropertyName = FName(TEXT("RADIUS"));
+					FProperty* RadiusProperty = MetadataType->FindPropertyByName(RadiusPropertyName);
+					if (RadiusProperty) {
+						FDoubleProperty* DoubleProp = CastField<FDoubleProperty>(RadiusProperty);
+						float Radius = DoubleProp->GetPropertyValue_InContainer(Metadata);
+						Actor->ChangeSize(Radius);
+					}
+				}
+				else {
+					UE_LOG(LogTemp, Warning, TEXT("Actor not ready yet"));
+				}
+				// Add the spawned actor to the array of spawned actors
+				SpawnedActorsMap.Add(TPair<AActor*, FSpatialMetadataStruct*>(Actor, Metadata));
 			}
 			else {
 				UE_LOG(LogTemp, Warning, TEXT("Spawned all actors"));
@@ -101,36 +174,26 @@ void AActorSpawner::SpawnActorsFromQueue() {
 
 void AActorSpawner::DestroySpawnedActors() {
 	/* Destroys all actors which have been spawned by this actor spawner */
-	for (auto& Actor : SpawnedActors) {
-		Actor->Destroy();
+	for (auto& Elem : SpawnedActorsMap) {
+		// Destroy the actor
+		Elem.Key->Destroy();
 	}
-	SpawnedActors.Empty();
-}
-
-void AActorSpawner::GenerateMetadata() {
-	/* Generates metadata for data in the data table */
-	// Configure the script to be run and the arguments to be passed to it
-	FString PythonPath;
-	GConfig->GetString(TEXT("Executables"), TEXT("PythonPath"), PythonPath, GGameIni);
-	FString SourceFile;
-	GConfig->GetString(TEXT("Data"), TEXT("SpatialDataFilePath"), SourceFile, GGameIni);
-	FString RootDirectory;
-	GConfig->GetString(TEXT("Data"), TEXT("RootDirectory"), RootDirectory, GGameIni);
-	FString ScriptPath = RootDirectory + TEXT("/Content/Scripts/poi_gen.py");
-	FString Arguments = TEXT("--input-csv-path \"") + SourceFile + TEXT("\" --output-json-path \"") + RootDirectory + TEXT("/Content/Data/poi_data.json\"");
-	UE_LOG(LogTemp, Warning, TEXT("Arguments: %s"), *Arguments);
-	// Run the script with the arguments. This will generate a JSON file containing metadata for the data in the data table
-	UPythonScriptRunner::RunPythonScript(PythonPath, ScriptPath, Arguments);
+	SpawnedActorsMap.Empty();
 }
 
 void AActorSpawner::ForceRefresh() {
-	/* Forces a refresh of the data table, destroys spawned actors, and enqueues new actors to spawn from the new data */
-	RefreshSpatialDataTable();
+	RefreshDataTable(FString(TEXT("/Game/SpatialDataTable.SpatialDataTable")), FString(TEXT("SpatialDataFilePath")));
+	RefreshDataTable(FString(TEXT("/Game/SpatialMetadataTable.SpatialMetadataTable")), FString(TEXT("SpatialMetadataFilePath")));
 	DestroySpawnedActors();
 	EnqueueSpawningActorsFromDataTable();
-	GenerateMetadata();
-	// TODO: This code will also need to generate configuration structs/view-perspective stucts, etc. and reload those data tables IF data has changed since last loaded.
+	// TODO: We may need to create an event hook here to generate configuration structs/view-perspective stucts, etc. 
+	// and reload those data tables IF data has changed since last loaded.
 	// Best way to check for changes would be to store some kind of hash of parts of the data, so that the hash is not too large, and compare that to the hash of the current data.
+	RefreshDataTable(FString(TEXT("/Game/POIDataTable.POIDataTable")), FString(TEXT("POIDataFilePath")));
+}
+
+FSpatialMetadataStruct& AActorSpawner::GetMetadataFromActor(AActor* Actor) {
+	return *(SpawnedActorsMap.FindRef(Actor));
 }
 
 // Called when the game starts or when spawned

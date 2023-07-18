@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ActorToSpawn.h"
+#include "Engine/DataTable.h"
+#include "SpatialMetadataStruct.h"
 #include "ActorSpawner.generated.h"
 
 UCLASS()
@@ -16,10 +18,7 @@ public:
 	AActorSpawner();
 
 	UFUNCTION()
-	void SpawnActor(FVector& SpawnLocation);
-
-	UFUNCTION()
-	void RefreshSpatialDataTable();
+	void RefreshDataTable(FString DataTablePath, FString SourceFileName);
 
 	UFUNCTION()
 	void EnqueueSpawningActorsFromDataTable();
@@ -31,10 +30,10 @@ public:
 	void DestroySpawnedActors();
 
 	UFUNCTION()
-	void GenerateMetadata();
+	void ForceRefresh();
 
 	UFUNCTION()
-	void ForceRefresh();
+	FSpatialMetadataStruct& GetMetadataFromActor(AActor* Actor);
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,11 +47,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	// Array of actors that have been spawned
-	TArray<TWeakObjectPtr<AActorToSpawn>> SpawnedActors = TArray<TWeakObjectPtr<AActorToSpawn>>();
-	// Queue of locations at which to spawn actors
-	TQueue<FVector> ActorSpawnLocations = TQueue<FVector>(); 
+	// Map of actors that have been spawned; key is metadata, value is the actor
+	TMap<AActor*, FSpatialMetadataStruct*> SpawnedActorsMap = TMap<AActor*, FSpatialMetadataStruct*>();
+	// Queue of locations at which to spawn actors; stores pairs of metadata to location
+	TQueue<TPair<FSpatialMetadataStruct*, FVector>> ActorSpawnMetadataLocationPairQueue = TQueue<TPair<FSpatialMetadataStruct*, FVector>>();
 	// Number of actors to spawn per tick
-	int32 SpawnActorsPerTick = 5000; // adjust this value as needed to prevent lag
-
+	int32 SpawnActorsPerTick = 500; // adjust this value as needed to prevent lag
 };
+
+
+

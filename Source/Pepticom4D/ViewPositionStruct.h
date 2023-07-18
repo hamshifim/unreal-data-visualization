@@ -12,24 +12,20 @@ struct FViewPositionStruct : public FTableRowBase
 	GENERATED_BODY()
 
 public:
-	/** Please add a variable description */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x", MakeStructureDefaultValue = 0.000000))
 	double X;
 
-	/** Please add a variable description */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y", MakeStructureDefaultValue = 0.000000))
 	double Y;
 
-	/** Please add a variable description */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z", MakeStructureDefaultValue = 0.000000))
 	double Z;
 
-	/** Please add a variable description */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "view_number", MakeStructureDefaultValue = 1))
 	int VIEW_NUMBER;
 
-	/** Please add a variable description */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "view_name", MakeStructureDefaultValue = "Home"))
+	// Stores the same information as the FName of each row; only populated with data during runtime and not in the DataTable
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "view_number", MakeStructureDefaultValue = 1))
 	FString VIEW_NAME;
 };
 

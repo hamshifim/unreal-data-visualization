@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "ViewPositionStruct.h"
+#include "UIManager.h"
 #include "PlayerCameraPawn.generated.h"
 
 UCLASS()
@@ -14,6 +16,36 @@ class PEPTICOM4D_API APlayerCameraPawn : public APawn
 public:
 	// Sets default values for this pawn's properties
 	APlayerCameraPawn();
+
+	UFUNCTION()
+	void GenerateViewsFromPOIDataTable();
+
+	UFUNCTION()
+	void SwitchToNextView();
+
+	UFUNCTION()
+	void SaveView(FVector& ViewCenterOffset, int ViewNumber, FString ViewName);
+
+	UFUNCTION()
+	void SaveCurrentView();
+
+	UFUNCTION()
+	double CalculateFOV();
+
+	UFUNCTION()
+	FString GetCurrentViewName();
+
+	UFUNCTION()
+	void MoveCameraToActor(AActor* Target);
+
+	UFUNCTION()
+	void ResetCameraZoomAndRotation(double RadiusOfTarget, FVector CenterOfTarget, bool Animate);
+
+	UFUNCTION()
+	void RestoreDefaults(bool AbandonTarget);
+
+	UFUNCTION()
+	void UpdateCurrentViewName(FString NewViewName);
 
 protected:
 	// Called when the game starts or when spawned
@@ -47,7 +79,33 @@ private:
 	void YawCamera(float AxisValue);
 	void ZoomIn(float AxisValue);
 
+	void StoreViewSphereCenterAndRadius();
+	void LoadViewsToMapFromDataTable();
+
+	bool bIsResettingCamera = false;
+	FVector TargetResetCameraLocation;
+	FRotator TargetResetSpringArmRotation;
+
 	float MovementSpeed = 1000.0f;
+	float MovementToTargetSpeed = 2.0f;
 	float ZoomSpeed = 100.0f;
+	float ViewPaddingFactor = 2.0f;
+	float FOVPaddingFactor = 1.2f;
+	int CurrentViewNumber = -1;
+	FString CurrentViewName;
+
+	// Store the center and radius of the bounding sphere for the current data set
+	FVector Center;
+	double Radius;
+	// Store the field of view to which the camera should be set for the current data set
+	double FOV;
+	// Store views in a map for O(1) lookup. Uni-directional; used for reading from the data table, but not writing to it. Important.
+	TMap<int, FViewPositionStruct*> ViewNumberToRowMap;
+
+	// Store a target towards which the camera should move
+	AActor* TargetActor = nullptr;
+
+	// Store the UI Manager
+	class AUIManager* UIManager;
 
 };
