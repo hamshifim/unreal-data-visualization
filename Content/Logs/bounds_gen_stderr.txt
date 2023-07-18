@@ -1,0 +1,3 @@
+usage: bounds_gen.py [-h] --input-csv-path INPUT_CSV_PATH --output-json-path
+                     OUTPUT_JSON_PATH
+bounds_gen.py: error: the following arguments are required: --input-csv-path, --output-json-path
