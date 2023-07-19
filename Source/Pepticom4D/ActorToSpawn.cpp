@@ -8,22 +8,22 @@
 #include "PlayerCameraPawn.h"
 
 void AActorToSpawn::Create() {
-    //Creating our Default Components
+    // Creating our Default Components
     SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
     StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
     ParticleComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleComp"));
     SetRootComponent(SphereComp);
 
-    //Attaching the Components
+    // Attaching the Components
     SphereComp->SetupAttachment(RootComponent);
     StaticMeshComp->AttachToComponent(SphereComp, FAttachmentTransformRules::KeepRelativeTransform);
     ParticleComp->AttachToComponent(StaticMeshComp, FAttachmentTransformRules::KeepRelativeTransform);
 
-    //Setting the Sphere radius to be of a smaller size in line with the Static Mesh.
-    SphereComp->SetSphereRadius(Size); // was 16
+    // Setting the Sphere radius to be of a smaller size in line with the Static Mesh.
+    SphereComp->SetSphereRadius(16.0f); // was 16
 
-    //Setting the Static Mesh Scale and Location to fit the radius of the Sphere.
-    StaticMeshComp->SetRelativeLocation(FVector(0.0, 0.0, -3.0f)); // was 0, 0, -12
+    // Setting the Static Mesh Scale and Location to fit the radius of the Sphere.
+    StaticMeshComp->SetRelativeLocation(FVector(0.0, 0.0, -12.0f)); // was 0, 0, -12
     StaticMeshComp->SetRelativeScale3D(FVector(0.25, 0.25, 0.25));
 
     // Set collision to query only
@@ -38,7 +38,7 @@ void AActorToSpawn::Create() {
     // Allow the actor to be clicked
     StaticMeshComp->OnClicked.AddDynamic(this, &AActorToSpawn::OnMeshClicked);
 
-    //Using Constructor Helpers to set our Static Mesh Comp with a Sphere Shape.
+    // Using Constructor Helpers to set our Static Mesh Comp with a Sphere Shape.
     static ConstructorHelpers::FObjectFinder<UStaticMesh>SphereMeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
     StaticMeshComp->SetStaticMesh(SphereMeshAsset.Object);
 
@@ -55,11 +55,9 @@ void AActorToSpawn::Create() {
 		}
 	}
 
-    /*
-    //Using Constructor Helpers to set our Particle Comp with our Fire Particle Comp.
-    static ConstructorHelpers::FObjectFinder<UParticleSystem>ParticleCompAsset(TEXT("ParticleSystem'/Game/StarterContent/Particles/P_Fire.P_Fire'"));
-    ParticleComp->SetTemplate(ParticleCompAsset.Object);
-    */
+    // Using Constructor Helpers to set our Particle Comp with our Fire Particle Comp.
+    //static ConstructorHelpers::FObjectFinder<UParticleSystem>ParticleCompAsset(TEXT("ParticleSystem'/Game/StarterContent/Particles/P_Fire.P_Fire'"));
+    //ParticleComp->SetTemplate(ParticleCompAsset.Object);
 }
 
 // Sets default values
@@ -107,17 +105,29 @@ void AActorToSpawn::ChangeColor(FString ColorHex) {
 	DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), Color);
 }
 
-void AActorToSpawn::ChangeSize(float NewSize) {
-    // PLACEHOLDER: Does not work yet
+float AActorToSpawn::GetNormalizedScale(float ScaleToNormalize, float MinScale = 0.f, float MaxScale = 100.f) {
+    /* Normalizes a scale to be between 0 and 1 */
+    // Check if the scale is between the min and max
+    if (ScaleToNormalize < MinScale) {
+		UE_LOG(LogTemp, Warning, TEXT("Scale %f is less than min scale %f"), ScaleToNormalize, MinScale)
+            ScaleToNormalize = MinScale;
+	}
+    else if (ScaleToNormalize > MaxScale) {
+		UE_LOG(LogTemp, Warning, TEXT("Scale %f is greater than max scale %f"), ScaleToNormalize, MaxScale)
+            ScaleToNormalize = MaxScale;
+	}
+    // Normalize the scale
+    ScaleToNormalize = (ScaleToNormalize - MinScale) / (MaxScale - MinScale);
+    // Return the normalized scale
+    return ScaleToNormalize;
+}
 
-	/* Updates the actor's size. Size can be any positive number. */
-    UE_LOG(LogTemp, Warning, TEXT("Changing size to %f"), NewSize)
+void AActorToSpawn::ChangeScale(float NewScale) {
+    // Normalize the scale to be between 0 and 1
+    NewScale = GetNormalizedScale(NewScale);
+    UE_LOG(LogTemp, Warning, TEXT("Changing scale to %f"), NewScale)
     // Scale the actor by the new size. Scale will not be between 0 and 1
-    SphereComp->SetSphereRadius(NewSize);
-
-    // TODO: Setting the Static Mesh Scale and Location to fit the radius of the Sphere.
-    // ...
-
+    SphereComp->SetRelativeScale3D(FVector(NewScale, NewScale, NewScale));
     // Update the size
-    Size = NewSize;
+    Scale = NewScale;
 }

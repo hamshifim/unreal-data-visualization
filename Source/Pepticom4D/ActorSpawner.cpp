@@ -155,7 +155,7 @@ void AActorSpawner::SpawnActorsFromQueue() {
 					if (RadiusProperty) {
 						FDoubleProperty* DoubleProp = CastField<FDoubleProperty>(RadiusProperty);
 						float Radius = DoubleProp->GetPropertyValue_InContainer(Metadata);
-						Actor->ChangeSize(Radius);
+						Actor->ChangeScale(Radius);
 					}
 				}
 				else {

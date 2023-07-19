@@ -18,7 +18,7 @@ public:
 	AActorToSpawn();
 	void Create();
 	void ChangeColor(FString ColorHex);
-	void ChangeSize(float NewSize);
+	void ChangeScale(float NewScale);
 
 protected:
 	// Called when the game starts or when spawned
@@ -43,6 +43,7 @@ public:
 private:
 	UFUNCTION()
 	void OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed);
+	float GetNormalizedScale(float ScaleToNormalize, float MinScale, float MaxScale);
 
-	float Size = 4.0f;
+	float Scale = 1.0f;
 };
