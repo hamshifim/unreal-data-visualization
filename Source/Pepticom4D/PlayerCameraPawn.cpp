@@ -97,12 +97,15 @@ void APlayerCameraPawn::RestoreDefaults(bool AbandonTarget = true) {
 void APlayerCameraPawn::GenerateViewsFromPOIDataTable() 
 {
     // Calculate camera offsets for each view
+    FVector CenterViewOffset = FVector(0, 0, 0);
+    SaveView(CenterViewOffset, 0, "Center View");
     FVector FrontViewOffset = FVector(-Radius * ViewPaddingFactor * 2, 0, 0);
-    SaveView(FrontViewOffset, 0, "Front View");
+    SaveView(FrontViewOffset, 1, "Front View");
     FVector SideViewOffset = FVector(0, -Radius * ViewPaddingFactor * 2, 0);
-    SaveView(SideViewOffset, 1, "Side View");
+    SaveView(SideViewOffset, 2, "Side View");
     FVector TopViewOffset = FVector(0, 0, Radius * ViewPaddingFactor * 2);
-    SaveView(TopViewOffset, 2, "Top View");
+    SaveView(TopViewOffset, 3, "Top View");
+
 }
 
 void APlayerCameraPawn::LoadViewsToMapFromDataTable() {
