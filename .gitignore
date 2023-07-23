@@ -2,9 +2,13 @@
 .vs/
 .vsconfig
 
-# IntelliJ
+# JetBrains IDE Configuration Files
+Content/Scripts/.idea/*
 .idea
 unreal-data-visualization.iml
+
+Config/DefaultGame.ini
+
 
 # Compiled Object files
 *.slo
@@ -60,8 +64,6 @@ Build/*
 # Starter Content Pack
 Content/StarterContent/*
 
-# JetBrains IDE Configuration Files
-Content/Scripts/.idea/*
 
 # Error/log files
 Content/Logs/*
