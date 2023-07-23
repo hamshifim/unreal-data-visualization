@@ -2,6 +2,10 @@
 .vs/
 .vsconfig
 
+# IntelliJ
+.idea
+unreal-data-visualization.iml
+
 # Compiled Object files
 *.slo
 *.lo
@@ -88,6 +92,5 @@ Plugins/*/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 
-# IML file
-unreal-data-visualization.iml
+
 
