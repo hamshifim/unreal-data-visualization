@@ -1,0 +1,44 @@
+{
+  "datasets": {
+    "milky_way": {
+      "basic": {
+        "columns": [
+          {
+            "name": "radius",
+            "type": "double"
+          },
+          {
+            "name": "color",
+            "type": "string"
+          },
+          {
+            "name": "star_name",
+            "type": "string"
+          }
+        ],
+        "animation_dimension": ""
+      },
+      "regular": {
+        "columns": [
+          {
+            "name": "radius",
+            "type": "double"
+          },
+          {
+            "name": "color",
+            "type": "string"
+          },
+          {
+            "name": "star_name",
+            "type": "string"
+          },
+          {
+            "name": "galaxy_name",
+            "type": "string"
+          }
+        ],
+        "animation_dimension": ""
+      }
+    }
+  }
+}

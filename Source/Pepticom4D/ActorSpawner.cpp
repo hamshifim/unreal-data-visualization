@@ -4,7 +4,6 @@
 #include "ActorSpawner.h"
 #include "Components/BoxComponent.h"
 #include "SpatialDataStruct.h"
-#include "Engine/DataTable.h"
 #include "Engine/AssetManager.h"
 
 
@@ -18,6 +17,18 @@ AActorSpawner::AActorSpawner()
 	SpawnVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnVolume"));
 	SpawnVolume->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
+}
+
+void AActorSpawner::CreateMetadataTableFromStruct(const FString& TableName, UScriptStruct* RowStruct) {
+	// Create a new Data Table asset
+	UDataTable* DataTable = NewObject<UDataTable>(GetTransientPackage(), FName(*TableName), RF_Transient);
+	DataTable->RowStruct = RowStruct;
+
+	// Register the Data Table
+	DataTable->AddToRoot();
+
+	// Save the metadata table
+	SpatialMetadataTable = DataTable;
 }
 
 void AActorSpawner::RefreshDataTable(FString DataTablePath, FString SourceFileName) {
@@ -68,9 +79,6 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 	// Get the spatial data table
 	FString SpatialDataTablePath = FString(TEXT("/Game/SpatialDataTable.SpatialDataTable"));
 	UDataTable* SpatialDataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
-	// Get the spatial metadata table
-	FString SpatialMetadataTablePath = FString(TEXT("/Game/SpatialMetadataTable.SpatialMetadataTable"));
-	UDataTable* SpatialMetadataTable = LoadObject<UDataTable>(NULL, *SpatialMetadataTablePath, NULL, LOAD_None, NULL);
 	// Make sure that we found the data table
 	if (SpatialDataTable) {
 		// Get all of the row names
@@ -113,7 +121,7 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 
 		}
 		else {
-			UE_LOG(LogTemp, Error, TEXT("Could not find spatial metadata table: %s"), *SpatialMetadataTablePath);
+			UE_LOG(LogTemp, Error, TEXT("Could not find spatial metadata table"));
 			return;
 		}
 	}

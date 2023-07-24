@@ -18,6 +18,9 @@ public:
 	AActorSpawner();
 
 	UFUNCTION()
+	void CreateMetadataTableFromStruct(const FString& TableName, UScriptStruct* RowStruct);
+
+	UFUNCTION()
 	void RefreshDataTable(FString DataTablePath, FString SourceFileName);
 
 	UFUNCTION()
@@ -53,6 +56,8 @@ private:
 	TQueue<TPair<FSpatialMetadataStruct*, FVector>> ActorSpawnMetadataLocationPairQueue = TQueue<TPair<FSpatialMetadataStruct*, FVector>>();
 	// Number of actors to spawn per tick
 	int32 SpawnActorsPerTick = 500; // adjust this value as needed to prevent lag
+	
+	UDataTable* SpatialMetadataTable = nullptr;
 };
 
 
