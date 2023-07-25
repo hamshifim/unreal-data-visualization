@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/PostProcessComponent.h"
-#include "SpatialMetadataStruct.h"
 #include "ActorToSpawn.generated.h"
 
 UCLASS()

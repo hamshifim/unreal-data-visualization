@@ -16,6 +16,19 @@ type_mapping = {
     # Add more types here as needed
 }
 
+
+def delete_old_structs(solution_name: str, unreal_project_dir: str):
+    """ Deletes all files in the Source directory ending in 'TempStruct.cpp' and 'TempStruct.h' """
+    # Get the path to the Source directory
+    source_dir = os.path.join(unreal_project_dir, solution_name, "Source")
+    # Iterate over all files in the Source directory
+    for root, dirs, files in os.walk(source_dir):
+        for file in files:
+            # If the file ends in 'TempStruct.cpp' or 'TempStruct.h', delete it
+            if file.endswith("TempStruct.cpp") or file.endswith("TempStruct.h"):
+                os.remove(os.path.join(root, file))
+
+
 def generate_structs(config_file_path: str, output_dir: str):
     with open(config_file_path, 'r') as f:
         data = json.load(f)
@@ -29,7 +42,7 @@ def generate_structs(config_file_path: str, output_dir: str):
             sub_dataset = main_dataset[sub_dataset_name]
             properties = sub_dataset['columns']
 
-            struct_name = (f"{main_dataset_name.capitalize()}_{sub_dataset_name.capitalize()}_Struct")
+            struct_name = (f"{main_dataset_name.capitalize()}_{sub_dataset_name.capitalize()}_Temp_Struct")
             # Get rid of all underscores in the name and capitalize the first letter of each word
             struct_name = struct_name.replace("_", " ").title().replace(" ", "")
             # Write code for the header
@@ -50,7 +63,7 @@ def generate_structs(config_file_path: str, output_dir: str):
 
 
 def prep_unreal_build(solution_name: str, unreal_proj_dir: str):
-    """ Deletes folders like Binaries, Intermediate, Saved, DerivedDataCache, and .vs """
+    """ Deletes folders like Binaries, Intermediate, Saved, DerivedDataCache, and .vs. """
     # Open the project directory
     for root, dirs, files in os.walk(unreal_proj_dir):
         # Iterate over all directories
@@ -96,6 +109,11 @@ def build_unreal_proj(vs_dir: str, solution_path: str):
     subprocess.call(command, shell=True)
 
 
+# Delete old structs
+solution_name = "Pepticom4D"
+unreal_proj_dir = "C:\\Users\\PC\\dev\\data-wielder\\unreal-data-visualization"
+delete_old_structs(solution_name, unreal_proj_dir)
+
 # Define the path to your config file
 config_file_path = "C:\\Users\\PC\\dev\\data-wielder\\unreal-data-visualization\\Config\\DataConfig.json"
 # Define the output directory
@@ -104,8 +122,6 @@ output_dir = "C:\\Users\\PC\\dev\\data-wielder\\unreal-data-visualization\\Sourc
 generate_structs(config_file_path, output_dir)
 
 # Prepare Unreal for building
-solution_name = "Pepticom4D"
-unreal_proj_dir = "C:\\Users\\PC\\dev\\data-wielder\\unreal-data-visualization"
 prep_unreal_build(solution_name, unreal_proj_dir)
 
 # Generate Visual Studio project files

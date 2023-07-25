@@ -152,7 +152,7 @@ FString AUIManager::GetFriendlyPropertyName(FString PropertyName) {
     return FriendlyPropertyName;
 }
 
-FString AUIManager::GetPropertyValueAsString(FProperty* Property, FSpatialMetadataStruct& Metadata) {
+FString AUIManager::GetPropertyValueAsString(FProperty* Property, FTableRowBase& Metadata) {
     FString PropertyName = Property->GetName();
     FString PropertyValue;
 
@@ -204,9 +204,20 @@ void AUIManager::RefreshActorDataWidget(AActor* Actor) {
     // Clear all of the existing fields from the widget. 
     VerticalBox->ClearChildren();
     // Get the metadata from the actor
-    FSpatialMetadataStruct& Metadata = ActorSpawner->GetMetadataFromActor(Actor);
+    FTableRowBase& Metadata = ActorSpawner->GetMetadataFromActor(Actor);
     // Get a pointer to the actor's dynamic struct
-    UStruct* MetadataType = FSpatialMetadataStruct::StaticStruct();
+    UStruct* MetadataType = FTableRowBase::StaticStruct();
+    FString MetadataStructName = ActorSpawner->GetStructNameFromFullDatasetName(ActorSpawner->GetCurrentFullDatasetName());
+    UScriptStruct* MetadataStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
+    if (MetadataStruct) {
+        MetadataType = Cast<UStruct>(MetadataStruct);
+        if (!MetadataType) {
+            UE_LOG(LogTemp, Warning, TEXT("Could not cast metadata struct to UStruct: %s"), *MetadataStructName)
+        }
+    }
+    else {
+        UE_LOG(LogTemp, Warning, TEXT("Could not load class for metadata parsing: %s"), *MetadataStructName);
+    }
     // Iterate through all properties of the struct and extract the property name and value
     for (TFieldIterator<FProperty> PropertyIt(MetadataType); PropertyIt; ++PropertyIt)
     {

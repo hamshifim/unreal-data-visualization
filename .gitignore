@@ -91,3 +91,9 @@ DerivedDataCache/*
 # IML file
 unreal-data-visualization.iml
 
+# Temporary struct files
+*TempStruct.*
+
+# Config Files
+Config/DefaultGame.ini
+Config/DataConfig.json
