@@ -98,7 +98,6 @@ void AActorToSpawn::OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonP
 
 void AActorToSpawn::ChangeColor(FString ColorHex) {
 	/* Converts the hex string to a linear color and updates the actor's color. Hex string should be in the format #RRGGBB or RRGGBB */
-    UE_LOG(LogTemp, Warning, TEXT("Changing color to %s"), *ColorHex)
     // Convert the hex string to a linear color
     FColor Color = FColor::FromHex(ColorHex);
 	// Set the emissive color of the material to be the color
@@ -119,13 +118,12 @@ float AActorToSpawn::GetNormalizedScale(float ScaleToNormalize, float MinScale =
     // Normalize the scale
     ScaleToNormalize = (ScaleToNormalize - MinScale) / (MaxScale - MinScale);
     // Return the normalized scale
-    return ScaleToNormalize;
+    return 1 + ScaleToNormalize;
 }
 
 void AActorToSpawn::ChangeScale(float NewScale) {
     // Normalize the scale to be between 0 and 1
     NewScale = GetNormalizedScale(NewScale);
-    UE_LOG(LogTemp, Warning, TEXT("Changing scale to %f"), NewScale)
     // Scale the actor by the new size. Scale will not be between 0 and 1
     SphereComp->SetRelativeScale3D(FVector(NewScale, NewScale, NewScale));
     // Update the size

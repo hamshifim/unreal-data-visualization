@@ -96,3 +96,9 @@ DerivedDataCache/*
 
 
 
+# Temporary struct files
+*TempStruct.*
+
+# Config Files
+Config/DefaultGame.ini
+Config/DataConfig.json

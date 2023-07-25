@@ -7,6 +7,7 @@
 #include "ActorDataWidget.h"
 #include "DataInteractionPlayerController.h"
 #include "ActorSpawner.h"
+#include "Engine/DataTable.h"
 #include "UIManager.generated.h"
 
 UCLASS()
@@ -54,6 +55,6 @@ private:
 
 	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject);
 	FString GetFriendlyPropertyName(FString PropertyName);
-	FString GetPropertyValueAsString(FProperty *Property, FSpatialMetadataStruct& Metadata);
+	FString GetPropertyValueAsString(FProperty *Property, FTableRowBase& Metadata);
 
 };
