@@ -8,6 +8,7 @@ Content/Scripts/.idea/*
 unreal-data-visualization.iml
 
 Config/DefaultGame.ini
+Config/DataConfig.ini
 
 
 # Compiled Object files
