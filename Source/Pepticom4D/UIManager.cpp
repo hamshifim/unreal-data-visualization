@@ -2,9 +2,6 @@
 
 
 #include "UIManager.h"
-#include "Runtime/UMG/Public/UMG.h"
-#include "Blueprint/UserWidget.h"
-#include "Components/TextBlock.h"
 
 // Sets default values
 AUIManager::AUIManager()
@@ -25,11 +22,14 @@ void AUIManager::BeginPlay()
     UE_LOG(LogTemp, Warning, TEXT("Initializing widgets..."));
     // Store the player controller
     DataInteractionPlayerController = Cast<ADataInteractionPlayerController>(GetWorld()->GetFirstPlayerController());
-    // Store the actor spawner - find object of class
-    ActorSpawner = Cast<AActorSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), AActorSpawner::StaticClass()));
+    // Store the data manager
+    DataManager = Cast<ADataManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ADataManager::StaticClass()));
+    // Store the HUD
+    DataInteractionHUD = Cast<ADataInteractionHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
     // Initialize widgets
     CreateAndRenderWidget("/Game/ViewNameWidget.ViewNameWidget_C", ViewNameWidget);
     CreateAndRenderWidget("/Game/ActorDataWidget.ActorDataWidget_C", ActorDataWidgetGeneric);
+    CreateAndRenderWidget("/Game/DataSelectorWidget.DataSelectorWidget_C", DataSelectorWidgetGeneric);
     InitializedWidgets = true;
 
     // By default, the actor data widget is hidden
@@ -49,6 +49,23 @@ void AUIManager::BeginPlay()
     else 
     {
 		UE_LOG(LogTemp, Error, TEXT("ActorDataWidgetGeneric is null"));
+	}
+
+    // Get the data selector widget from its generic version
+    if (DataSelectorWidgetGeneric)
+    {
+		DataSelectorWidget = Cast<UDataSelectorWidget>(DataSelectorWidgetGeneric);
+    }
+    else {
+        UE_LOG(LogTemp, Error, TEXT("DataSelectorWidgetGeneric is null"));
+    }
+
+    // Configure widget inputs (bind to events, etc.)
+    if (DataSelectorWidget) {
+        ConfigureDataSelectorWidgetInputs();
+    }
+    else {
+		UE_LOG(LogTemp, Error, TEXT("DataSelectorWidget is null"));
 	}
 }
 
@@ -118,8 +135,6 @@ void AUIManager::DisplayActorDataWidget(AActor* Actor) {
     FVector ActorLocation = Actor->GetActorLocation();
     FVector2D ScreenPosition;
     if (UGameplayStatics::ProjectWorldToScreen(DataInteractionPlayerController, ActorLocation, ScreenPosition)) {
-		// Set the position of the actor data widget
-		ActorDataWidget->SetPositionInViewport(ScreenPosition);
         // Show the actor data widget
         ActorDataWidget->AnimateIn(2.0f);
 	}
@@ -200,14 +215,14 @@ void AUIManager::RefreshActorDataWidget(AActor* Actor) {
     // Get the widget's vertical box, assuming that all text blocks are children of a vertical box
     UVerticalBox* VerticalBox = Cast<UVerticalBox>(ActorDataWidget->GetWidgetFromName("ActorDataVerticalBox"));
     // Get the border, which is the parent of the vertical box
-    UBorder* Border = Cast<UBorder>(VerticalBox->GetParent());
+    ActorDataWidgetBorder = Cast<UBorder>(VerticalBox->GetParent());
     // Clear all of the existing fields from the widget. 
     VerticalBox->ClearChildren();
     // Get the metadata from the actor
-    FTableRowBase& Metadata = ActorSpawner->GetMetadataFromActor(Actor);
+    FTableRowBase& Metadata = DataManager->GetMetadataFromActor(Actor);
     // Get a pointer to the actor's dynamic struct
     UStruct* MetadataType = FTableRowBase::StaticStruct();
-    FString MetadataStructName = ActorSpawner->GetStructNameFromFullDatasetName(ActorSpawner->GetCurrentFullDatasetName());
+    FString MetadataStructName = DataManager->GetStructNameFromFullDatasetName(DataManager->CurrentFullDatasetName);
     UScriptStruct* MetadataStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
     if (MetadataStruct) {
         MetadataType = Cast<UStruct>(MetadataStruct);
@@ -244,14 +259,14 @@ void AUIManager::RefreshActorDataWidget(AActor* Actor) {
     // Wait a small amount of time before resizing the parent canvas
     // This is necessary because the vertical box's size is not updated immediately after adding children
     FTimerHandle TimerHandle;
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, Border, VerticalBox]()
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, VerticalBox]()
     {
         // After creating all text blocks, resize the parent canvas based on the size of the vertical box
         // Get the size of the vertical box
         FVector2D VerticalBoxSize = VerticalBox->GetDesiredSize();
-        if (Border) {
+        if (ActorDataWidgetBorder) {
             // Get the parent of the vertical box, which is the canvas
-            UCanvasPanelSlot* BorderSlot = Cast<UCanvasPanelSlot>(Border->Slot);
+            UCanvasPanelSlot* BorderSlot = Cast<UCanvasPanelSlot>(ActorDataWidgetBorder->Slot);
             // Check if we found the slot
             if (BorderSlot)
             {
@@ -276,5 +291,64 @@ void AUIManager::HideActorDataWidget() {
     else {
 		UE_LOG(LogTemp, Warning, TEXT("Actor data widget not found in the UI Manager"));
 	}
+}
+
+void AUIManager::StartDrawingConnectingLineToActorDataWidget(AActor* Actor) {
+    // Set the start point of the line to be the center of the ActorDataWidget Border
+    FVector2D LineStart = ActorDataWidgetBorder->GetCachedGeometry().GetAbsolutePosition() + ActorDataWidgetBorder->GetCachedGeometry().GetAbsoluteSize() / 2.0f;
+    // Tell the HUD to draw a line (and keep updating it) from the actor to the actor data widget
+    DataInteractionHUD->LineStart = LineStart;
+    DataInteractionHUD->ActorToDrawLineTo = Actor;
+}
+
+void AUIManager::StopDrawingConnectingLineToActorDataWidget() {
+    // Tell the HUD to stop drawing the line
+    // DataInteractionHUD->LineStart = FVector2D::ZeroVector;
+    DataInteractionHUD->ActorToDrawLineTo = nullptr;
+}
+
+void AUIManager::ConfigureDataSelectorWidgetInputs() {
+    // Get the dropdown item
+    UComboBoxString* DatasetSelectorDropdown = Cast<UComboBoxString>(DataSelectorWidget->GetWidgetFromName("DatasetNameComboBox"));
+    // Bind to the dropdown's OnSelectionChanged event
+    if (DatasetSelectorDropdown) {
+		DatasetSelectorDropdown->OnSelectionChanged.AddDynamic(this, &AUIManager::OnDatasetSelectorWidgetDropdownChanged);
+	}
+    else {
+		UE_LOG(LogTemp, Warning, TEXT("Dataset selector dropdown not found"));
+	}
+}
+
+void AUIManager::OnDatasetSelectorWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType) {
+    // Update the current full dataset name
+    DataManager->CurrentFullDatasetName = SelectedItem;
+    // 
+}
+
+void AUIManager::RefreshDataSelectorWidget() {
+    /* Add options to the data selector widget from the available datasets */
+
+    if (DataSelectorWidget) {
+        // Get the dropdown item
+        UComboBoxString* DatasetSelectorDropdown = Cast<UComboBoxString>(DataSelectorWidget->GetWidgetFromName("DatasetNameComboBox"));
+        if (DatasetSelectorDropdown) {
+            // Get a list of all of the dataset names from the data manager
+            TArray<FString> DatasetNames;
+            DataManager->FullDatasetNameToFilePathsMap.GetKeys(DatasetNames);
+            // For each dataset name, add it to the dropdown
+            for (FString DatasetName : DatasetNames) {
+                DatasetSelectorDropdown->AddOption(DatasetName);
+            }
+            // Set the default dropdown value to the current dataset name
+            DatasetSelectorDropdown->SetSelectedOption(DataManager->CurrentFullDatasetName);
+        }
+        else {
+            UE_LOG(LogTemp, Warning, TEXT("Dataset selector dropdown not found"));
+        }
+    }
+    else {
+        UE_LOG(LogTemp, Warning, TEXT("Data selector widget not found in the UI Manager"));
+    }
+
 }
 

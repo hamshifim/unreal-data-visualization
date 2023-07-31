@@ -89,6 +89,8 @@ void APlayerCameraPawn::RestoreDefaults(bool AbandonTarget = true) {
         TargetActor = nullptr;
         // Hide the actor data widget
         UIManager->HideActorDataWidget();
+        // Stop drawing a connecting line from the actor to the actor data widget
+        UIManager->StopDrawingConnectingLineToActorDataWidget();
         // Reset the view name
         UpdateCurrentViewName("Free View");
     }
@@ -152,6 +154,8 @@ void APlayerCameraPawn::ResetCameraZoomAndRotation(double RadiusOfTarget, FVecto
         CameraComp->SetRelativeLocation(TargetResetCameraLocation);
         SpringArmComp->SetWorldRotation((CenterOfTarget - GetActorLocation()).Rotation());
     }
+    // Reset the zoom factor
+    ZoomFactor = 1.0f;
 }
 
 void APlayerCameraPawn::UpdateCurrentViewName(FString NewViewName) {
@@ -245,6 +249,8 @@ void APlayerCameraPawn::MoveCameraToActor(AActor* Target) {
     float RadiusOfTarget = BoxExtent.GetMax();
     // Reset the camera's zoom and rotation
     ResetCameraZoomAndRotation(RadiusOfTarget, Origin, true);
+    // Zoom in on the target
+    ZoomFactor = 100.0f;
     // The main functionality occurs in Tick; this function just sets the target actor
 }
 
@@ -295,6 +301,8 @@ void APlayerCameraPawn::Tick(float DeltaTime)
                 UIManager->RefreshActorDataWidget(TargetActor);
                 // Make the target actor's widget visible and position it   
                 UIManager->DisplayActorDataWidget(TargetActor);
+                // Draw a line from the ActorDataWidget to the target actor
+                UIManager->StartDrawingConnectingLineToActorDataWidget(TargetActor);
                 // Reset the target actor once we have reached it
                 TargetActor = nullptr;
                 // Update the view name
