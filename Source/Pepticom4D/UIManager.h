@@ -5,9 +5,16 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ActorDataWidget.h"
+#include "DataSelectorWidget.h"
 #include "DataInteractionPlayerController.h"
-#include "ActorSpawner.h"
 #include "Engine/DataTable.h"
+#include "DataManager.h"
+#include "Types/SlateEnums.h"
+#include "DataInteractionHUD.h"
+#include "Runtime/UMG/Public/UMG.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
+#include "Components/ComboBoxString.h"
 #include "UIManager.generated.h"
 
 UCLASS()
@@ -34,6 +41,21 @@ public:
 	UFUNCTION()
 	void HideActorDataWidget();
 
+	UFUNCTION()
+	void StartDrawingConnectingLineToActorDataWidget(AActor* Actor);
+
+	UFUNCTION()
+	void StopDrawingConnectingLineToActorDataWidget();
+
+	UFUNCTION()
+	void ConfigureDataSelectorWidgetInputs();
+
+	UFUNCTION()
+	void RefreshDataSelectorWidget();
+
+	UFUNCTION()
+	void OnDatasetSelectorWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -49,9 +71,13 @@ private:
 	UUserWidget* ViewNameWidget;
 	UUserWidget* ActorDataWidgetGeneric;
 	UActorDataWidget* ActorDataWidget;
+	UBorder* ActorDataWidgetBorder;
+	UUserWidget* DataSelectorWidgetGeneric;
+	UDataSelectorWidget* DataSelectorWidget;
 	bool InitializedWidgets = false;
 	ADataInteractionPlayerController* DataInteractionPlayerController;
-	AActorSpawner* ActorSpawner;
+	ADataManager* DataManager;
+	ADataInteractionHUD* DataInteractionHUD;
 
 	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject);
 	FString GetFriendlyPropertyName(FString PropertyName);

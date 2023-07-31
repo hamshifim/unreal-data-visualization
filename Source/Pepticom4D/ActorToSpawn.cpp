@@ -82,9 +82,6 @@ void AActorToSpawn::Tick(float DeltaTime)
 }
 
 void AActorToSpawn::OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed) {
-    // Highlight the actor by making it blue
-    DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Blue);
-
     // Get the player camera pawn
     APlayerCameraPawn* PlayerCameraPawn = Cast<APlayerCameraPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
     if (PlayerCameraPawn) {
@@ -122,8 +119,6 @@ float AActorToSpawn::GetNormalizedScale(float ScaleToNormalize, float MinScale =
 }
 
 void AActorToSpawn::ChangeScale(float NewScale) {
-    // Normalize the scale to be between 0 and 1
-    NewScale = GetNormalizedScale(NewScale);
     // Scale the actor by the new size. Scale will not be between 0 and 1
     SphereComp->SetRelativeScale3D(FVector(NewScale, NewScale, NewScale));
     // Update the size

@@ -8,6 +8,7 @@
 #include "Json.h"
 #include "JsonUtilities.h"
 #include "Misc/FileHelper.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -20,60 +21,6 @@ AActorSpawner::AActorSpawner()
 	SpawnVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnVolume"));
 	SpawnVolume->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
-}
-
-UDataTable* AActorSpawner::CreateMetadataTableFromStruct(const FString& TableName, UScriptStruct* RowStruct) {
-	// Create a new Data Table asset
-	UDataTable* DataTable = NewObject<UDataTable>(GetTransientPackage(), FName(*TableName), RF_Transient);
-	DataTable->RowStruct = RowStruct;
-
-	// Register the Data Table
-	DataTable->AddToRoot();
-
-	// Return the metadata table
-	return DataTable;
-}
-
-void AActorSpawner::RefreshDataTable(UDataTable* DataTable, FString SourceFilePath) {
-	/* Imports data from the source file into the data table */
-	// Make sure that we found the data table
-	if (DataTable) {
-		FString DataTablePath = DataTable->GetPathName();
-		// Make sure that the source file exists
-		if (FPaths::FileExists(SourceFilePath)) {
-			// Read the file into a string and store problems, if any, in an array
-			FString FileContent;
-			FFileHelper::LoadFileToString(FileContent, *SourceFilePath);
-			TArray<FString> problems = TArray<FString>();
-			// Check if the file is a CSV or JSON file and parse it accordingly
-			if (SourceFilePath.EndsWith(".csv")) {
-				problems = DataTable->CreateTableFromCSVString(FileContent);
-			} 
-			else if (SourceFilePath.EndsWith(".json")) {
-				problems = DataTable->CreateTableFromJSONString(FileContent);
-			}
-			else {
-				UE_LOG(LogTemp, Error, TEXT("File source for %s is not a CSV or JSON file: %s"), *DataTablePath, *SourceFilePath);
-				return;
-			}
-			// Make sure that there were no problems
-			if (problems.Num() > 0) {
-				UE_LOG(LogTemp, Warning, TEXT("There were problems importing %s"), *DataTablePath);
-				for (auto& problem : problems) {
-					UE_LOG(LogTemp, Warning, TEXT("%s"), *problem);
-				}
-			}
-			else {
-				UE_LOG(LogTemp, Warning, TEXT("Data table %s imported successfully"), *DataTablePath);
-			}
-		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("File source for %s does not exist: %s"), *DataTablePath, *SourceFilePath);
-		}
-	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("Data table passed to refresh function does not exist"));
-	}
 }
 
 void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
@@ -145,16 +92,18 @@ void AActorSpawner::SpawnActorsFromQueue() {
 				FTableRowBase* Metadata = MetadataLocationPair.Key;
 				// Get the metadata type for property examination
 				UStruct* MetadataType = FTableRowBase::StaticStruct();
-				FString MetadataStructName = GetStructNameFromFullDatasetName(CurrentFullDatasetName);
+				FString MetadataStructName = DataManager->GetStructNameFromFullDatasetName(DataManager->CurrentFullDatasetName);
 				UScriptStruct* MetadataStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
 				if (MetadataStruct) {
 					MetadataType = Cast<UStruct>(MetadataStruct);
 					if (!MetadataType) {
 						UE_LOG(LogTemp, Warning, TEXT("Could not cast metadata struct to UStruct: %s"), *MetadataStructName)
+							return;
 					}
 				}
 				else {
 					UE_LOG(LogTemp, Warning, TEXT("Could not load class for metadata parsing: %s"), *MetadataStructName);
+					return;
 				}
 				FVector SpawnLocation = MetadataLocationPair.Value;
 				// Spawn the actor
@@ -172,7 +121,7 @@ void AActorSpawner::SpawnActorsFromQueue() {
 						Actor->ChangeColor(ColorHex);
 					}
 					// Check if the metadata has a radius property and set the actor's size to that radius
-					FName RadiusPropertyName = FName(TEXT("radius"));
+					FName RadiusPropertyName = FName(TEXT("size"));
 					FProperty* RadiusProperty = MetadataType->FindPropertyByName(RadiusPropertyName);
 					if (RadiusProperty) {
 						FDoubleProperty* DoubleProp = CastField<FDoubleProperty>(RadiusProperty);
@@ -184,7 +133,7 @@ void AActorSpawner::SpawnActorsFromQueue() {
 					UE_LOG(LogTemp, Warning, TEXT("Actor not ready yet"));
 				}
 				// Add the spawned actor to the array of spawned actors
-				SpawnedActorsMap.Add(TPair<AActor*, FTableRowBase*>(Actor, Metadata));
+				DataManager->SpawnedActorsMap.Add(TPair<AActor*, FTableRowBase*>(Actor, Metadata));
 			}
 			else {
 				UE_LOG(LogTemp, Warning, TEXT("Spawned all actors"));
@@ -196,149 +145,31 @@ void AActorSpawner::SpawnActorsFromQueue() {
 
 void AActorSpawner::DestroySpawnedActors() {
 	/* Destroys all actors which have been spawned by this actor spawner */
-	for (auto& Elem : SpawnedActorsMap) {
+	for (auto& Elem : DataManager->SpawnedActorsMap) {
 		// Destroy the actor
 		Elem.Key->Destroy();
 	}
-	SpawnedActorsMap.Empty();
-}
-
-FString AActorSpawner::GetCurrentFullDatasetName() { return CurrentFullDatasetName; }
-
-FString AActorSpawner::GetFullDatasetNameFromMainAndSubDatasetNames(FString MainDatasetName, FString SubDatasetName) {
-	return MainDatasetName + TEXT("_") + SubDatasetName;
-}
-
-FString AActorSpawner::GetStructNameFromFullDatasetName(FString FullDatasetName) {
-	// Assumes an input of the form "main_dataset_name_sub_dataset_name, converts to MainDatasetNameSubDatasetNameTempStruct"
-	FString PascalCaseString;
-	bool bNextIsUpper = true;
-	for (TCHAR Char : FullDatasetName)
-	{
-		if (Char == '_')
-		{
-			bNextIsUpper = true;
-		}
-		else
-		{
-			PascalCaseString.AppendChar(bNextIsUpper ? FChar::ToUpper(Char) : Char);
-			bNextIsUpper = false;
-		}
-	}
-	FString StructName = PascalCaseString + "TempStruct";
-	return StructName;
-}
-
-void AActorSpawner::ProcessConfig(FString ConfigVarName) {
-	// Get the config file path
-	FString ConfigFilePath;
-	GConfig->GetString(TEXT("Data"), *ConfigVarName, ConfigFilePath, GGameIni);
-	// Read the config file, which is a JSON file. 
-	FString JsonRaw;
-	if (!FFileHelper::LoadFileToString(JsonRaw, *ConfigFilePath))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load config file: %s"), *ConfigFilePath);
-		return;
-	}
-	// Parse the JSON string into a JSON object
-	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
-	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonRaw);
-	if (!FJsonSerializer::Deserialize(Reader, JsonObject) || !JsonObject.IsValid())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to parse JSON from config file."));
-		return;
-	}
-	// Access the datasets field of the config file
-	const TSharedPtr<FJsonObject>* DatasetsObjectPtr;
-	if (!JsonObject->TryGetObjectField("datasets", DatasetsObjectPtr))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'datasets' field."));
-		return;
-	}
-
-	// Process the JSON data and initialize variables
-	bool bFirstMainDataset = true;
-	// Iterate over all main datasets
-	for (const auto& MainPair : (*DatasetsObjectPtr)->Values)
-	{
-		FString MainDatasetName = MainPair.Key;
-		// Set the default main-dataset to be the first one
-		if (bFirstMainDataset)
-		{
-			CurrentMainDatasetName = MainDatasetName;
-			bFirstMainDataset = false;
-		}
-		// Get the subsets object and make sure that it is an object that we can iterate over
-		const TSharedPtr<FJsonObject>* SubsetsObjectPtr;
-		if (!MainPair.Value->AsObject()->TryGetObjectField("subsets", SubsetsObjectPtr))
-		{
-			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'subsets' field."));
-			continue; // or handle the error
-		}
-		bool bFirstSubDataset = true;
-		// Iterate over all sub datasets
-		for (const auto& SubPair : (*SubsetsObjectPtr)->Values)
-		{
-			// Get the sub-dataset name and object
-			FString SubDatasetName = SubPair.Key;
-			TSharedPtr<FJsonObject> SubDatasetObj = SubPair.Value->AsObject();
-			// Set the default sub-dataset to be the first one
-			if (bFirstSubDataset)
-			{
-				CurrentSubDatasetName = SubDatasetName;
-				CurrentFullDatasetName = GetFullDatasetNameFromMainAndSubDatasetNames(CurrentMainDatasetName, CurrentSubDatasetName);
-				bFirstSubDataset = false;
-			}
-			// Create a map of file paths
-			TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
-			// Get the file paths and populate the array
-			FString DataSource;
-			if (SubDatasetObj->TryGetStringField("data_source", DataSource))
-			{
-				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
-				FilePathsMap.Add(Pair);
-			}
-			FString MetadataSource;
-			if (SubDatasetObj->TryGetStringField("metadata_source", MetadataSource))
-			{
-				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), MetadataSource);
-				FilePathsMap.Add(Pair);
-			}
-			FString POISource;
-			if (SubDatasetObj->TryGetStringField("poi_source", POISource))
-			{
-				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("POIFilePath"), POISource);
-				FilePathsMap.Add(Pair);
-			}
-			// Add the file paths to the map
-			FullDatasetNameToFilePathsMap.Add(GetFullDatasetNameFromMainAndSubDatasetNames(MainDatasetName, SubDatasetName), FilePathsMap);
-		}
-	}
+	DataManager->SpawnedActorsMap.Empty();
 }
 
 void AActorSpawner::ForceRefresh() {
-	ProcessConfig(FString(TEXT("DataConfigFilePath")));
 	// Get the spatial data table
 	FString SpatialDataTablePath = FString(TEXT("/Game/SpatialDataTable.SpatialDataTable"));
 	UDataTable* SpatialDataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
-	RefreshDataTable(SpatialDataTable, FullDatasetNameToFilePathsMap[CurrentFullDatasetName]["SpatialDataFilePath"]);
+	DataManager->RefreshDataTable(SpatialDataTable, DataManager->FullDatasetNameToFilePathsMap[DataManager->CurrentFullDatasetName]["SpatialDataFilePath"]);
 	// Create the spatial metadata table (exists only during runtime)
 	FString SpatialMetadataTableName = FString(TEXT("SpatialMetadataTable"));
-	FString MetadataStructName = GetStructNameFromFullDatasetName(CurrentFullDatasetName);
+	FString MetadataStructName = DataManager->GetStructNameFromFullDatasetName(DataManager->CurrentFullDatasetName);
 	UScriptStruct* SpatialMetadataStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-	SpatialMetadataTable = CreateMetadataTableFromStruct(SpatialMetadataTableName, SpatialMetadataStruct);
-	RefreshDataTable(SpatialMetadataTable, FullDatasetNameToFilePathsMap[CurrentFullDatasetName]["SpatialMetadataFilePath"]);
+	SpatialMetadataTable = DataManager->CreateMetadataTableFromStruct(SpatialMetadataTableName, SpatialMetadataStruct);
+	DataManager->RefreshDataTable(SpatialMetadataTable, DataManager->FullDatasetNameToFilePathsMap[DataManager->CurrentFullDatasetName]["SpatialMetadataFilePath"]);
 	DestroySpawnedActors();
 	EnqueueSpawningActorsFromDataTable();
 	// TODO: We may need to create an event hook here to generate configuration structs/view-perspective stucts, etc. 
 	// and reload those data tables IF data has changed since last loaded.
 	// Best way to check for changes would be to store some kind of hash of parts of the data, so that the hash is not too large, and compare that to the hash of the current data.
 	UDataTable* POIDataTable = LoadObject<UDataTable>(NULL, *FString(TEXT("/Game/POIDataTable.POIDataTable")), NULL, LOAD_None, NULL);
-	RefreshDataTable(POIDataTable, FullDatasetNameToFilePathsMap[CurrentFullDatasetName]["POIFilePath"]);
-}
-
-FTableRowBase& AActorSpawner::GetMetadataFromActor(AActor* Actor) {
-	return *(SpawnedActorsMap.FindRef(Actor));
+	DataManager->RefreshDataTable(POIDataTable, DataManager->FullDatasetNameToFilePathsMap[DataManager->CurrentFullDatasetName]["POIFilePath"]);
 }
 
 // Called when the game starts or when spawned
@@ -346,7 +177,32 @@ void AActorSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ForceRefresh();
+	// Run this 
+	FTimerHandle TimerHandle;
+	FTimerDelegate TimerDel;
+	TimerDel.BindLambda([this]() {
+		// Get and store a reference to the UI manager
+		UIManager = Cast<AUIManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AUIManager::StaticClass()));
+		if (!UIManager) {
+			UE_LOG(LogTemp, Error, TEXT("UI Manager not found in actor spawner"));
+			return;
+		}
+		// Get and store a reference to the data manager
+		DataManager = Cast<ADataManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ADataManager::StaticClass()));
+		if (!DataManager) {
+			UE_LOG(LogTemp, Error, TEXT("Data Manager not found in actor spawner"));
+			return;
+		}
+
+		// Initial dataset setup
+		DataManager->ProcessConfig(FString(TEXT("DataConfigFilePath")));
+		UIManager->RefreshDataSelectorWidget();
+
+		ForceRefresh();
+	});
+
+	// Set the timer to call the lambda function after a delay of 0.1 seconds
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, 0.1f, false);
 }
 
 // Called every frame
