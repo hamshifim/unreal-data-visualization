@@ -9,10 +9,13 @@ import subprocess
 # Map JSON types to Unreal types
 type_mapping = {
     "int": "int32",
+    "integer": "int32",
     "float": "float",
     "string": "FString",
     "bool": "bool",
-    "double": "double"
+    "double": "double",
+    "long": "int32",  # Unreal does not support int64. We may need to be careful with this.
+    "short": "int32"
     # Add more types here as needed
 }
 
@@ -20,7 +23,7 @@ type_mapping = {
 def delete_old_structs(solution_name: str, unreal_project_dir: str):
     """ Deletes all files in the Source directory ending in 'TempStruct.cpp' and 'TempStruct.h' """
     # Get the path to the Source directory
-    source_dir = os.path.join(unreal_project_dir, solution_name, "Source")
+    source_dir = os.path.join(unreal_project_dir, "Source", solution_name)
     # Iterate over all files in the Source directory
     for root, dirs, files in os.walk(source_dir):
         for file in files:
@@ -34,12 +37,12 @@ def generate_structs(config_file_path: str, output_dir: str):
         data = json.load(f)
 
     # Iterate over main datasets
-    for main_dataset_name in data['datasets']:
-        main_dataset = data['datasets'][main_dataset_name]
+    for main_dataset_name in data['data_types']:
+        main_dataset = data['data_types'][main_dataset_name]
 
         # Iterate over sub-datasets
-        for sub_dataset_name in main_dataset:
-            sub_dataset = main_dataset[sub_dataset_name]
+        for sub_dataset_name in main_dataset["tables"]:
+            sub_dataset = main_dataset["tables"][sub_dataset_name]
             properties = sub_dataset['columns']
 
             struct_name = (f"{main_dataset_name.capitalize()}_{sub_dataset_name.capitalize()}_Temp_Struct")
@@ -47,7 +50,14 @@ def generate_structs(config_file_path: str, output_dir: str):
             struct_name = struct_name.replace("_", " ").title().replace(" ", "")
             # Write code for the header
             header_code = f"#pragma once\n\n#include \"CoreMinimal.h\"\n#include \"Engine/DataTable.h\"\n#include \"{struct_name}.generated.h\"\n\nUSTRUCT(BlueprintType)\nstruct F{struct_name} : public FTableRowBase\n{{\n    GENERATED_BODY()\n\npublic:\n"
+            # Iterate through the properties and write code for each one
+            ignored_first_col = False
             for prop in properties:
+                # Ignore the first property, which is an indexing column
+                if not ignored_first_col:
+                    ignored_first_col = True
+                    print("Ignored col: ", prop['name'])
+                    continue
                 unreal_type = type_mapping.get(prop['type'], "UNKNOWN_TYPE")
                 header_code += f"    UPROPERTY(EditAnywhere, BlueprintReadWrite)\n    {unreal_type} {prop['name']};\n\n"
             header_code += "};\n"

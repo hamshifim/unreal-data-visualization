@@ -103,3 +103,4 @@ DerivedDataCache/*
 # Config Files
 Config/DefaultGame.ini
 Config/DataConfig.json
+Config/DataConfigProteins.json

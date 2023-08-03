@@ -13,34 +13,34 @@ struct FPOIStruct : public FTableRowBase
 
 public:
 	// The below properties describe the bounding points along the X, Y, and Z axes
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x_min", MakeStructureDefaultValue = 0.000000))
-	double X_MIN;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "min_x", MakeStructureDefaultValue = 0.000000))
+	double min_x;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "x_max", MakeStructureDefaultValue = 0.000000))
-	double X_MAX;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "max_x", MakeStructureDefaultValue = 0.000000))
+	double max_x;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y_min", MakeStructureDefaultValue = 0.000000))
-	double Y_MIN;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "min_y", MakeStructureDefaultValue = 0.000000))
+	double min_y;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "y_max", MakeStructureDefaultValue = 0.000000))
-	double Y_MAX;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "max_y", MakeStructureDefaultValue = 0.000000))
+	double max_y;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z_min", MakeStructureDefaultValue = 0.000000))
-	double Z_MIN;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "min_z", MakeStructureDefaultValue = 0.000000))
+	double min_z;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "z_max", MakeStructureDefaultValue = 0.000000))
-	double Z_MAX;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "max_z", MakeStructureDefaultValue = 0.000000))
+	double max_z;
 
 	// The below properties describe the center and radius of a sphere that bounds all points
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "center_x", MakeStructureDefaultValue = 0.000000))
-	double CENTER_X;
+	double center_x;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "center_y", MakeStructureDefaultValue = 0.000000))
-	double CENTER_Y;
+	double center_y;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "center_z", MakeStructureDefaultValue = 0.000000))
-	double CENTER_Z;
+	double center_z;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "radius", MakeStructureDefaultValue = 0.000000))
-	double RADIUS;
+	double radius;
 };

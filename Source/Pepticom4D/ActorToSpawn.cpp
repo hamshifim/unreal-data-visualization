@@ -97,8 +97,12 @@ void AActorToSpawn::ChangeColor(FString ColorHex) {
 	/* Converts the hex string to a linear color and updates the actor's color. Hex string should be in the format #RRGGBB or RRGGBB */
     // Convert the hex string to a linear color
     FColor Color = FColor::FromHex(ColorHex);
-	// Set the emissive color of the material to be the color
-	DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), Color);
+    ChangeColor(Color);
+}
+
+void AActorToSpawn::ChangeColor(FColor NewColor) {
+    // Set the emissive color of the material to be the color
+    DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), NewColor);
 }
 
 float AActorToSpawn::GetNormalizedScale(float ScaleToNormalize, float MinScale = 0.f, float MaxScale = 100.f) {
@@ -119,6 +123,13 @@ float AActorToSpawn::GetNormalizedScale(float ScaleToNormalize, float MinScale =
 }
 
 void AActorToSpawn::ChangeScale(float NewScale) {
+    // Check if the scale is between 0 and 1
+    if (NewScale < 0 || NewScale > 1) {
+        // Throw an error
+        UE_LOG(LogTemp, Warning, TEXT("Scale for at least one actor is not between 0 and 1. Rendering issues may occur."));
+    }
+    // Increase the scale by 1 to make it between 1 and 2
+    NewScale += 1;
     // Scale the actor by the new size. Scale will not be between 0 and 1
     SphereComp->SetRelativeScale3D(FVector(NewScale, NewScale, NewScale));
     // Update the size

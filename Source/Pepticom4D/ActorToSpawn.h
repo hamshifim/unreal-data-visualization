@@ -17,6 +17,7 @@ public:
 	AActorToSpawn();
 	void Create();
 	void ChangeColor(FString ColorHex);
+	void ChangeColor(FColor NewColor);
 	void ChangeScale(float NewScale);
 
 protected:

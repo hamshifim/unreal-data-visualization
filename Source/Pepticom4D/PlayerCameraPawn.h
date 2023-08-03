@@ -80,17 +80,19 @@ private:
 	void ZoomIn(float AxisValue);
 
 	void StoreViewSphereCenterAndRadius();
+	void AdjustMovementSpeedFromRadius();
 	void LoadViewsToMapFromDataTable();
 
 	bool bIsResettingCamera = false;
 	FVector TargetResetCameraLocation;
 	FRotator TargetResetSpringArmRotation;
 
-	float MovementSpeed = 1000.0f;
+	float BaseMovementSpeed = 1000.0f;
+	float MovementSpeed = BaseMovementSpeed;
 	float MovementToTargetSpeed = 2.0f;
 	float ZoomSpeed = 100.0f;
-	float ViewPaddingFactor = 2.0f;
-	float FOVPaddingFactor = 1.2f;
+	float ViewPaddingFactor = 4.0f;
+	float FOVPaddingFactor = 2.0f;
 	int CurrentViewNumber = -1;
 	FString CurrentViewName;
 

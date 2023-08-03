@@ -35,43 +35,77 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 		// Get the total number of rows
 		int32 NumSpatialDataRows = SpatialDataRowNames.Num();
 
-		// Make sure that we found the metadata table
-		if (SpatialMetadataTable) {
-			// Get all of the row names
-			TArray<FName> SpatialMetadataRowNames = SpatialMetadataTable->GetRowNames();
-			// Get the total number of rows
-			int32 NumSpatialMetadataRows = SpatialMetadataRowNames.Num();
+		// Get the total number of rows across all combined metadata tables
+		int32 NumSpatialMetadataRows = 0;
+		for (const auto& Pair : DataManager->FullDatasetNameToSpatialMetadataTableMap) {
+			UDataTable* MetadataTable = Pair.Value;
+			// Get all rows
+			TArray<FName> MetadataRowNames = MetadataTable->GetRowNames();
+			// Add the number of rows to the total
+			NumSpatialMetadataRows += MetadataRowNames.Num();
+		}
 
-			// Make sure that there are the same number of rows in both tables
-			if (NumSpatialDataRows != NumSpatialMetadataRows) {
-				UE_LOG(LogTemp, Error, TEXT("The number of rows in the spatial data table (%d) does not match the number of rows in the spatial metadata table (%d)"), NumSpatialDataRows, NumSpatialMetadataRows);
+		// Store a map of actor type name to the number of actors of that type that have been spawned
+		TMap<FString, int32> ActorTypeToNumSpawnedMap;
+
+		// Iterate through the rows while keeping track of the row index
+		for (int32 i = 0; i < NumSpatialDataRows; ++i) {
+			// Get the spatial data row name
+			FName SpatialDataRowName = SpatialDataRowNames[i];
+			FSpatialDataStruct* SpatialDataRow = SpatialDataTable->FindRow<FSpatialDataStruct>(SpatialDataRowName, TEXT(""));
+			// Get the spatial metadata table given the type name of the current row
+			FName TypePropertyName = FName(TEXT("type"));
+			FProperty* TypeProperty = FSpatialDataStruct::StaticStruct()->FindPropertyByName(TypePropertyName);
+			FString TypeName = TEXT("");
+			if (TypeProperty) {
+				FStrProperty* StrProp = CastField<FStrProperty>(TypeProperty);
+				TypeName = StrProp->GetPropertyValue_InContainer(SpatialDataRow);
+			}
+			else {
+				UE_LOG(LogTemp, Error, TEXT("Could not find type property in spatial data struct"));
 				return;
 			}
+			// Get the full dataset name from the type name
+			FString FullDatasetName = DataManager->GetFullDatasetNameFromDataType(TypeName);
+			// Get the metadata table from the full dataset name
+			UDataTable* SpatialMetadataTable = DataManager->GetMetadataTableFromFullDatasetName(FullDatasetName);
+			// Make sure that we found the metadata table
+			if (SpatialMetadataTable) {
+				// Get all of the row names
+				TArray<FName> SpatialMetadataRowNames = SpatialMetadataTable->GetRowNames();
 
-			// Iterate through the rows while keeping track of the row index
-			for (int32 i = 0; i < NumSpatialDataRows; ++i) {
-				// Get the spatial data row name
-				FName SpatialDataRowName = SpatialDataRowNames[i];
-				FSpatialDataStruct* SpatialDataRow = SpatialDataTable->FindRow<FSpatialDataStruct>(SpatialDataRowName, TEXT(""));
+				// Make sure that there are the same number of rows in both tables
+				if (NumSpatialDataRows != NumSpatialMetadataRows) {
+					UE_LOG(LogTemp, Error, TEXT("The number of rows in the spatial data table (%d) does not match the number of rows in the spatial metadata table (%d)"), NumSpatialDataRows, NumSpatialMetadataRows);
+					return;
+				}
+
+				// Add the type name to the map if it doesn't already exist, or increment the count if it does
+				if (ActorTypeToNumSpawnedMap.Contains(TypeName)) {
+					ActorTypeToNumSpawnedMap[TypeName] += 1;
+				}
+				else {
+					ActorTypeToNumSpawnedMap.Add(TypeName, 0);
+				}
 				// Get the corresponding metadata row
-				FName SpatialMetadataRowName = SpatialMetadataRowNames[i];
+				int32 MetadataRowIndex = ActorTypeToNumSpawnedMap[TypeName];
+				FName SpatialMetadataRowName = SpatialMetadataRowNames[MetadataRowIndex];
 				FTableRowBase* SpatialMetadataRow = SpatialMetadataTable->FindRow<FTableRowBase>(SpatialMetadataRowName, TEXT(""));
 				// Make sure that we found the rows
 				if (SpatialDataRow && SpatialMetadataRow) {
 					// Spawn the actor
-					FVector SpawnLocation = FVector(SpatialDataRow->X, SpatialDataRow->Y, SpatialDataRow->Z);
-					TPair<FTableRowBase*, FVector> MetadataLocationPair = TPair<FTableRowBase*, FVector>(SpatialMetadataRow, SpawnLocation);
-					ActorSpawnMetadataLocationPairQueue.Enqueue(MetadataLocationPair);
+					FVector SpawnLocation = FVector(SpatialDataRow->x, SpatialDataRow->y, SpatialDataRow->z);
+					auto ActorDataTuple = TTuple<FTableRowBase*, FSpatialDataStruct*, FVector>(SpatialMetadataRow, SpatialDataRow, SpawnLocation);
+					ActorDataTupleQueue.Enqueue(ActorDataTuple);
 				}
 				else {
 					UE_LOG(LogTemp, Error, TEXT("Could not find one or more rows in the spatial data table or spatial metadata table"));
 				}
 			}
-
-		}
-		else {
-			UE_LOG(LogTemp, Error, TEXT("Could not find spatial metadata table"));
-			return;
+			else {
+				UE_LOG(LogTemp, Error, TEXT("Could not find spatial metadata table for dataset name %s"), *FullDatasetName);
+				return;
+			}
 		}
 	}
 	else {
@@ -82,58 +116,65 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 
 void AActorSpawner::SpawnActorsFromQueue() {
 	/* Spawns actors from the queue */
-	if (!ActorSpawnMetadataLocationPairQueue.IsEmpty()) {
+	if (!ActorDataTupleQueue.IsEmpty()) {
 		for (int32 i = 0; i < SpawnActorsPerTick; ++i) {
 			// Make sure that there are actors to spawn
-			if (!ActorSpawnMetadataLocationPairQueue.IsEmpty()) {
-				TPair<FTableRowBase*, FVector> MetadataLocationPair;
+			if (!ActorDataTupleQueue.IsEmpty()) {
+				TTuple<FTableRowBase*, FSpatialDataStruct*, FVector> ActorDataTuple;
 				// Get the next spawn location
-				ActorSpawnMetadataLocationPairQueue.Dequeue(MetadataLocationPair);
-				FTableRowBase* Metadata = MetadataLocationPair.Key;
-				// Get the metadata type for property examination
-				UStruct* MetadataType = FTableRowBase::StaticStruct();
-				FString MetadataStructName = DataManager->GetStructNameFromFullDatasetName(DataManager->CurrentFullDatasetName);
-				UScriptStruct* MetadataStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-				if (MetadataStruct) {
-					MetadataType = Cast<UStruct>(MetadataStruct);
-					if (!MetadataType) {
-						UE_LOG(LogTemp, Warning, TEXT("Could not cast metadata struct to UStruct: %s"), *MetadataStructName)
-							return;
-					}
-				}
-				else {
-					UE_LOG(LogTemp, Warning, TEXT("Could not load class for metadata parsing: %s"), *MetadataStructName);
-					return;
-				}
-				FVector SpawnLocation = MetadataLocationPair.Value;
-				// Spawn the actor
+				ActorDataTupleQueue.Dequeue(ActorDataTuple);
+				FTableRowBase* Metadata = ActorDataTuple.Get<0>();
+				FSpatialDataStruct* SpatialData = ActorDataTuple.Get<1>();
+				FVector SpawnLocation = ActorDataTuple.Get<2>();
 				// Set actor rotation to be the same as the rotation of the spawner
 				FRotator SpawnRotation = GetActorRotation();
 				// Spawn the actor
 				AActorToSpawn* Actor = GetWorld()->SpawnActor<AActorToSpawn>(SpawnLocation, SpawnRotation);
+
+				// Get the spatial data type in order to be able to apply rendering properties (color, size, etc.)
+				UStruct* SpatialDataType = FSpatialDataStruct::StaticStruct();
 				if (Actor) {
-					// Check if the metadata has a color property and set the actor's color to that color
+					// Check if the spatial data has a color property and set the actor's color to that color
 					FName ColorPropertyName = FName(TEXT("color"));
-					FProperty* ColorProperty = MetadataType->FindPropertyByName(ColorPropertyName);
+					FProperty* ColorProperty = SpatialDataType->FindPropertyByName(ColorPropertyName);
 					if (ColorProperty) {
 						FStrProperty* StrProp = CastField<FStrProperty>(ColorProperty);
-						FString ColorHex = StrProp->GetPropertyValue_InContainer(Metadata);
+						FString ColorHex = StrProp->GetPropertyValue_InContainer(SpatialData);
 						Actor->ChangeColor(ColorHex);
 					}
-					// Check if the metadata has a radius property and set the actor's size to that radius
+					// Check if the spatial data has a radius property and set the actor's size to that radius
 					FName RadiusPropertyName = FName(TEXT("size"));
-					FProperty* RadiusProperty = MetadataType->FindPropertyByName(RadiusPropertyName);
+					FProperty* RadiusProperty = SpatialDataType->FindPropertyByName(RadiusPropertyName);
 					if (RadiusProperty) {
 						FDoubleProperty* DoubleProp = CastField<FDoubleProperty>(RadiusProperty);
-						float Radius = DoubleProp->GetPropertyValue_InContainer(Metadata);
+						float Radius = DoubleProp->GetPropertyValue_InContainer(SpatialData);
 						Actor->ChangeScale(Radius);
 					}
+					
+					// Get the actor's type
+					FString ActorDataType = TEXT("");
+					FName TypePropertyName = FName(TEXT("type"));
+					FProperty* TypeProperty = SpatialDataType->FindPropertyByName(TypePropertyName);
+					if (TypeProperty) {
+						FStrProperty* StrProp = CastField<FStrProperty>(TypeProperty);
+						ActorDataType = StrProp->GetPropertyValue_InContainer(SpatialData);
+					}
+					else {
+						UE_LOG(LogTemp, Error, TEXT("Could not find type property for at least one actor"));
+						continue;
+					}
+
+					// Map the actor to its metadata
+					DataManager->ActorToMetadataMap.Add(TPair<AActor*, FTableRowBase*>(Actor, Metadata));
+					// Map the actor to its spatial data
+					DataManager->ActorToSpatialDataMap.Add(TPair<AActor*, FSpatialDataStruct*>(Actor, SpatialData));
+					// Map the actor to its data type
+					DataManager->ActorToDataTypeMap.Add(TPair<AActor*, FString>(Actor, ActorDataType));
 				}
 				else {
 					UE_LOG(LogTemp, Warning, TEXT("Actor not ready yet"));
+					continue;
 				}
-				// Add the spawned actor to the array of spawned actors
-				DataManager->SpawnedActorsMap.Add(TPair<AActor*, FTableRowBase*>(Actor, Metadata));
 			}
 			else {
 				UE_LOG(LogTemp, Warning, TEXT("Spawned all actors"));
@@ -145,31 +186,20 @@ void AActorSpawner::SpawnActorsFromQueue() {
 
 void AActorSpawner::DestroySpawnedActors() {
 	/* Destroys all actors which have been spawned by this actor spawner */
-	for (auto& Elem : DataManager->SpawnedActorsMap) {
+	for (auto& Elem : DataManager->ActorToMetadataMap) {
 		// Destroy the actor
 		Elem.Key->Destroy();
 	}
-	DataManager->SpawnedActorsMap.Empty();
+	DataManager->ActorToMetadataMap.Empty();
+	DataManager->ActorToSpatialDataMap.Empty();
+	DataManager->ActorToDataTypeMap.Empty();
 }
 
 void AActorSpawner::ForceRefresh() {
-	// Get the spatial data table
-	FString SpatialDataTablePath = FString(TEXT("/Game/SpatialDataTable.SpatialDataTable"));
-	UDataTable* SpatialDataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
-	DataManager->RefreshDataTable(SpatialDataTable, DataManager->FullDatasetNameToFilePathsMap[DataManager->CurrentFullDatasetName]["SpatialDataFilePath"]);
-	// Create the spatial metadata table (exists only during runtime)
-	FString SpatialMetadataTableName = FString(TEXT("SpatialMetadataTable"));
-	FString MetadataStructName = DataManager->GetStructNameFromFullDatasetName(DataManager->CurrentFullDatasetName);
-	UScriptStruct* SpatialMetadataStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-	SpatialMetadataTable = DataManager->CreateMetadataTableFromStruct(SpatialMetadataTableName, SpatialMetadataStruct);
-	DataManager->RefreshDataTable(SpatialMetadataTable, DataManager->FullDatasetNameToFilePathsMap[DataManager->CurrentFullDatasetName]["SpatialMetadataFilePath"]);
+	DataManager->ForceRefresh();
+	// Destroy all spawned actors and create new ones based on the new data
 	DestroySpawnedActors();
 	EnqueueSpawningActorsFromDataTable();
-	// TODO: We may need to create an event hook here to generate configuration structs/view-perspective stucts, etc. 
-	// and reload those data tables IF data has changed since last loaded.
-	// Best way to check for changes would be to store some kind of hash of parts of the data, so that the hash is not too large, and compare that to the hash of the current data.
-	UDataTable* POIDataTable = LoadObject<UDataTable>(NULL, *FString(TEXT("/Game/POIDataTable.POIDataTable")), NULL, LOAD_None, NULL);
-	DataManager->RefreshDataTable(POIDataTable, DataManager->FullDatasetNameToFilePathsMap[DataManager->CurrentFullDatasetName]["POIFilePath"]);
 }
 
 // Called when the game starts or when spawned
@@ -177,32 +207,25 @@ void AActorSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Run this 
-	FTimerHandle TimerHandle;
-	FTimerDelegate TimerDel;
-	TimerDel.BindLambda([this]() {
-		// Get and store a reference to the UI manager
-		UIManager = Cast<AUIManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AUIManager::StaticClass()));
-		if (!UIManager) {
-			UE_LOG(LogTemp, Error, TEXT("UI Manager not found in actor spawner"));
-			return;
-		}
-		// Get and store a reference to the data manager
-		DataManager = Cast<ADataManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ADataManager::StaticClass()));
-		if (!DataManager) {
-			UE_LOG(LogTemp, Error, TEXT("Data Manager not found in actor spawner"));
-			return;
-		}
+	// Get and store a reference to the UI manager
+	UIManager = Cast<AUIManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AUIManager::StaticClass()));
+	if (!UIManager) {
+		UE_LOG(LogTemp, Error, TEXT("UI Manager not found in actor spawner"));
+		return;
+	}
+	// Get and store a reference to the data manager
+	DataManager = Cast<ADataManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ADataManager::StaticClass()));
+	if (!DataManager) {
+		UE_LOG(LogTemp, Error, TEXT("Data Manager not found in actor spawner"));
+		return;
+	}
 
-		// Initial dataset setup
-		DataManager->ProcessConfig(FString(TEXT("DataConfigFilePath")));
-		UIManager->RefreshDataSelectorWidget();
+	// Initial dataset setup and UI configuration based on dataset configuration
+	DataManager->ProcessConfig(FString(TEXT("DataConfigFilePath")));
+	UIManager->ConfigureDataSelectorWidget();
+	UIManager->ConfigureDataFilteringWidget();
 
-		ForceRefresh();
-	});
-
-	// Set the timer to call the lambda function after a delay of 0.1 seconds
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, 0.1f, false);
+	ForceRefresh();
 }
 
 // Called every frame

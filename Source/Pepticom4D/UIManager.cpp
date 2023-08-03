@@ -30,6 +30,7 @@ void AUIManager::BeginPlay()
     CreateAndRenderWidget("/Game/ViewNameWidget.ViewNameWidget_C", ViewNameWidget);
     CreateAndRenderWidget("/Game/ActorDataWidget.ActorDataWidget_C", ActorDataWidgetGeneric);
     CreateAndRenderWidget("/Game/DataSelectorWidget.DataSelectorWidget_C", DataSelectorWidgetGeneric);
+    CreateAndRenderWidget("/Game/DataFilteringWidget.DataFilteringWidget_C", DataFilteringWidgetGeneric);
     InitializedWidgets = true;
 
     // By default, the actor data widget is hidden
@@ -60,13 +61,14 @@ void AUIManager::BeginPlay()
         UE_LOG(LogTemp, Error, TEXT("DataSelectorWidgetGeneric is null"));
     }
 
-    // Configure widget inputs (bind to events, etc.)
-    if (DataSelectorWidget) {
-        ConfigureDataSelectorWidgetInputs();
+    // Get the data filtering widget from its generic version
+    if (DataFilteringWidgetGeneric)
+    {
+        DataFilteringWidget = Cast<UDataFilteringWidget>(DataFilteringWidgetGeneric);
     }
     else {
-		UE_LOG(LogTemp, Error, TEXT("DataSelectorWidget is null"));
-	}
+        UE_LOG(LogTemp, Error, TEXT("DataFilteringWidgetGeneric is null"));
+    }
 }
 
 // Called every frame
@@ -167,50 +169,6 @@ FString AUIManager::GetFriendlyPropertyName(FString PropertyName) {
     return FriendlyPropertyName;
 }
 
-FString AUIManager::GetPropertyValueAsString(FProperty* Property, FTableRowBase& Metadata) {
-    FString PropertyName = Property->GetName();
-    FString PropertyValue;
-
-    // Check the property type and convert it to a string accordingly
-    FString PropertyTypeName = Property->GetClass()->GetName();
-
-    if (PropertyTypeName.Equals("IntProperty"))
-    {
-        FIntProperty* IntProp = CastField<FIntProperty>(Property);
-        int32 Value = IntProp->GetPropertyValue_InContainer(&Metadata);
-        PropertyValue = FString::Printf(TEXT("%d"), Value);
-    }
-    else if (PropertyTypeName.Equals("FloatProperty"))
-    {
-        FFloatProperty* FloatProp = CastField<FFloatProperty>(Property);
-        float Value = FloatProp->GetPropertyValue_InContainer(&Metadata);
-        PropertyValue = FString::Printf(TEXT("%f"), Value);
-    }
-    else if (PropertyTypeName.Equals("DoubleProperty"))
-    {
-        FDoubleProperty* DoubleProp = CastField<FDoubleProperty>(Property);
-        double Value = DoubleProp->GetPropertyValue_InContainer(&Metadata);
-        PropertyValue = FString::Printf(TEXT("%f"), Value);
-    }
-    else if (PropertyTypeName.Equals("BoolProperty"))
-    {
-        FBoolProperty* BoolProp = CastField<FBoolProperty>(Property);
-        bool Value = BoolProp->GetPropertyValue_InContainer(&Metadata);
-        PropertyValue = Value ? "True" : "False";
-    }
-    else if (PropertyTypeName.Equals("StrProperty"))
-    {
-        FStrProperty* StrProp = CastField<FStrProperty>(Property);
-        FString Value = StrProp->GetPropertyValue_InContainer(&Metadata);
-        PropertyValue = Value;
-    }
-    else {
-        UE_LOG(LogTemp, Warning, TEXT("Struct property %s type not supported. Type: %s"), *PropertyName, *PropertyTypeName);
-    }
-    
-    return PropertyValue;
-}
-
 void AUIManager::RefreshActorDataWidget(AActor* Actor) {
     // Get the widget's vertical box, assuming that all text blocks are children of a vertical box
     UVerticalBox* VerticalBox = Cast<UVerticalBox>(ActorDataWidget->GetWidgetFromName("ActorDataVerticalBox"));
@@ -220,25 +178,14 @@ void AUIManager::RefreshActorDataWidget(AActor* Actor) {
     VerticalBox->ClearChildren();
     // Get the metadata from the actor
     FTableRowBase& Metadata = DataManager->GetMetadataFromActor(Actor);
-    // Get a pointer to the actor's dynamic struct
-    UStruct* MetadataType = FTableRowBase::StaticStruct();
-    FString MetadataStructName = DataManager->GetStructNameFromFullDatasetName(DataManager->CurrentFullDatasetName);
-    UScriptStruct* MetadataStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-    if (MetadataStruct) {
-        MetadataType = Cast<UStruct>(MetadataStruct);
-        if (!MetadataType) {
-            UE_LOG(LogTemp, Warning, TEXT("Could not cast metadata struct to UStruct: %s"), *MetadataStructName)
-        }
-    }
-    else {
-        UE_LOG(LogTemp, Warning, TEXT("Could not load class for metadata parsing: %s"), *MetadataStructName);
-    }
+    // Get the data type from the actor
+    UStruct* MetadataStruct = DataManager->GetMetadataStructFromActor(Actor);
     // Iterate through all properties of the struct and extract the property name and value
-    for (TFieldIterator<FProperty> PropertyIt(MetadataType); PropertyIt; ++PropertyIt)
+    for (TFieldIterator<FProperty> PropertyIt(MetadataStruct); PropertyIt; ++PropertyIt)
     {
         FProperty* Property = *PropertyIt;
         FString PropertyName = Property->GetName();
-        FString PropertyValue = GetPropertyValueAsString(Property, Metadata);
+        FString PropertyValue = DataManager->GetPropertyValueAsString(Property, Metadata);
 
         // Create a text block
         UTextBlock* TextBlock = NewObject<UTextBlock>(VerticalBox);
@@ -307,48 +254,183 @@ void AUIManager::StopDrawingConnectingLineToActorDataWidget() {
     DataInteractionHUD->ActorToDrawLineTo = nullptr;
 }
 
-void AUIManager::ConfigureDataSelectorWidgetInputs() {
-    // Get the dropdown item
-    UComboBoxString* DatasetSelectorDropdown = Cast<UComboBoxString>(DataSelectorWidget->GetWidgetFromName("DatasetNameComboBox"));
-    // Bind to the dropdown's OnSelectionChanged event
-    if (DatasetSelectorDropdown) {
-		DatasetSelectorDropdown->OnSelectionChanged.AddDynamic(this, &AUIManager::OnDatasetSelectorWidgetDropdownChanged);
-	}
+void AUIManager::ConfigureDataSelectorWidget() {
+    /* Add options to the data selector widget from the available datasets, bind events to functions */
+    // Initialize variables
+    if (DataSelectorWidget) {
+        // Generate horizontal boxes containing the data type and a combo box for the sub-dataset name
+        // Get the vertical box which will contain all of these horizontal boxes
+        UVerticalBox* VerticalBox = Cast<UVerticalBox>(DataSelectorWidget->GetWidgetFromName("DataSelectorVerticalBox"));
+        // Iterate through all data types
+        for (const FString& DataType : DataManager->ViewNameToDataTypesMap[DataManager->CurrentViewName]) {
+            // Create a horizontal box element inside the vertical box
+            UHorizontalBox* HorizontalBox = NewObject<UHorizontalBox>(VerticalBox);
+            // Add the horizontal box to the vertical box
+            UVerticalBoxSlot* VerticalBoxSlot = VerticalBox->AddChildToVerticalBox(HorizontalBox);
+            // Give the horizontal box a lower padding of 10
+            FMargin HorizontalBoxPadding = FMargin(0.0f, 0.0f, 0.0f, 10.0f);
+            VerticalBoxSlot->SetPadding(HorizontalBoxPadding);
+            // Create a text block for the data type inside the horizontal box
+            UTextBlock* TextBlock = NewObject<UTextBlock>(HorizontalBox);
+            // Set the text to be the data type
+            TextBlock->SetText(FText::FromString(DataType));
+            // Set the text's font size
+            TextBlock->Font.Size = 14;
+            // Set the name of the text block to be the data type + "TextBlock"
+            FString TextBlockName = DataType + "TextBlock";
+            // Add the text block to the list of text blocks
+            DataSelectorWidgetDataTypeNamesMap.Add(TextBlockName, TextBlock);
+            // Add the text block to the horizontal box
+            HorizontalBox->AddChildToHorizontalBox(TextBlock);
+            // Create a combo box for the sub-dataset name inside the horizontal box
+            UComboBoxString* ComboBox = NewObject<UComboBoxString>(HorizontalBox);
+            // Set the name of the combo box to be the data type + "ComboBox"
+            FString ComboBoxName = DataType + "ComboBox";
+            // Add the combo box to the list of combo boxes
+            DataSelectorWidgetTableNameComboBoxesMap.Add(ComboBoxName, ComboBox);
+            // Add the combo box to the horizontal box
+            UHorizontalBoxSlot* HorizontalBoxSlot = HorizontalBox->AddChildToHorizontalBox(ComboBox);
+            // Give the combo box a left padding of 10
+            FMargin ComboBoxPadding = FMargin(10.0f, 0.0f, 0.0f, 0.0f);
+            HorizontalBoxSlot->SetPadding(ComboBoxPadding);
+            // Set the font size of the combo box
+            ComboBox->Font.Size = 12;
+            // Add the sub-dataset names to the combo box
+            for (const FString& SubDatasetName : DataManager->DataTypeToSubDatasetNamesMap[DataType]) {
+                // Add the sub-dataset name to the combo box
+                ComboBox->AddOption(SubDatasetName);
+            }
+            // Bind to the combo box's OnSelectionChanged event
+            ComboBox->OnSelectionChanged.AddDynamic(this, &AUIManager::OnDataSelectorWidgetDropdownChanged);
+            // Set the default selected item
+            FString DefaultSelectedItem = DataManager->CurrentMainDatasetNameToSubDatasetNameMap[DataType];
+            ComboBox->SetSelectedOption(DefaultSelectedItem);
+        }
+    }
     else {
-		UE_LOG(LogTemp, Warning, TEXT("Dataset selector dropdown not found"));
-	}
+        UE_LOG(LogTemp, Error, TEXT("Data selector widget not found in the UI Manager"));
+    }
 }
 
-void AUIManager::OnDatasetSelectorWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType) {
-    // Update the current full dataset name
-    DataManager->CurrentFullDatasetName = SelectedItem;
-    // 
+void AUIManager::OnDataSelectorWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType) {
+    // PLACEHOLDER
+ 
+    //// Update the current full dataset name
+    //DataManager->CurrentFullDatasetName = SelectedItem;
+    //// 
 }
 
 void AUIManager::RefreshDataSelectorWidget() {
-    /* Add options to the data selector widget from the available datasets */
+    // PLACEHOLDER
 
-    if (DataSelectorWidget) {
-        // Get the dropdown item
-        UComboBoxString* DatasetSelectorDropdown = Cast<UComboBoxString>(DataSelectorWidget->GetWidgetFromName("DatasetNameComboBox"));
-        if (DatasetSelectorDropdown) {
-            // Get a list of all of the dataset names from the data manager
-            TArray<FString> DatasetNames;
-            DataManager->FullDatasetNameToFilePathsMap.GetKeys(DatasetNames);
-            // For each dataset name, add it to the dropdown
-            for (FString DatasetName : DatasetNames) {
-                DatasetSelectorDropdown->AddOption(DatasetName);
+  //  if (DataSelectorWidget) {
+  //      // Iterate through all data types
+  //      for (const FString& DataType : DataManager->ViewNameToDataTypesMap[DataManager->CurrentViewName]) {
+		//	// Get the text block for the data type
+  //          FString TextBlockName = DataType + "TextBlock";
+  //          UTextBlock* TextBlock = DataSelectorWidgetDataTypeNamesMap[TextBlockName];
+  //          //
+		//}
+  //  }
+  //  else {
+  //      UE_LOG(LogTemp, Error, TEXT("Data selector widget not found in the UI Manager"));
+  //  }
+}
+
+void AUIManager::ConfigureDataFilteringWidget() {
+    if (DataFilteringWidget) {
+        // Get the text block for this widget
+        DataFilteringWidgetTextBlock = Cast<UTextBlock>(DataFilteringWidget->GetWidgetFromName("ColorDataByPropertyTextBlock"));
+        // Get the combo box for this widget
+        DataFilteringWidgetComboBox = Cast<UComboBoxString>(DataFilteringWidget->GetWidgetFromName("ColorDataByPropertyComboBox"));
+        // Add the options to the combo box
+        FString DefaultOption = "Default";
+        DataFilteringWidgetComboBox->AddOption(DefaultOption);
+        DataFilteringWidgetComboBox->SetSelectedOption(DefaultOption);
+        // Add options to the combo box, if they exist
+        if (DataManager->ColorMap.Contains(DataManager->CurrentViewName)) {
+            for (const auto& PropertyNameMap : DataManager->ColorMap[DataManager->CurrentViewName]) {
+                FString PropertyName = PropertyNameMap.Key;
+                DataFilteringWidgetComboBox->AddOption(PropertyName);
             }
-            // Set the default dropdown value to the current dataset name
-            DatasetSelectorDropdown->SetSelectedOption(DataManager->CurrentFullDatasetName);
         }
-        else {
-            UE_LOG(LogTemp, Warning, TEXT("Dataset selector dropdown not found"));
-        }
+        // Bind the combo box to the OnSelectionChanged event
+        DataFilteringWidgetComboBox->OnSelectionChanged.AddDynamic(this, &AUIManager::OnDataFilteringWidgetDropdownChanged);
     }
     else {
-        UE_LOG(LogTemp, Warning, TEXT("Data selector widget not found in the UI Manager"));
+        UE_LOG(LogTemp, Error, TEXT("Data filtering widget not found in the UI Manager"));
     }
+}
 
+void AUIManager::RefreshDataFilteringWidget() {
+    // PLACEHOLDER
+}
+
+void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType) {
+    // PLACEHOLDER
+    // Update the text on the text block
+    FString Text;
+    if (SelectedItem.Equals("Default")) {
+        Text = "Default Coloring";
+    }
+    else {
+        Text = "Coloring by " + SelectedItem;
+    }
+    DataFilteringWidgetTextBlock->SetText(FText::FromString(Text));
+    // Create a map of data type to a boolean - whether or not the data type supports coloring by the selected property
+    TMap<FString, bool> DataTypeToSupportsColoringMap = TMap<FString, bool>();
+    // Iterate through all actors
+    for (const auto& ActorDataPair : DataManager->ActorToSpatialDataMap) {
+        AActor* Actor = ActorDataPair.Key;
+        if (SelectedItem.Equals("Default")) {
+            // Apply coloring from spatial data
+            // Get the actor's spatial data
+            FSpatialDataStruct& SpatialData = DataManager->GetSpatialDataFromActor(Actor);
+            // Get the color to set on the actor
+            FColor NewColor = FColor::FromHex(SpatialData.color);
+            // Cast the actor to an ActorToSpawn
+            AActorToSpawn* ActorToSpawn = Cast<AActorToSpawn>(Actor);
+            // Set the actor's color
+            ActorToSpawn->ChangeColor(NewColor);
+        }
+        else {
+            bool DataTypeSupportsColoring;
+            // Get the actor's data type
+            FString ActorDataType = DataManager->GetDataTypeFromActor(Actor);
+            // Check if the data type is already in the map
+            if (DataTypeToSupportsColoringMap.Contains(ActorDataType)) {
+                // Check if the data type supports coloring by the selected property
+                DataTypeSupportsColoring = DataTypeToSupportsColoringMap[ActorDataType];
+            }
+            else {
+                // Check if the actor's data type supports coloring by the selected property
+                DataTypeSupportsColoring = DataManager->ActorHasMetadataProperty(Actor, SelectedItem);
+                // Add the data type to the map
+                DataTypeToSupportsColoringMap.Add(ActorDataType, DataTypeSupportsColoring);
+            }
+            // Apply coloring to the actor if the actor supports coloring by the selected property
+            if (DataTypeSupportsColoring) {
+                // Get the actor's metadata
+                FTableRowBase& Metadata = DataManager->GetMetadataFromActor(Actor);
+                // Get the metadata struct from the actor
+                UStruct* MetadataStruct = DataManager->GetMetadataStructFromActor(Actor);
+                // Get the value of the selected property from the actor's metadata
+                FString PropertyValue = DataManager->GetPropertyValueStringFromMetadata(Metadata, MetadataStruct, SelectedItem);
+                // Get the color from the color map based on the property value
+                auto ValueColorMap = DataManager->ColorMap[DataManager->CurrentViewName][SelectedItem];
+                if (ValueColorMap.Contains(PropertyValue)) {
+                    FColor NewColor = ValueColorMap[PropertyValue];
+                    // Cast the actor to an ActorToSpawn
+                    AActorToSpawn* ActorToSpawn = Cast<AActorToSpawn>(Actor);
+                    // Set the actor's color
+                    ActorToSpawn->ChangeColor(NewColor);
+                }
+                else {
+                    UE_LOG(LogTemp, Error, TEXT("Color map for the current view does not contain a color for the property value %s for property name %s"), *PropertyValue, *SelectedItem);
+                    return;
+                }
+            }
+        }
+    }
 }
 

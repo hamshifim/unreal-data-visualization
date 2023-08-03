@@ -36,6 +36,8 @@ APlayerCameraPawn::APlayerCameraPawn()
 
     // Load the points of interest data table and store the center and radius of the view sphere
     StoreViewSphereCenterAndRadius();
+    // Adjust movement speed based on the radius
+    AdjustMovementSpeedFromRadius();
     // Using the POI data table, generate several default views
     GenerateViewsFromPOIDataTable();
     // Load the views data table and store the views in a map for quick searching
@@ -60,8 +62,8 @@ void APlayerCameraPawn::StoreViewSphereCenterAndRadius() {
             // Make sure that we found the row.
             if (Row) {
                 // For now, we are assuming that there is only one row
-                Center = FVector(Row->CENTER_X, Row->CENTER_Y, Row->CENTER_Z);
-                Radius = Row->RADIUS;
+                Center = FVector(Row->center_x, Row->center_y, Row->center_z);
+                Radius = Row->radius;
             }
             else {
                 UE_LOG(LogTemp, Warning, TEXT("Could not find row in data table for storing view sphere data"));
@@ -71,6 +73,10 @@ void APlayerCameraPawn::StoreViewSphereCenterAndRadius() {
     else {
         UE_LOG(LogTemp, Warning, TEXT("Could not find data table for storing view sphere data"));
     }
+}
+
+void APlayerCameraPawn::AdjustMovementSpeedFromRadius() {
+    MovementSpeed = BaseMovementSpeed * (Radius / 1000);
 }
 
 double APlayerCameraPawn::CalculateFOV() 
@@ -99,11 +105,11 @@ void APlayerCameraPawn::RestoreDefaults(bool AbandonTarget = true) {
 void APlayerCameraPawn::GenerateViewsFromPOIDataTable() 
 {
     // Calculate camera offsets for each view
-    FVector FrontViewOffset = FVector(-Radius * ViewPaddingFactor * 2, 0, 0);
+    FVector FrontViewOffset = FVector(-Radius * ViewPaddingFactor, 0, 0);
     SaveView(FrontViewOffset, 0, "Front View");
-    FVector SideViewOffset = FVector(0, -Radius * ViewPaddingFactor * 2, 0);
+    FVector SideViewOffset = FVector(0, -Radius * ViewPaddingFactor, 0);
     SaveView(SideViewOffset, 1, "Side View");
-    FVector TopViewOffset = FVector(0, 0, Radius * ViewPaddingFactor * 2);
+    FVector TopViewOffset = FVector(0, 0, Radius * ViewPaddingFactor);
     SaveView(TopViewOffset, 2, "Top View");
 
 }
