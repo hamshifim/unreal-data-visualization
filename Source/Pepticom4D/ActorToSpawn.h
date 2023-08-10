@@ -18,7 +18,7 @@ public:
 	void Create();
 	void ChangeColor(FString ColorHex);
 	void ChangeColor(FColor NewColor);
-	void ChangeScale(float NewScale);
+	void ChangeScale(const float NewScale) const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -43,7 +43,4 @@ public:
 private:
 	UFUNCTION()
 	void OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed);
-	float GetNormalizedScale(float ScaleToNormalize, float MinScale, float MaxScale);
-
-	float Scale = 1.0f;
 };

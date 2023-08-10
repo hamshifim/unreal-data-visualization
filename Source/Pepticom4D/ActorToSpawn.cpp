@@ -19,13 +19,6 @@ void AActorToSpawn::Create() {
     StaticMeshComp->AttachToComponent(SphereComp, FAttachmentTransformRules::KeepRelativeTransform);
     ParticleComp->AttachToComponent(StaticMeshComp, FAttachmentTransformRules::KeepRelativeTransform);
 
-    // Setting the Sphere radius to be of a smaller size in line with the Static Mesh.
-    SphereComp->SetSphereRadius(16.0f); // was 16
-
-    // Setting the Static Mesh Scale and Location to fit the radius of the Sphere.
-    StaticMeshComp->SetRelativeLocation(FVector(0.0, 0.0, -12.0f)); // was 0, 0, -12
-    StaticMeshComp->SetRelativeScale3D(FVector(0.25, 0.25, 0.25));
-
     // Set collision to query only
     StaticMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
@@ -105,33 +98,11 @@ void AActorToSpawn::ChangeColor(FColor NewColor) {
     DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), NewColor);
 }
 
-float AActorToSpawn::GetNormalizedScale(float ScaleToNormalize, float MinScale = 0.f, float MaxScale = 100.f) {
-    /* Normalizes a scale to be between 0 and 1 */
-    // Check if the scale is between the min and max
-    if (ScaleToNormalize < MinScale) {
-		UE_LOG(LogTemp, Warning, TEXT("Scale %f is less than min scale %f"), ScaleToNormalize, MinScale)
-            ScaleToNormalize = MinScale;
-	}
-    else if (ScaleToNormalize > MaxScale) {
-		UE_LOG(LogTemp, Warning, TEXT("Scale %f is greater than max scale %f"), ScaleToNormalize, MaxScale)
-            ScaleToNormalize = MaxScale;
-	}
-    // Normalize the scale
-    ScaleToNormalize = (ScaleToNormalize - MinScale) / (MaxScale - MinScale);
-    // Return the normalized scale
-    return 1 + ScaleToNormalize;
-}
 
-void AActorToSpawn::ChangeScale(float NewScale) {
-    // Check if the scale is between 0 and 1
-    if (NewScale < 0 || NewScale > 1) {
-        // Throw an error
-        UE_LOG(LogTemp, Warning, TEXT("Scale for at least one actor is not between 0 and 1. Rendering issues may occur."));
-    }
-    // Increase the scale by 1 to make it between 1 and 2
-    NewScale += 1;
-    // Scale the actor by the new size. Scale will not be between 0 and 1
+void AActorToSpawn::ChangeScale(const float NewScale) const {
+
+    // FString Message = FString::Printf(TEXT("Scale foo: %f"), NewScale);
+    // UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+
     SphereComp->SetRelativeScale3D(FVector(NewScale, NewScale, NewScale));
-    // Update the size
-    Scale = NewScale;
 }
