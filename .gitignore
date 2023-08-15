@@ -95,11 +95,6 @@ Plugins/*/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 
-
-
-# Temporary struct files
-*TempStruct.*
-
 # Config Files
 Config/DefaultGame.ini
 Config/DataConfig.json
