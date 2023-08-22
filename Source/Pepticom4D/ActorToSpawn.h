@@ -19,6 +19,7 @@ public:
 	void ChangeColor(FString ColorHex);
 	void ChangeColor(FColor NewColor);
 	void ChangeScale(const float NewScale) const;
+	void ExtractDataTypes(const TTuple<FString, TSharedPtr<FJsonValue, ESPMode::ThreadSafe>>&);
 
 protected:
 	// Called when the game starts or when spawned

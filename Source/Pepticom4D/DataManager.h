@@ -20,10 +20,10 @@ public:
 	ADataManager();
 
 	UFUNCTION()
-	FString GetFullDatasetNameFromMainAndSubDatasetNames(FString MainDatasetName, FString SubDatasetName);
+	FString GetFullTableName(FString DataTypeName, FString TableName);
 
 	UFUNCTION()
-	FString GetStructNameFromFullDatasetName(FString FullDatasetName);
+	FString StructNameFromFullTableName(FString FullTableName);
 
 	UFUNCTION()
 	void ProcessConfig(FString ConfigVarName);
@@ -89,13 +89,13 @@ public:
 	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.
 	FString CurrentViewName = TEXT("");
 	// Combination of main and sub dataset names within the current view
-	TArray<FString> CurrentFullDatasetNames = TArray<FString>();
+	TArray<FString> CurrentFullTableNames = TArray<FString>();
 	// Map of data type (main dataset name) to the current sub dataset name for that data type
-	TMap<FString, FString> CurrentMainDatasetNameToSubDatasetNameMap = TMap<FString, FString>();
+	TMap<FString, FString> CurrentDataTypeNameToTableNameMap = TMap<FString, FString>();
 	// Current valid keys for each TPair: "SpatialDataFilePath", "SpatialMetadataFilePath". All entries in the map should have pairs with these keys.
-	TMap<FString, TMap<FString, FString>> FullDatasetNameToFilePathsMap = TMap<FString, TMap<FString, FString>>();
+	TMap<FString, TMap<FString, FString>> TableFilePathMap = TMap<FString, TMap<FString, FString>>();
 	// Map of full dataset names to the UStruct type of their metadata
-	TMap<FString, UStruct*> FullDatasetNameToMetadataStructMap = TMap<FString, UStruct*>();
+	TMap<FString, UStruct*> FullTableNameToMetadataStructMap = TMap<FString, UStruct*>();
 	// Map of data full dataset names to spatial metadata tables
 	TMap<FString, UDataTable*> FullDatasetNameToSpatialMetadataTableMap = TMap<FString, UDataTable*>();
 	// Map of view names to data types/main dataset names that are displayed in that view

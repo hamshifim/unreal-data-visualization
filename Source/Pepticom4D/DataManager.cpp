@@ -80,9 +80,6 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 		const TSharedPtr<FJsonObject>* ColorMapsObjectPtr;
 		if (!ViewObj->TryGetObjectField("color_maps", ColorMapsObjectPtr))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Config file JSON does not contain 'color_maps' field in at least one 'views' -> 'view' object (%s)."), *ViewName);
-		}
-		else {
 			// Iterate through the property names 
 			TMap<FString, TMap<FString, FColor>> PropertyNameAndValueColorMap = TMap<FString, TMap<FString, FColor>>();
 			for (const auto& ColorMapPair : (*ColorMapsObjectPtr)->Values) {
@@ -103,6 +100,9 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 			}
 			// Add the view name and property name and value color map to the map
 			ColorMap.Add(ViewName, PropertyNameAndValueColorMap);
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Config file JSON does not contain 'color_maps' field in at least one 'views' -> 'view' object (%s)."), *ViewName);
 		}
 
 		// Get the data types for this view and make sure that we can iterate over them
@@ -151,29 +151,30 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 	}
 
 	// Iterate over all main datasets
-	for (const auto& MainPair : (*DataTypesObjectPtr)->Values)
+	for (const auto& DataTypePair : (*DataTypesObjectPtr)->Values)
 	{
-		FString MainDatasetName = MainPair.Key;
-		TSharedPtr<FJsonObject> MainDatasetObj = MainPair.Value->AsObject();
+		FString DataTypeName = DataTypePair.Key;
+		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
+		
 		// Get the subsets object and make sure that it is an object that we can iterate over
-		const TSharedPtr<FJsonObject>* SubsetsObjectPtr;
-		if (!MainDatasetObj->TryGetObjectField("tables", SubsetsObjectPtr))
+		const TSharedPtr<FJsonObject>* TablesObjectPtr;
+		if (!DataTypeObj->TryGetObjectField("tables", TablesObjectPtr))
 		{
 			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'tables' field."));
 			continue; // or handle the error
 		}
 		// Iterate over all sub datasets
-		TArray<FString> SubDatasetNames;
-		for (const auto& SubPair : (*SubsetsObjectPtr)->Values)
+		TArray<FString> TableNames;
+		for (const auto& TablePair : (*TablesObjectPtr)->Values)
 		{
-			// Get the sub-dataset name and object
-			FString SubDatasetName = SubPair.Key;
-			TSharedPtr<FJsonObject> SubDatasetObj = SubPair.Value->AsObject();
+			// Get the table name and object
+			FString TableName = TablePair.Key;
+			TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
 			// Create a map of file paths
 			TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
 			// Get the file paths and populate the array
 			FString DataSource;
-			if (MainDatasetObj->TryGetStringField("data_source", DataSource))
+			if (DataTypeObj->TryGetStringField("data_source", DataSource))
 			{
 				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
 				FilePathsMap.Add(Pair);
@@ -182,8 +183,9 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 				UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
 				continue;
 			}
+			
 			FString MetadataSource;
-			if (SubDatasetObj->TryGetStringField("data_source", MetadataSource))
+			if (TableObj->TryGetStringField("data_source", MetadataSource))
 			{
 				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), MetadataSource);
 				FilePathsMap.Add(Pair);
@@ -192,35 +194,36 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 				UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in at least one 'data_types' -> 'data_type' -> 'tables' -> 'table' object."));
 				continue;
 			}
+			
 			// Add the file paths to the map
-			FString FullDatasetName = GetFullDatasetNameFromMainAndSubDatasetNames(MainDatasetName, SubDatasetName);
-			FullDatasetNameToFilePathsMap.Add(FullDatasetName, FilePathsMap);
-			// Add the sub-dataset name to the array of sub-dataset names
-			SubDatasetNames.Add(SubDatasetName);
-			// Create a spatial metadata table for each data type, assuming a default metadata struct from the current sub-dataset
-			FString MetadataStructName = GetStructNameFromFullDatasetName(FullDatasetName);
+			FString FullTableName = GetFullTableName(DataTypeName, TableName);
+			TableFilePathMap.Add(FullTableName, FilePathsMap);
+			// Add the table name to the array of table names
+			TableNames.Add(TableName);
+			// Create a spatial metadata table for each data type, assuming a default metadata struct from the current table
+			FString MetadataStructName = StructNameFromFullTableName(FullTableName);
 			FString SpatialMetadataTableName = MetadataStructName + "DataTable";
 			UScriptStruct* SpatialMetadataScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
 			UDataTable* SpatialMetadataTable = CreateMetadataTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
 			// Add the spatial metadata table to the map
-			FullDatasetNameToSpatialMetadataTableMap.Add(FullDatasetName, SpatialMetadataTable);
+			FullDatasetNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
 			// Store the metadata struct in the map of full dataset names to metadata structs
 			UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
-			FullDatasetNameToMetadataStructMap.Add(FullDatasetName, SpatialMetadataStruct);
+			FullTableNameToMetadataStructMap.Add(FullTableName, SpatialMetadataStruct);
 		}
-		// Store the sub-dataset names in the map
-		DataTypeToSubDatasetNamesMap.Add(MainDatasetName, SubDatasetNames);
+		// Store the table names in the map
+		DataTypeToSubDatasetNamesMap.Add(DataTypeName, TableNames);
 
-		// Set the default sub-dataset to be the first one - set in the default_table property
-		FString DefaultSubDatasetName;
-		if (MainDatasetObj->TryGetStringField("default_table", DefaultSubDatasetName)) {
-			FString FullDatasetName = GetFullDatasetNameFromMainAndSubDatasetNames(MainDatasetName, DefaultSubDatasetName);
+		// Set the default table to be the first one - set in the default_table property
+		FString DefaultTableName;
+		if (DataTypeObj->TryGetStringField("default_table", DefaultTableName)) {
+			FString FullDatasetName = GetFullTableName(DataTypeName, DefaultTableName);
 			// Check if this main dataset is within the current view; if so, add the full dataset name to the list of current full dataset names
-			if (ViewNameToDataTypesMap[CurrentViewName].Contains(MainDatasetName)) {
-				CurrentFullDatasetNames.Add(FullDatasetName);
+			if (ViewNameToDataTypesMap[CurrentViewName].Contains(DataTypeName)) {
+				CurrentFullTableNames.Add(FullDatasetName);
 			}
-			// Map the current main dataset name to its current sub dataset name
-			CurrentMainDatasetNameToSubDatasetNameMap.Add(MainDatasetName, DefaultSubDatasetName);
+			// Map the current main data type name to its current table name
+			CurrentDataTypeNameToTableNameMap.Add(DataTypeName, DefaultTableName);
 		}
 		else {
 			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_table' field for at least one data type."));
@@ -229,15 +232,15 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 	}
 }
 
-FString ADataManager::GetFullDatasetNameFromMainAndSubDatasetNames(FString MainDatasetName, FString SubDatasetName) {
-	return MainDatasetName + TEXT("_") + SubDatasetName;
+FString ADataManager::GetFullTableName(FString DataTypeName, FString TableName) {
+	return DataTypeName + TEXT("_") + TableName;
 }
 
-FString ADataManager::GetStructNameFromFullDatasetName(FString FullDatasetName) {
-	// Assumes an input of the form "main_dataset_name_sub_dataset_name, converts to MainDatasetNameSubDatasetNameTempStruct"
+FString ADataManager::StructNameFromFullTableName(FString FullTableName) {
+	// Assumes an input of the form "dat_type_name_table_name, converts to DataTypeNameTableNameTempStruct"
 	FString PascalCaseString;
 	bool bNextIsUpper = true;
-	for (TCHAR Char : FullDatasetName)
+	for (const TCHAR Char : FullTableName)
 	{
 		if (Char == '_')
 		{
@@ -408,8 +411,8 @@ FString ADataManager::GetBoundaryPointsFromViewName(FString ViewName) {
 }
 
 FString ADataManager::GetFullDatasetNameFromDataType(FString DataType) {
-	FString SubDatasetName = CurrentMainDatasetNameToSubDatasetNameMap.FindRef(DataType);
-	FString FullDatasetName = GetFullDatasetNameFromMainAndSubDatasetNames(DataType, SubDatasetName);
+	FString SubDatasetName = CurrentDataTypeNameToTableNameMap.FindRef(DataType);
+	FString FullDatasetName = GetFullTableName(DataType, SubDatasetName);
 	return FullDatasetName;
 }
 
@@ -419,7 +422,7 @@ UStruct* ADataManager::GetMetadataStructFromActor(AActor* Actor) {
 	// Get the full dataset name from the data type
 	FString FullDatasetName = GetFullDatasetNameFromDataType(DataType);
 	// Get the metadata struct from the full dataset name
-	UStruct* MetadataStruct = FullDatasetNameToMetadataStructMap.FindRef(FullDatasetName);
+	UStruct* MetadataStruct = FullTableNameToMetadataStructMap.FindRef(FullDatasetName);
 
 	return MetadataStruct;
 }
@@ -497,13 +500,13 @@ void ADataManager::ForceRefresh() {
 	// Clear the spatial data table
 	ClearDataTable(SpatialDataTable);
 	// Iterate over the array of current full dataset names and populate the spatial data table
-	for (int32 index = 0; index < CurrentFullDatasetNames.Num(); ++index) {
-		FString FullDatasetName = CurrentFullDatasetNames[index];
-		FString SpatialDataSourceFileType = GetFileTypeFromSourceFile(FullDatasetNameToFilePathsMap[FullDatasetName]["SpatialDataFilePath"]);
+	for (int32 index = 0; index < CurrentFullTableNames.Num(); ++index) {
+		FString FullDatasetName = CurrentFullTableNames[index];
+		FString SpatialDataSourceFileType = GetFileTypeFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
 		TArray<FString> SpatialDataSourceFileContentChunks;
 		FString SpatialDataSourceFileContents;
 		if (SpatialDataSourceFileType.Equals("CSV")) {
-			SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(FullDatasetNameToFilePathsMap[FullDatasetName]["SpatialDataFilePath"], 1000);
+			SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(TableFilePathMap[FullDatasetName]["SpatialDataFilePath"], 1000);
 			UE_LOG(LogTemp, Warning, TEXT("Loading spatial data into data table (in chunks) for dataset %s"), *FullDatasetName);
 			for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex) {
 				UE_LOG(LogTemp, Warning, TEXT("Chunk %d of %d"), ChunkIndex + 1, SpatialDataSourceFileContentChunks.Num());
@@ -512,7 +515,7 @@ void ADataManager::ForceRefresh() {
 			}
 		}
 		else {
-			SpatialDataSourceFileContents = GetContentFromSourceFile(FullDatasetNameToFilePathsMap[FullDatasetName]["SpatialDataFilePath"]);
+			SpatialDataSourceFileContents = GetContentFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
 			UE_LOG(LogTemp, Warning, TEXT("Loading spatial data into data table for dataset %s"), *FullDatasetName);
 			AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContents, SpatialDataSourceFileType);
 		}
@@ -523,11 +526,11 @@ void ADataManager::ForceRefresh() {
 		// Clear the metadata table
 		ClearDataTable(MetadataTable);
 		// Load the metadata into the metadata table
-		FString MetadataSourceFileType = GetFileTypeFromSourceFile(FullDatasetNameToFilePathsMap[FullDatasetName]["SpatialMetadataFilePath"]);
+		FString MetadataSourceFileType = GetFileTypeFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
 		TArray<FString> MetadataSourceFileContentChunks;
 		FString MetadataSourceFileContents;
 		if (MetadataSourceFileType.Equals("CSV")) {
-			MetadataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(FullDatasetNameToFilePathsMap[FullDatasetName]["SpatialMetadataFilePath"], 1000);
+			MetadataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"], 1000);
 			UE_LOG(LogTemp, Warning, TEXT("Loading metadata into data table (in chunks) for dataset %s"), *FullDatasetName);
 			for (int32 ChunkIndex = 0; ChunkIndex < MetadataSourceFileContentChunks.Num(); ++ChunkIndex) {
 				UE_LOG(LogTemp, Warning, TEXT("Chunk %d of %d"), ChunkIndex + 1, MetadataSourceFileContentChunks.Num());
@@ -536,7 +539,7 @@ void ADataManager::ForceRefresh() {
 			}
 		}
 		else {
-			MetadataSourceFileContents = GetContentFromSourceFile(FullDatasetNameToFilePathsMap[FullDatasetName]["SpatialMetadataFilePath"]);
+			MetadataSourceFileContents = GetContentFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
 			UE_LOG(LogTemp, Warning, TEXT("Loading metadata into data table for dataset %s"), *FullDatasetName);
 			AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContents, MetadataSourceFileType);
 		}

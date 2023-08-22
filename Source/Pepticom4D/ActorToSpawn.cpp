@@ -106,3 +106,9 @@ void AActorToSpawn::ChangeScale(const float NewScale) const {
 
     SphereComp->SetRelativeScale3D(FVector(NewScale, NewScale, NewScale));
 }
+
+
+void AActorToSpawn::ExtractDataTypes(const TTuple<FString, TSharedPtr<FJsonValue, ESPMode::ThreadSafe>>& MainPair)
+{
+    
+}
