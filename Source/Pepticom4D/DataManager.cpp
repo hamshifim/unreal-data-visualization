@@ -5,8 +5,9 @@
 
 // Sets default values
 ADataManager::ADataManager()
+	: Super() // Initialize the base class constructor
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSceneRoot"));
@@ -18,7 +19,7 @@ ADataManager::ADataManager()
 void ADataManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	UE_LOG(LogTemp, Warning, TEXT("Data manager initialized"));
 }
 
@@ -26,10 +27,10 @@ void ADataManager::BeginPlay()
 void ADataManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void ADataManager::ProcessConfig(FString ConfigVarName) {
+void ADataManager::ProcessConfig(FString ConfigVarName)
+{
 	// Get the config file path
 	FString ConfigFilePath;
 	GConfig->GetString(TEXT("Data"), *ConfigVarName, ConfigFilePath, GGameIni);
@@ -66,7 +67,8 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 	}
 
 	// Iterate over all views
-	for (const auto& ViewPair : (*ViewsObjectPtr)->Values) {
+	for (const auto& ViewPair : (*ViewsObjectPtr)->Values)
+	{
 		FString ViewName = ViewPair.Key;
 		TSharedPtr<FJsonObject> ViewObj = ViewPair.Value->AsObject();
 
@@ -82,12 +84,14 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 		{
 			// Iterate through the property names 
 			TMap<FString, TMap<FString, FColor>> PropertyNameAndValueColorMap = TMap<FString, TMap<FString, FColor>>();
-			for (const auto& ColorMapPair : (*ColorMapsObjectPtr)->Values) {
+			for (const auto& ColorMapPair : (*ColorMapsObjectPtr)->Values)
+			{
 				FString PropertyName = ColorMapPair.Key;
 				TSharedPtr<FJsonObject> ColorMapObj = ColorMapPair.Value->AsObject();
 				// Iterate through the color map objects
 				TMap<FString, FColor> ValueColorMap = TMap<FString, FColor>();
-				for (const auto& ValueColorPair : ColorMapObj->Values) {
+				for (const auto& ValueColorPair : ColorMapObj->Values)
+				{
 					FString Value = ValueColorPair.Key;
 					FString ColorString = ValueColorPair.Value->AsString();
 					// Get the color as an FColor
@@ -101,20 +105,26 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 			// Add the view name and property name and value color map to the map
 			ColorMap.Add(ViewName, PropertyNameAndValueColorMap);
 		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("Config file JSON does not contain 'color_maps' field in at least one 'views' -> 'view' object (%s)."), *ViewName);
+		else
+		{
+			UE_LOG(LogTemp, Warning,
+			       TEXT(
+				       "Config file JSON does not contain 'color_maps' field in at least one 'views' -> 'view' object (%s)."
+			       ), *ViewName);
 		}
 
 		// Get the data types for this view and make sure that we can iterate over them
 		const TArray<TSharedPtr<FJsonValue>>* DataTypesArray;
 		if (!ViewObj->TryGetArrayField("data_types", DataTypesArray))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_types' field in the 'views' -> 'view' object."));
+			UE_LOG(LogTemp, Error,
+			       TEXT("Config file JSON does not contain 'data_types' field in the 'views' -> 'view' object."));
 			continue; // or handle the error
 		}
 		// Iterate over all data types
 		TArray<FString> DataTypes;
-		for (const auto& DataTypeValue : *DataTypesArray) {
+		for (const auto& DataTypeValue : *DataTypesArray)
+		{
 			FString DataTypeName = DataTypeValue->AsString();
 			// Add the data type name to the array
 			DataTypes.Add(DataTypeName);
@@ -126,7 +136,8 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 		const TSharedPtr<FJsonObject>* BoundaryPointsObjectPtr;
 		if (!ViewObj->TryGetObjectField("boundaries", BoundaryPointsObjectPtr))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Config file JSON missing 'boundaries' field in the 'views' -> 'view' object."));
+			UE_LOG(LogTemp, Error,
+			       TEXT("Config file JSON missing 'boundaries' field in the 'views' -> 'view' object."));
 			continue; // or handle the error
 		}
 		// Add a name field to the boundary points object so that Unreal can read it into a DataTable
@@ -155,7 +166,7 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 	{
 		FString DataTypeName = DataTypePair.Key;
 		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
-		
+
 		// Get the subsets object and make sure that it is an object that we can iterate over
 		const TSharedPtr<FJsonObject>* TablesObjectPtr;
 		if (!DataTypeObj->TryGetObjectField("tables", TablesObjectPtr))
@@ -179,22 +190,30 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
 				FilePathsMap.Add(Pair);
 			}
-			else {
-				UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
+			else
+			{
+				UE_LOG(LogTemp, Error,
+				       TEXT(
+					       "Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."
+				       ));
 				continue;
 			}
-			
+
 			FString MetadataSource;
 			if (TableObj->TryGetStringField("data_source", MetadataSource))
 			{
 				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), MetadataSource);
 				FilePathsMap.Add(Pair);
 			}
-			else {
-				UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in at least one 'data_types' -> 'data_type' -> 'tables' -> 'table' object."));
+			else
+			{
+				UE_LOG(LogTemp, Error,
+				       TEXT(
+					       "Config file JSON does not contain 'data_source' field in at least one 'data_types' -> 'data_type' -> 'tables' -> 'table' object."
+				       ));
 				continue;
 			}
-			
+
 			// Add the file paths to the map
 			FString FullTableName = GetFullTableName(DataTypeName, TableName);
 			TableFilePathMap.Add(FullTableName, FilePathsMap);
@@ -204,7 +223,8 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 			FString MetadataStructName = StructNameFromFullTableName(FullTableName);
 			FString SpatialMetadataTableName = MetadataStructName + "DataTable";
 			UScriptStruct* SpatialMetadataScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-			UDataTable* SpatialMetadataTable = CreateMetadataTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
+			UDataTable* SpatialMetadataTable = CreateMetadataTableFromStruct(
+				SpatialMetadataTableName, SpatialMetadataScriptStruct);
 			// Add the spatial metadata table to the map
 			FullDatasetNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
 			// Store the metadata struct in the map of full dataset names to metadata structs
@@ -216,27 +236,33 @@ void ADataManager::ProcessConfig(FString ConfigVarName) {
 
 		// Set the default table to be the first one - set in the default_table property
 		FString DefaultTableName;
-		if (DataTypeObj->TryGetStringField("default_table", DefaultTableName)) {
+		if (DataTypeObj->TryGetStringField("default_table", DefaultTableName))
+		{
 			FString FullDatasetName = GetFullTableName(DataTypeName, DefaultTableName);
 			// Check if this main dataset is within the current view; if so, add the full dataset name to the list of current full dataset names
-			if (ViewNameToDataTypesMap[CurrentViewName].Contains(DataTypeName)) {
+			if (ViewNameToDataTypesMap[CurrentViewName].Contains(DataTypeName))
+			{
 				CurrentFullTableNames.Add(FullDatasetName);
 			}
 			// Map the current main data type name to its current table name
 			CurrentDataTypeNameToTableNameMap.Add(DataTypeName, DefaultTableName);
 		}
-		else {
-			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_table' field for at least one data type."));
+		else
+		{
+			UE_LOG(LogTemp, Error,
+			       TEXT("Config file JSON does not contain 'default_table' field for at least one data type."));
 			continue;
 		}
 	}
 }
 
-FString ADataManager::GetFullTableName(FString DataTypeName, FString TableName) {
+FString ADataManager::GetFullTableName(FString DataTypeName, FString TableName)
+{
 	return DataTypeName + TEXT("_") + TableName;
 }
 
-FString ADataManager::StructNameFromFullTableName(FString FullTableName) {
+FString ADataManager::StructNameFromFullTableName(FString FullTableName)
+{
 	// Assumes an input of the form "dat_type_name_table_name, converts to DataTypeNameTableNameTempStruct"
 	FString PascalCaseString;
 	bool bNextIsUpper = true;
@@ -256,7 +282,8 @@ FString ADataManager::StructNameFromFullTableName(FString FullTableName) {
 	return StructName;
 }
 
-UDataTable* ADataManager::CreateMetadataTableFromStruct(const FString& TableName, UScriptStruct* RowStruct) {
+UDataTable* ADataManager::CreateMetadataTableFromStruct(const FString& TableName, UScriptStruct* RowStruct)
+{
 	// Create a new Data Table asset
 	UDataTable* DataTable = NewObject<UDataTable>(GetTransientPackage(), FName(*TableName), RF_Transient);
 	DataTable->RowStruct = RowStruct;
@@ -268,25 +295,31 @@ UDataTable* ADataManager::CreateMetadataTableFromStruct(const FString& TableName
 	return DataTable;
 }
 
-FString ADataManager::GetContentFromSourceFile(FString SourceFilePath) {
+FString ADataManager::GetContentFromSourceFile(FString SourceFilePath)
+{
 	FString FileContent = TEXT("");
 	// Make sure that the source file exists
-	if (FPaths::FileExists(SourceFilePath)) {
+	if (FPaths::FileExists(SourceFilePath))
+	{
 		// Read the file into a string
 		FFileHelper::LoadFileToString(FileContent, *SourceFilePath);
 	}
-	else {
+	else
+	{
 		UE_LOG(LogTemp, Error, TEXT("Source file does not exist: %s"), *SourceFilePath);
 	}
 
 	return FileContent;
 }
 
-TArray<FString> ADataManager::GetChunkedContentFromCSVSourceFile(FString SourceFilePath, int ChunkSize) {
+TArray<FString> ADataManager::GetChunkedContentFromCSVSourceFile(FString SourceFilePath, int ChunkSize)
+{
 	// Validate the file extension
 	FString FileExtension = GetFileTypeFromSourceFile(SourceFilePath);
-	if (!FileExtension.Equals("CSV")) {
-		UE_LOG(LogTemp, Error, TEXT("Source file passed to get chunked content is not a CSV file: %s"), *SourceFilePath);
+	if (!FileExtension.Equals("CSV"))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Source file passed to get chunked content is not a CSV file: %s"),
+		       *SourceFilePath);
 		return TArray<FString>();
 	}
 	FString FileContent = GetContentFromSourceFile(SourceFilePath);
@@ -296,16 +329,20 @@ TArray<FString> ADataManager::GetChunkedContentFromCSVSourceFile(FString SourceF
 	FileContent.ParseIntoArrayLines(Lines);
 	FString CurrentChunk;
 	// Loop over the lines
-	for (int32 i = 0; i < Lines.Num(); i++) {
-		if (i % ChunkSize == 0) {
+	for (int32 i = 0; i < Lines.Num(); i++)
+	{
+		if (i % ChunkSize == 0)
+		{
 			// If we have read ChunkSize lines, add the current chunk to the chunks array
-			if (!CurrentChunk.IsEmpty()) {
+			if (!CurrentChunk.IsEmpty())
+			{
 				Chunks.Add(CurrentChunk);
 			}
 			// Start a new chunk with the column row
 			CurrentChunk = Lines[0] + TEXT("\n");
 		}
-		if (i == 0) {
+		if (i == 0)
+		{
 			// Skip the column row
 			continue;
 		}
@@ -313,21 +350,26 @@ TArray<FString> ADataManager::GetChunkedContentFromCSVSourceFile(FString SourceF
 		CurrentChunk += Lines[i] + TEXT("\n");
 	}
 	// Add the last chunk if it is not empty
-	if (!CurrentChunk.IsEmpty() && CurrentChunk != Lines[0] + TEXT("\n")) {
+	if (!CurrentChunk.IsEmpty() && CurrentChunk != Lines[0] + TEXT("\n"))
+	{
 		Chunks.Add(CurrentChunk);
 	}
 	// Return the chunks
 	return Chunks;
 }
 
-FString ADataManager::GetFileTypeFromSourceFile(FString SourceFilePath) {
+FString ADataManager::GetFileTypeFromSourceFile(FString SourceFilePath)
+{
 	FString FileExtension = FPaths::GetExtension(SourceFilePath).ToUpper();
 	return FileExtension;
 }
 
-void ADataManager::AddDataToDataTableFromSource(UDataTable* DataTable, FString& SourceFileContent, FString& SourceFileType) {
+void ADataManager::AddDataToDataTableFromSource(UDataTable* DataTable, FString& SourceFileContent,
+                                                FString& SourceFileType)
+{
 	// Make sure that we found the data table
-	if (DataTable) {
+	if (DataTable)
+	{
 		// Create a temporary data table to hold the new data and copy the row struct from the original data table
 		UDataTable* TempDataTable = NewObject<UDataTable>();
 		TempDataTable->RowStruct = DataTable->RowStruct;
@@ -335,33 +377,41 @@ void ADataManager::AddDataToDataTableFromSource(UDataTable* DataTable, FString& 
 		FString TempDataTablePath = TempDataTable->GetPathName();
 		FString DataTablePath = DataTable->GetPathName();
 		// Make sure that the file content is not empty
-		if (SourceFileContent.IsEmpty()) {
+		if (SourceFileContent.IsEmpty())
+		{
 			UE_LOG(LogTemp, Error, TEXT("Source file content for %s data table is empty."), *DataTablePath);
 			return;
 		}
 
 		TArray<FString> problems = TArray<FString>();
 		// Check if the file is a CSV or JSON file and parse it accordingly
-		if (SourceFileType == "CSV") {
+		if (SourceFileType == "CSV")
+		{
 			problems = TempDataTable->CreateTableFromCSVString(SourceFileContent);
 		}
-		else if (SourceFileType == "JSON") {
+		else if (SourceFileType == "JSON")
+		{
 			problems = TempDataTable->CreateTableFromJSONString(SourceFileContent);
 		}
-		else {
+		else
+		{
 			UE_LOG(LogTemp, Error, TEXT("File source for %s is not a CSV or JSON file"), *TempDataTablePath);
 			return;
 		}
 		// Make sure that there were no problems
-		if (problems.Num() > 0) {
+		if (problems.Num() > 0)
+		{
 			UE_LOG(LogTemp, Warning, TEXT("There were problems importing %s"), *TempDataTablePath);
-			for (auto& problem : problems) {
+			for (auto& problem : problems)
+			{
 				UE_LOG(LogTemp, Warning, TEXT("%s"), *problem);
 			}
 		}
-		else {
+		else
+		{
 			// Add the new data to the existing data table
-			for (auto& Row : TempDataTable->GetRowMap()) {
+			for (auto& Row : TempDataTable->GetRowMap())
+			{
 				FName RowName = Row.Key;
 				FTableRowBase* RowValue = (FTableRowBase*)Row.Value;
 				DataTable->AddRow(RowName, *RowValue);
@@ -370,14 +420,17 @@ void ADataManager::AddDataToDataTableFromSource(UDataTable* DataTable, FString& 
 			UE_LOG(LogTemp, Warning, TEXT("Added data to data table %s successfully"), *DataTablePath);
 		}
 	}
-	else {
+	else
+	{
 		UE_LOG(LogTemp, Warning, TEXT("Data table passed to add data function does not exist"));
 	}
 }
 
-void ADataManager::ClearDataTable(UDataTable* DataTable) {
+void ADataManager::ClearDataTable(UDataTable* DataTable)
+{
 	// Make sure that the data table exists
-	if (DataTable) {
+	if (DataTable)
+	{
 		// Get data table path names
 		FString DataTablePath = DataTable->GetPathName();
 		// Clear the data table
@@ -385,38 +438,46 @@ void ADataManager::ClearDataTable(UDataTable* DataTable) {
 		// Log success
 		UE_LOG(LogTemp, Warning, TEXT("Cleared data table %s successfully"), *DataTablePath);
 	}
-	else {
+	else
+	{
 		UE_LOG(LogTemp, Warning, TEXT("Data table passed to clear data function does not exist"));
 	}
 }
 
-FTableRowBase& ADataManager::GetMetadataFromActor(AActor* Actor) {
+FTableRowBase& ADataManager::GetMetadataFromActor(AActor* Actor)
+{
 	return *(ActorToMetadataMap.FindRef(Actor));
 }
 
-FSpatialDataStruct& ADataManager::GetSpatialDataFromActor(AActor* Actor) {
+FSpatialDataStruct& ADataManager::GetSpatialDataFromActor(AActor* Actor)
+{
 	return *(ActorToSpatialDataMap.FindRef(Actor));
 }
 
-FString ADataManager::GetDataTypeFromActor(AActor* Actor) {
+FString ADataManager::GetDataTypeFromActor(AActor* Actor)
+{
 	return ActorToDataTypeMap.FindRef(Actor);
 }
 
-UDataTable* ADataManager::GetMetadataTableFromFullDatasetName(FString FullDatasetName) {
+UDataTable* ADataManager::GetMetadataTableFromFullDatasetName(FString FullDatasetName)
+{
 	return FullDatasetNameToSpatialMetadataTableMap.FindRef(FullDatasetName);
 }
 
-FString ADataManager::GetBoundaryPointsFromViewName(FString ViewName) {
+FString ADataManager::GetBoundaryPointsFromViewName(FString ViewName)
+{
 	return ViewNameToBoundaryPointsMap.FindRef(ViewName);
 }
 
-FString ADataManager::GetFullDatasetNameFromDataType(FString DataType) {
+FString ADataManager::GetFullDatasetNameFromDataType(FString DataType)
+{
 	FString SubDatasetName = CurrentDataTypeNameToTableNameMap.FindRef(DataType);
 	FString FullDatasetName = GetFullTableName(DataType, SubDatasetName);
 	return FullDatasetName;
 }
 
-UStruct* ADataManager::GetMetadataStructFromActor(AActor* Actor) {
+UStruct* ADataManager::GetMetadataStructFromActor(AActor* Actor)
+{
 	// Get the data type from the actor
 	FString DataType = GetDataTypeFromActor(Actor);
 	// Get the full dataset name from the data type
@@ -427,7 +488,8 @@ UStruct* ADataManager::GetMetadataStructFromActor(AActor* Actor) {
 	return MetadataStruct;
 }
 
-bool ADataManager::ActorHasMetadataProperty(AActor* Actor, FString PropertyName) {
+bool ADataManager::ActorHasMetadataProperty(AActor* Actor, FString PropertyName)
+{
 	// Get the metadata type from the actor
 	UStruct* MetadataType = GetMetadataStructFromActor(Actor);
 	// Check if the metadata type has the property
@@ -436,7 +498,8 @@ bool ADataManager::ActorHasMetadataProperty(AActor* Actor, FString PropertyName)
 	return HasProperty;
 }
 
-FString ADataManager::GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata) {
+FString ADataManager::GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata)
+{
 	FString PropertyName = Property->GetName();
 	FString PropertyValue;
 
@@ -473,17 +536,22 @@ FString ADataManager::GetPropertyValueAsString(FProperty* Property, const FTable
 		FString Value = StrProp->GetPropertyValue_InContainer(&Metadata);
 		PropertyValue = Value;
 	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("Struct property %s type not supported. Type: %s"), *PropertyName, *PropertyTypeName);
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Struct property %s type not supported. Type: %s"), *PropertyName,
+		       *PropertyTypeName);
 	}
 
 	return PropertyValue;
 }
 
-FString ADataManager::GetPropertyValueStringFromMetadata(const FTableRowBase& Metadata, UStruct* MetadataStruct, FString PropertyName) {
+FString ADataManager::GetPropertyValueStringFromMetadata(const FTableRowBase& Metadata, UStruct* MetadataStruct,
+                                                         FString PropertyName)
+{
 	// Find the property with the given name in the metadata type
 	FProperty* Property = MetadataStruct->FindPropertyByName(*PropertyName);
-	if (Property == nullptr) {
+	if (Property == nullptr)
+	{
 		// The property was not found
 		return FString();
 	}
@@ -493,53 +561,73 @@ FString ADataManager::GetPropertyValueStringFromMetadata(const FTableRowBase& Me
 	return PropertyValue;
 }
 
-void ADataManager::ForceRefresh() {
+void ADataManager::ForceRefresh()
+{
 	// Get the spatial data table
 	FString SpatialDataTablePath = FString(TEXT("/Game/SpatialDataTable.SpatialDataTable"));
 	UDataTable* SpatialDataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
 	// Clear the spatial data table
 	ClearDataTable(SpatialDataTable);
 	// Iterate over the array of current full dataset names and populate the spatial data table
-	for (int32 index = 0; index < CurrentFullTableNames.Num(); ++index) {
+	for (int32 index = 0; index < CurrentFullTableNames.Num(); ++index)
+	{
 		FString FullDatasetName = CurrentFullTableNames[index];
-		FString SpatialDataSourceFileType = GetFileTypeFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
+		FString SpatialDataSourceFileType = GetFileTypeFromSourceFile(
+			TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
 		TArray<FString> SpatialDataSourceFileContentChunks;
 		FString SpatialDataSourceFileContents;
-		if (SpatialDataSourceFileType.Equals("CSV")) {
-			SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(TableFilePathMap[FullDatasetName]["SpatialDataFilePath"], 1000);
-			UE_LOG(LogTemp, Warning, TEXT("Loading spatial data into data table (in chunks) for dataset %s"), *FullDatasetName);
-			for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex) {
-				UE_LOG(LogTemp, Warning, TEXT("Chunk %d of %d"), ChunkIndex + 1, SpatialDataSourceFileContentChunks.Num());
+		if (SpatialDataSourceFileType.Equals("CSV"))
+		{
+			SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(
+				TableFilePathMap[FullDatasetName]["SpatialDataFilePath"], 1000);
+			UE_LOG(LogTemp, Warning, TEXT("Loading spatial data into data table (in chunks) for dataset %s"),
+			       *FullDatasetName);
+			for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Chunk %d of %d"), ChunkIndex + 1,
+				       SpatialDataSourceFileContentChunks.Num());
 				UE_LOG(LogTemp, Warning, TEXT("File contents: %s"), *(SpatialDataSourceFileContentChunks[ChunkIndex]));
-				AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContentChunks[ChunkIndex], SpatialDataSourceFileType);
+				AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContentChunks[ChunkIndex],
+				                             SpatialDataSourceFileType);
 			}
 		}
-		else {
-			SpatialDataSourceFileContents = GetContentFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
+		else
+		{
+			SpatialDataSourceFileContents = GetContentFromSourceFile(
+				TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
 			UE_LOG(LogTemp, Warning, TEXT("Loading spatial data into data table for dataset %s"), *FullDatasetName);
 			AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContents, SpatialDataSourceFileType);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Finished loading spatial data into data table for dataset %s"), *FullDatasetName);
+		UE_LOG(LogTemp, Warning, TEXT("Finished loading spatial data into data table for dataset %s"),
+		       *FullDatasetName);
 
 		// Get the corresponding spatial metadata table
 		UDataTable* MetadataTable = GetMetadataTableFromFullDatasetName(FullDatasetName);
 		// Clear the metadata table
 		ClearDataTable(MetadataTable);
 		// Load the metadata into the metadata table
-		FString MetadataSourceFileType = GetFileTypeFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
+		FString MetadataSourceFileType = GetFileTypeFromSourceFile(
+			TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
 		TArray<FString> MetadataSourceFileContentChunks;
 		FString MetadataSourceFileContents;
-		if (MetadataSourceFileType.Equals("CSV")) {
-			MetadataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"], 1000);
-			UE_LOG(LogTemp, Warning, TEXT("Loading metadata into data table (in chunks) for dataset %s"), *FullDatasetName);
-			for (int32 ChunkIndex = 0; ChunkIndex < MetadataSourceFileContentChunks.Num(); ++ChunkIndex) {
+		if (MetadataSourceFileType.Equals("CSV"))
+		{
+			MetadataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(
+				TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"], 1000);
+			UE_LOG(LogTemp, Warning, TEXT("Loading metadata into data table (in chunks) for dataset %s"),
+			       *FullDatasetName);
+			for (int32 ChunkIndex = 0; ChunkIndex < MetadataSourceFileContentChunks.Num(); ++ChunkIndex)
+			{
 				UE_LOG(LogTemp, Warning, TEXT("Chunk %d of %d"), ChunkIndex + 1, MetadataSourceFileContentChunks.Num());
 				UE_LOG(LogTemp, Warning, TEXT("File contents: %s"), *(MetadataSourceFileContentChunks[ChunkIndex]));
-				AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContentChunks[ChunkIndex], MetadataSourceFileType);
+				AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContentChunks[ChunkIndex],
+				                             MetadataSourceFileType);
 			}
 		}
-		else {
-			MetadataSourceFileContents = GetContentFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
+		else
+		{
+			MetadataSourceFileContents = GetContentFromSourceFile(
+				TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
 			UE_LOG(LogTemp, Warning, TEXT("Loading metadata into data table for dataset %s"), *FullDatasetName);
 			AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContents, MetadataSourceFileType);
 		}
@@ -547,8 +635,9 @@ void ADataManager::ForceRefresh() {
 	}
 	// Load the boundary points (POIs) for the current view
 	FString BoundaryPointsSourceFileContents = GetBoundaryPointsFromViewName(CurrentViewName);
-	FString BoundaryPointsSourceFileType = "JSON";  // This is hard-coded; we will always assume that boundary points will be provided as JSON within the main JSON config file
-	UDataTable* POIDataTable = LoadObject<UDataTable>(NULL, *FString(TEXT("/Game/POIDataTable.POIDataTable")), NULL, LOAD_None, NULL);
+	FString BoundaryPointsSourceFileType = "JSON";
+	// This is hard-coded; we will always assume that boundary points will be provided as JSON within the main JSON config file
+	UDataTable* POIDataTable = LoadObject<UDataTable>(NULL, *FString(TEXT("/Game/POIDataTable.POIDataTable")), NULL,
+	                                                  LOAD_None, NULL);
 	AddDataToDataTableFromSource(POIDataTable, BoundaryPointsSourceFileContents, BoundaryPointsSourceFileType);
 }
-
