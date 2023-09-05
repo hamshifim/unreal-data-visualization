@@ -124,5 +124,6 @@ private:
 
 	void ExtractViews(TSharedPtr<FJsonObject> JsonObject);
 	void ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject);
+	TArray<FString> ExtractTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 
 };

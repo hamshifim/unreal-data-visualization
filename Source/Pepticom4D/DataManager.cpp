@@ -39,64 +39,8 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		FString DataTypeName = DataTypePair.Key;
 		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
 
-		// Get the tables object and make sure that it is an object that we can iterate over
-		const TSharedPtr<FJsonObject>* TablesObjectPtr;
-		if (!DataTypeObj->TryGetObjectField("tables", TablesObjectPtr))
-		{
-			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'tables' field."));
-			continue; // or handle the error
-		}
-
-		// Iterate over all tables
-		TArray<FString> TableNames;
-		for (const auto& TablePair : (*TablesObjectPtr)->Values)
-		{
-			// Get the table name and object
-			FString TableName = TablePair.Key;
-			TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
-			// Create a map of file paths
-			TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
-			// Get the file paths and populate the array
-			FString DataSource;
-			if (DataTypeObj->TryGetStringField("data_source", DataSource))
-			{
-				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
-				FilePathsMap.Add(Pair);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
-				continue;
-			}
-
-			FString MetadataSource;
-			if (TableObj->TryGetStringField("data_source", MetadataSource))
-			{
-				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), MetadataSource);
-				FilePathsMap.Add(Pair);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in at least one 'data_types' -> 'data_type' -> 'tables' -> 'table' object."));
-				continue;
-			}
-
-			// Add the file paths to the map
-			FString FullTableName = GetFullTableName(DataTypeName, TableName);
-			TableFilePathMap.Add(FullTableName, FilePathsMap);
-			// Add the table name to the array of table names
-			TableNames.Add(TableName);
-			// Create a spatial metadata table for each data type, assuming a default metadata struct from the current table
-			FString MetadataStructName = StructNameFromFullTableName(FullTableName);
-			FString SpatialMetadataTableName = MetadataStructName + "DataTable";
-			UScriptStruct* SpatialMetadataScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-			UDataTable* SpatialMetadataTable = CreateMetadataTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
-			// Add the spatial metadata table to the map
-			FullDatasetNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
-			// Store the metadata struct in the map of full dataset names to metadata structs
-			UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
-			FullTableNameToMetadataStructMap.Add(FullTableName, SpatialMetadataStruct);
-		}
+		TArray<FString> TableNames = ExtractTables(DataTypeName, DataTypeObj);
+		
 		// Store the table names in the map
 		DataTypeToSubDatasetNamesMap.Add(DataTypeName, TableNames);
 
@@ -119,6 +63,70 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 			continue;
 		}
 	}
+}
+
+TArray<FString> ADataManager::ExtractTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
+{
+	TArray<FString> TableNames;
+	
+	// Get the tables object and make sure that it is an object that we can iterate over
+	const TSharedPtr<FJsonObject>* TablesObjectPtr;
+	if (!DataTypeObj->TryGetObjectField("tables", TablesObjectPtr))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'tables' field."));
+		return TableNames; // or handle the error
+	}
+	
+	for (const auto& TablePair : (*TablesObjectPtr)->Values)
+	{
+		// Get the table name and object
+		FString TableName = TablePair.Key;
+		TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
+		// Create a map of file paths
+		TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
+		// Get the file paths and populate the array
+		FString DataSource;
+		if (DataTypeObj->TryGetStringField("data_source", DataSource))
+		{
+			TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
+			FilePathsMap.Add(Pair);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
+			continue;
+		}
+
+		FString MetadataSource;
+		if (TableObj->TryGetStringField("data_source", MetadataSource))
+		{
+			TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), MetadataSource);
+			FilePathsMap.Add(Pair);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in at least one 'data_types' -> 'data_type' -> 'tables' -> 'table' object."));
+			continue;
+		}
+
+		// Add the file paths to the map
+		FString FullTableName = GetFullTableName(DataTypeName, TableName);
+		TableFilePathMap.Add(FullTableName, FilePathsMap);
+		// Add the table name to the array of table names
+		TableNames.Add(TableName);
+		// Create a spatial metadata table for each data type, assuming a default metadata struct from the current table
+		FString MetadataStructName = StructNameFromFullTableName(FullTableName);
+		FString SpatialMetadataTableName = MetadataStructName + "DataTable";
+		UScriptStruct* SpatialMetadataScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
+		UDataTable* SpatialMetadataTable = CreateMetadataTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
+		// Add the spatial metadata table to the map
+		FullDatasetNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
+		// Store the metadata struct in the map of full dataset names to metadata structs
+		UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
+		FullTableNameToMetadataStructMap.Add(FullTableName, SpatialMetadataStruct);
+	}		
+
+	return TableNames;
 }
 
 // Called every frame
