@@ -37,7 +37,7 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 
 		// Get the total number of rows across all combined metadata tables
 		int32 NumSpatialMetadataRows = 0;
-		for (const auto& Pair : DataManager->FullDatasetNameToSpatialMetadataTableMap) {
+		for (const auto& Pair : DataManager->FullTableNameToSpatialMetadataTableMap) {
 			UDataTable* MetadataTable = Pair.Value;
 			// Get all rows
 			TArray<FName> MetadataRowNames = MetadataTable->GetRowNames();

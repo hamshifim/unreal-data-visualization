@@ -40,9 +40,12 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
 
 		TArray<FString> TableNames = ExtractTables(DataTypeName, DataTypeObj);
-		
 		// Store the table names in the map
-		DataTypeToSubDatasetNamesMap.Add(DataTypeName, TableNames);
+		DataTypeToTableNamesMap.Add(DataTypeName, TableNames);
+
+		TArray<FString> ManyToOneTableNames = ExtractManyToOneTables(DataTypeName, DataTypeObj);
+		// Store the table names in the map
+		DataTypeToManyToOneTableNamesMap.Add(DataTypeName, ManyToOneTableNames);
 
 		// Set the default table to be the first one - set in the default_table property
 		FString DefaultTableName;
@@ -62,6 +65,8 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_table' field for at least one data type."));
 			continue;
 		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping DataTypeName: %s"), *DataTypeName);
 	}
 }
 
@@ -118,13 +123,86 @@ TArray<FString> ADataManager::ExtractTables(FString DataTypeName, TSharedPtr<FJs
 		FString MetadataStructName = StructNameFromFullTableName(FullTableName);
 		FString SpatialMetadataTableName = MetadataStructName + "DataTable";
 		UScriptStruct* SpatialMetadataScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-		UDataTable* SpatialMetadataTable = CreateMetadataTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
+		UDataTable* SpatialMetadataTable = CreateTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
 		// Add the spatial metadata table to the map
-		FullDatasetNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
+		FullTableNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
 		// Store the metadata struct in the map of full dataset names to metadata structs
 		UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
 		FullTableNameToMetadataStructMap.Add(FullTableName, SpatialMetadataStruct);
-	}		
+
+		UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping tables for DataTypeName: %s"), *DataTypeName);
+
+	return TableNames;
+}
+
+
+TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
+{
+	TArray<FString> TableNames;
+	
+	// Get the tables object and make sure that it is an object that we can iterate over
+	const TSharedPtr<FJsonObject>* TablesObjectPtr;
+	if (!DataTypeObj->TryGetObjectField("one_to_many_tables", TablesObjectPtr))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Config file JSON does not contain 'one_to_many_tables' field."));
+		return TableNames; // or handle the error
+	}
+	
+	for (const auto& TablePair : (*TablesObjectPtr)->Values)
+	{
+		// Get the table name and object
+		FString TableName = TablePair.Key;
+		TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
+		// Create a map of file paths
+		TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
+		// Get the file paths and populate the array
+		FString DataSource;
+		if (DataTypeObj->TryGetStringField("data_source", DataSource))
+		{
+			TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
+			FilePathsMap.Add(Pair);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
+			continue;
+		}
+
+		FString ManyToOneSource;
+		if (TableObj->TryGetStringField("data_source", ManyToOneSource))
+		{
+			TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), ManyToOneSource);
+			FilePathsMap.Add(Pair);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in at least one 'data_types' -> 'data_type' -> 'tables' -> 'table' object."));
+			continue;
+		}
+
+		// Add the file paths to the map
+		FString FullTableName = GetFullTableName(DataTypeName, TableName);
+		ManyToOneTableFilePathMap.Add(FullTableName, FilePathsMap);
+		// Add the table name to the array of table names
+		TableNames.Add(TableName);
+		// Create a spatial many to one table for each data type, assuming a default many to one struct from the current table
+		FString ManyToOneStructName = StructNameFromFullTableName(FullTableName);
+		FString ManyToOneTableName = ManyToOneStructName + "DataTable";
+		UScriptStruct* ManyToOneScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *ManyToOneStructName);
+		UDataTable* ManyToOneTable = CreateTableFromStruct(ManyToOneTableName, ManyToOneScriptStruct);
+		// Add the spatial many to one table to the map
+		FullTableNameToManyToOneTableMap.Add(FullTableName, ManyToOneTable);
+		// Store the many to one struct in the map of full dataset names to metadata structs
+		UStruct* ManyToOneStruct = Cast<UStruct>(ManyToOneScriptStruct);
+		FullManyToOneTableNameToMetadataStructMap.Add(FullTableName, ManyToOneStruct);
+
+		UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping many to one tables for DataTypeName: %s"), *DataTypeName);
 
 	return TableNames;
 }
@@ -293,7 +371,7 @@ FString ADataManager::StructNameFromFullTableName(FString FullTableName)
 	return StructName;
 }
 
-UDataTable* ADataManager::CreateMetadataTableFromStruct(const FString& TableName, UScriptStruct* RowStruct)
+UDataTable* ADataManager::CreateTableFromStruct(const FString& TableName, UScriptStruct* RowStruct)
 {
 	// Create a new Data Table asset
 	UDataTable* DataTable = NewObject<UDataTable>(GetTransientPackage(), FName(*TableName), RF_Transient);
@@ -472,7 +550,7 @@ FString ADataManager::GetDataTypeFromActor(AActor* Actor)
 
 UDataTable* ADataManager::GetMetadataTableFromFullDatasetName(FString FullDatasetName)
 {
-	return FullDatasetNameToSpatialMetadataTableMap.FindRef(FullDatasetName);
+	return FullTableNameToSpatialMetadataTableMap.FindRef(FullDatasetName);
 }
 
 FString ADataManager::GetBoundaryPointsFromViewName(FString ViewName)

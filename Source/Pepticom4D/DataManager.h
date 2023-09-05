@@ -29,7 +29,7 @@ public:
 	void ProcessConfig(FString ConfigVarName);
 
 	UFUNCTION()
-	UDataTable* CreateMetadataTableFromStruct(const FString& TableName, UScriptStruct* RowStruct);
+	UDataTable* CreateTableFromStruct(const FString& TableName, UScriptStruct* RowStruct);
 
 	UFUNCTION()
 	FString GetContentFromSourceFile(FString SourceFilePath);
@@ -94,16 +94,33 @@ public:
 	TMap<FString, FString> CurrentDataTypeNameToTableNameMap = TMap<FString, FString>();
 	// Current valid keys for each TPair: "SpatialDataFilePath", "SpatialMetadataFilePath". All entries in the map should have pairs with these keys.
 	TMap<FString, TMap<FString, FString>> TableFilePathMap = TMap<FString, TMap<FString, FString>>();
+
+	// Current valid keys for each TPair: "SpatialDataFilePath", "SpatialMetadataFilePath". All entries in the map should have pairs with these keys.
+	TMap<FString, TMap<FString, FString>> ManyToOneTableFilePathMap = TMap<FString, TMap<FString, FString>>();
+	
 	// Map of full dataset names to the UStruct type of their metadata
 	TMap<FString, UStruct*> FullTableNameToMetadataStructMap = TMap<FString, UStruct*>();
+
+	// Map of full dataset names to the UStruct type of their metadata
+	TMap<FString, UStruct*> FullManyToOneTableNameToMetadataStructMap = TMap<FString, UStruct*>();
+
+	
 	// Map of data full dataset names to spatial metadata tables
-	TMap<FString, UDataTable*> FullDatasetNameToSpatialMetadataTableMap = TMap<FString, UDataTable*>();
+	TMap<FString, UDataTable*> FullTableNameToSpatialMetadataTableMap = TMap<FString, UDataTable*>();
+
+	// Map of data full table names to many_to_one tables
+	TMap<FString, UDataTable*> FullTableNameToManyToOneTableMap = TMap<FString, UDataTable*>();
+	
 	// Map of view names to data types/main dataset names that are displayed in that view
 	TMap<FString, TArray<FString>> ViewNameToDataTypesMap = TMap<FString, TArray<FString>>();
 	// Map of view names to a JSON object string representing boundary points (POIs) for that view
 	TMap<FString, FString> ViewNameToBoundaryPointsMap = TMap<FString, FString>();
-	// Map of data types to table/sub dataset names
-	TMap<FString, TArray<FString>> DataTypeToSubDatasetNamesMap = TMap<FString, TArray<FString>>();
+	// Map of data types to table names
+	TMap<FString, TArray<FString>> DataTypeToTableNamesMap = TMap<FString, TArray<FString>>();
+
+	// Map of data types to table names
+	TMap<FString, TArray<FString>> DataTypeToManyToOneTableNamesMap = TMap<FString, TArray<FString>>();
+	
 	// Map of colors which can be applied to properties - K: view name, V: K: property name, V: K: property value, V: color
 	TMap<FString, TMap<FString, TMap<FString, FColor>>> ColorMap = TMap<FString, TMap<FString, TMap<FString, FColor>>>();
 
@@ -125,5 +142,6 @@ private:
 	void ExtractViews(TSharedPtr<FJsonObject> JsonObject);
 	void ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject);
 	TArray<FString> ExtractTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
+	TArray<FString> ExtractManyToOneTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 
 };

@@ -296,7 +296,7 @@ void AUIManager::ConfigureDataSelectorWidget() {
             // Set the font size of the combo box
             ComboBox->Font.Size = 12;
             // Add the sub-dataset names to the combo box
-            for (const FString& SubDatasetName : DataManager->DataTypeToSubDatasetNamesMap[DataType]) {
+            for (const FString& SubDatasetName : DataManager->DataTypeToTableNamesMap[DataType]) {
                 // Add the sub-dataset name to the combo box
                 ComboBox->AddOption(SubDatasetName);
             }
