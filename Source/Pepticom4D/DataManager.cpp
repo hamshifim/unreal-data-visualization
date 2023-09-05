@@ -145,9 +145,9 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 	
 	// Get the tables object and make sure that it is an object that we can iterate over
 	const TSharedPtr<FJsonObject>* TablesObjectPtr;
-	if (!DataTypeObj->TryGetObjectField("one_to_many_tables", TablesObjectPtr))
+	if (!DataTypeObj->TryGetObjectField("many_to_one_tables", TablesObjectPtr))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Config file JSON does not contain 'one_to_many_tables' field."));
+		UE_LOG(LogTemp, Warning, TEXT("Config file JSON does not contain 'many_to_one_tables' field."));
 		return TableNames; // or handle the error
 	}
 	
