@@ -119,5 +119,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+private:
+
+	void ExtractViews(TSharedPtr<FJsonObject> JsonObject);
+	void ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject);
 
 };

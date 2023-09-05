@@ -23,33 +23,112 @@ void ADataManager::BeginPlay()
 	UE_LOG(LogTemp, Warning, TEXT("Data manager initialized"));
 }
 
+void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
+{
+		// Access the data_types field of the config file
+	const TSharedPtr<FJsonObject>* DataTypesObjectPtr;
+	if (!JsonObject->TryGetObjectField("data_types", DataTypesObjectPtr))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_types' field."));
+		return;
+	}
+
+	// Iterate over all main data types
+	for (const auto& DataTypePair : (*DataTypesObjectPtr)->Values)
+	{
+		FString DataTypeName = DataTypePair.Key;
+		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
+
+		// Get the tables object and make sure that it is an object that we can iterate over
+		const TSharedPtr<FJsonObject>* TablesObjectPtr;
+		if (!DataTypeObj->TryGetObjectField("tables", TablesObjectPtr))
+		{
+			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'tables' field."));
+			continue; // or handle the error
+		}
+
+		// Iterate over all tables
+		TArray<FString> TableNames;
+		for (const auto& TablePair : (*TablesObjectPtr)->Values)
+		{
+			// Get the table name and object
+			FString TableName = TablePair.Key;
+			TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
+			// Create a map of file paths
+			TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
+			// Get the file paths and populate the array
+			FString DataSource;
+			if (DataTypeObj->TryGetStringField("data_source", DataSource))
+			{
+				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
+				FilePathsMap.Add(Pair);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
+				continue;
+			}
+
+			FString MetadataSource;
+			if (TableObj->TryGetStringField("data_source", MetadataSource))
+			{
+				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), MetadataSource);
+				FilePathsMap.Add(Pair);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in at least one 'data_types' -> 'data_type' -> 'tables' -> 'table' object."));
+				continue;
+			}
+
+			// Add the file paths to the map
+			FString FullTableName = GetFullTableName(DataTypeName, TableName);
+			TableFilePathMap.Add(FullTableName, FilePathsMap);
+			// Add the table name to the array of table names
+			TableNames.Add(TableName);
+			// Create a spatial metadata table for each data type, assuming a default metadata struct from the current table
+			FString MetadataStructName = StructNameFromFullTableName(FullTableName);
+			FString SpatialMetadataTableName = MetadataStructName + "DataTable";
+			UScriptStruct* SpatialMetadataScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
+			UDataTable* SpatialMetadataTable = CreateMetadataTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
+			// Add the spatial metadata table to the map
+			FullDatasetNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
+			// Store the metadata struct in the map of full dataset names to metadata structs
+			UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
+			FullTableNameToMetadataStructMap.Add(FullTableName, SpatialMetadataStruct);
+		}
+		// Store the table names in the map
+		DataTypeToSubDatasetNamesMap.Add(DataTypeName, TableNames);
+
+		// Set the default table to be the first one - set in the default_table property
+		FString DefaultTableName;
+		if (DataTypeObj->TryGetStringField("default_table", DefaultTableName))
+		{
+			FString FullDatasetName = GetFullTableName(DataTypeName, DefaultTableName);
+			// Check if this main dataset is within the current view; if so, add the full dataset name to the list of current full dataset names
+			if (ViewNameToDataTypesMap[CurrentViewName].Contains(DataTypeName))
+			{
+				CurrentFullTableNames.Add(FullDatasetName);
+			}
+			// Map the current main data type name to its current table name
+			CurrentDataTypeNameToTableNameMap.Add(DataTypeName, DefaultTableName);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_table' field for at least one data type."));
+			continue;
+		}
+	}
+}
+
 // Called every frame
 void ADataManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void ADataManager::ProcessConfig(FString ConfigVarName)
+void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 {
-	// Get the config file path
-	FString ConfigFilePath;
-	GConfig->GetString(TEXT("Data"), *ConfigVarName, ConfigFilePath, GGameIni);
-	// Read the config file, which is a JSON file. 
-	FString JsonRaw;
-	if (!FFileHelper::LoadFileToString(JsonRaw, *ConfigFilePath))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load config file: %s"), *ConfigFilePath);
-		return;
-	}
-	// Parse the JSON string into a JSON object
-	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
-	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonRaw);
-	if (!FJsonSerializer::Deserialize(Reader, JsonObject) || !JsonObject.IsValid())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to parse JSON from config file."));
-		return;
-	}
-
 	// Get the default view name
 	FString DefaultViewName;
 	if (!JsonObject->TryGetStringField("default_view", DefaultViewName))
@@ -152,108 +231,32 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		// Add the view name and boundary points to the map
 		ViewNameToBoundaryPointsMap.Add(ViewName, BoundaryPointsString);
 	}
+}
 
-	// Access the data_types field of the config file
-	const TSharedPtr<FJsonObject>* DataTypesObjectPtr;
-	if (!JsonObject->TryGetObjectField("data_types", DataTypesObjectPtr))
+void ADataManager::ProcessConfig(FString ConfigVarName)
+{
+	// Get the config file path
+	FString ConfigFilePath;
+	GConfig->GetString(TEXT("Data"), *ConfigVarName, ConfigFilePath, GGameIni);
+	// Read the config file, which is a JSON file. 
+	FString JsonRaw;
+	if (!FFileHelper::LoadFileToString(JsonRaw, *ConfigFilePath))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_types' field."));
+		UE_LOG(LogTemp, Error, TEXT("Failed to load config file: %s"), *ConfigFilePath);
+		return;
+	}
+	// Parse the JSON string into a JSON object
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonRaw);
+	if (!FJsonSerializer::Deserialize(Reader, JsonObject) || !JsonObject.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to parse JSON from config file."));
 		return;
 	}
 
-	// Iterate over all main datasets
-	for (const auto& DataTypePair : (*DataTypesObjectPtr)->Values)
-	{
-		FString DataTypeName = DataTypePair.Key;
-		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
+	ExtractViews(JsonObject);
 
-		// Get the subsets object and make sure that it is an object that we can iterate over
-		const TSharedPtr<FJsonObject>* TablesObjectPtr;
-		if (!DataTypeObj->TryGetObjectField("tables", TablesObjectPtr))
-		{
-			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'tables' field."));
-			continue; // or handle the error
-		}
-		// Iterate over all sub datasets
-		TArray<FString> TableNames;
-		for (const auto& TablePair : (*TablesObjectPtr)->Values)
-		{
-			// Get the table name and object
-			FString TableName = TablePair.Key;
-			TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
-			// Create a map of file paths
-			TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
-			// Get the file paths and populate the array
-			FString DataSource;
-			if (DataTypeObj->TryGetStringField("data_source", DataSource))
-			{
-				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
-				FilePathsMap.Add(Pair);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error,
-				       TEXT(
-					       "Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."
-				       ));
-				continue;
-			}
-
-			FString MetadataSource;
-			if (TableObj->TryGetStringField("data_source", MetadataSource))
-			{
-				TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), MetadataSource);
-				FilePathsMap.Add(Pair);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error,
-				       TEXT(
-					       "Config file JSON does not contain 'data_source' field in at least one 'data_types' -> 'data_type' -> 'tables' -> 'table' object."
-				       ));
-				continue;
-			}
-
-			// Add the file paths to the map
-			FString FullTableName = GetFullTableName(DataTypeName, TableName);
-			TableFilePathMap.Add(FullTableName, FilePathsMap);
-			// Add the table name to the array of table names
-			TableNames.Add(TableName);
-			// Create a spatial metadata table for each data type, assuming a default metadata struct from the current table
-			FString MetadataStructName = StructNameFromFullTableName(FullTableName);
-			FString SpatialMetadataTableName = MetadataStructName + "DataTable";
-			UScriptStruct* SpatialMetadataScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-			UDataTable* SpatialMetadataTable = CreateMetadataTableFromStruct(
-				SpatialMetadataTableName, SpatialMetadataScriptStruct);
-			// Add the spatial metadata table to the map
-			FullDatasetNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
-			// Store the metadata struct in the map of full dataset names to metadata structs
-			UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
-			FullTableNameToMetadataStructMap.Add(FullTableName, SpatialMetadataStruct);
-		}
-		// Store the table names in the map
-		DataTypeToSubDatasetNamesMap.Add(DataTypeName, TableNames);
-
-		// Set the default table to be the first one - set in the default_table property
-		FString DefaultTableName;
-		if (DataTypeObj->TryGetStringField("default_table", DefaultTableName))
-		{
-			FString FullDatasetName = GetFullTableName(DataTypeName, DefaultTableName);
-			// Check if this main dataset is within the current view; if so, add the full dataset name to the list of current full dataset names
-			if (ViewNameToDataTypesMap[CurrentViewName].Contains(DataTypeName))
-			{
-				CurrentFullTableNames.Add(FullDatasetName);
-			}
-			// Map the current main data type name to its current table name
-			CurrentDataTypeNameToTableNameMap.Add(DataTypeName, DefaultTableName);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error,
-			       TEXT("Config file JSON does not contain 'default_table' field for at least one data type."));
-			continue;
-		}
-	}
+	ExtractDataTypes(JsonObject);
 }
 
 FString ADataManager::GetFullTableName(FString DataTypeName, FString TableName)
