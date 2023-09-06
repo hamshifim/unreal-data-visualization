@@ -20,7 +20,7 @@ void ADataManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Warning, TEXT("Data manager initialized"));
+	UE_LOG(LogTemp, Display, TEXT("Data manager initialized"));
 }
 
 void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
@@ -66,7 +66,7 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 			continue;
 		}
 
-		UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping DataTypeName: %s"), *DataTypeName);
+		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping DataTypeName: %s"), *DataTypeName);
 	}
 }
 
@@ -130,10 +130,10 @@ TArray<FString> ADataManager::ExtractTables(FString DataTypeName, TSharedPtr<FJs
 		UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
 		FullTableNameToMetadataStructMap.Add(FullTableName, SpatialMetadataStruct);
 
-		UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
+		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping tables for DataTypeName: %s"), *DataTypeName);
+	UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping tables for DataTypeName: %s"), *DataTypeName);
 
 	return TableNames;
 }
@@ -147,7 +147,7 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 	const TSharedPtr<FJsonObject>* TablesObjectPtr;
 	if (!DataTypeObj->TryGetObjectField("many_to_one_tables", TablesObjectPtr))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Config file JSON does not contain 'many_to_one_tables' field."));
+		UE_LOG(LogTemp, Display, TEXT("Config file JSON does not contain 'many_to_one_tables' field."));
 		return TableNames; // or handle the error
 	}
 	
@@ -199,12 +199,42 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 		UStruct* ManyToOneStruct = Cast<UStruct>(ManyToOneScriptStruct);
 		FullManyToOneTableNameToMetadataStructMap.Add(FullTableName, ManyToOneStruct);
 
-		UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
+		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Finished extracting and mapping many to one tables for DataTypeName: %s"), *DataTypeName);
+	UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping many to one tables for DataTypeName: %s"), *DataTypeName);
 
 	return TableNames;
+}
+
+void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> ViewObject)
+{
+	// Get the default view name
+	const TSharedPtr<FJsonObject>* AnimationsObjectPtr;
+	if (ViewObject->TryGetObjectField("animations", AnimationsObjectPtr))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Animation Config found in ViewName: %s."), *ViewName);
+
+		// Iterate over all animations
+		for (const auto& AnimationPair : (*AnimationsObjectPtr)->Values)
+		{
+			FString AnimationName = AnimationPair.Key;
+			UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
+
+			const TSharedPtr<FJsonObject> AnimationProperties = AnimationPair.Value->AsObject();
+
+			// Iterate over all views
+			for (const auto& AnimationPropertyPair : AnimationProperties->Values)
+			{
+				FString AnimationPropertyName = AnimationPropertyPair.Key;
+				UE_LOG(LogTemp, Display, TEXT("Animation PropertyName: %s."), *AnimationPropertyName);
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Animation Config not found in ViewName: %s."), *ViewName);
+	}
 }
 
 // Called every frame
@@ -245,7 +275,7 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 
 		// Get the color maps for this view and make sure that we can iterate over them
 		const TSharedPtr<FJsonObject>* ColorMapsObjectPtr;
-		if (!ViewObj->TryGetObjectField("color_maps", ColorMapsObjectPtr))
+		if (ViewObj->TryGetObjectField("color_maps", ColorMapsObjectPtr))
 		{
 			// Iterate through the property names 
 			TMap<FString, TMap<FString, FColor>> PropertyNameAndValueColorMap = TMap<FString, TMap<FString, FColor>>();
@@ -272,10 +302,7 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning,
-			       TEXT(
-				       "Config file JSON does not contain 'color_maps' field in at least one 'views' -> 'view' object (%s)."
-			       ), *ViewName);
+			UE_LOG(LogTemp, Display,TEXT("Config file JSON does not contain 'color_maps' field in at least one 'views' -> 'view' object (%s)."), *ViewName);
 		}
 
 		// Get the data types for this view and make sure that we can iterate over them
@@ -299,23 +326,27 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 
 		// Get the boundary points for this view
 		const TSharedPtr<FJsonObject>* BoundaryPointsObjectPtr;
-		if (!ViewObj->TryGetObjectField("boundaries", BoundaryPointsObjectPtr))
+		if (ViewObj->TryGetObjectField("boundaries", BoundaryPointsObjectPtr))
 		{
-			UE_LOG(LogTemp, Error,
-			       TEXT("Config file JSON missing 'boundaries' field in the 'views' -> 'view' object."));
-			continue; // or handle the error
+			// Add a name field to the boundary points object so that Unreal can read it into a DataTable
+			(*BoundaryPointsObjectPtr)->SetStringField("name", "boundary_points");
+			// Wrap the boundary points object inside of a new array
+			TArray<TSharedPtr<FJsonValue>> BoundaryPointsArray;
+			BoundaryPointsArray.Add(MakeShareable(new FJsonValueObject(*BoundaryPointsObjectPtr)));
+			// Store the boundary points object as a string
+			FString BoundaryPointsString;
+			TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&BoundaryPointsString);
+			FJsonSerializer::Serialize(BoundaryPointsArray, Writer);
+			// Add the view name and boundary points to the map
+			ViewNameToBoundaryPointsMap.Add(ViewName, BoundaryPointsString);
 		}
-		// Add a name field to the boundary points object so that Unreal can read it into a DataTable
-		(*BoundaryPointsObjectPtr)->SetStringField("name", "boundary_points");
-		// Wrap the boundary points object inside of a new array
-		TArray<TSharedPtr<FJsonValue>> BoundaryPointsArray;
-		BoundaryPointsArray.Add(MakeShareable(new FJsonValueObject(*BoundaryPointsObjectPtr)));
-		// Store the boundary points object as a string
-		FString BoundaryPointsString;
-		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&BoundaryPointsString);
-		FJsonSerializer::Serialize(BoundaryPointsArray, Writer);
-		// Add the view name and boundary points to the map
-		ViewNameToBoundaryPointsMap.Add(ViewName, BoundaryPointsString);
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Config file JSON missing 'boundaries' field in the 'views' -> 'view' object."));
+			// or handle the error
+		}
+
+		ExtractAnimations(ViewName, ViewObj);
 	}
 }
 
@@ -506,7 +537,7 @@ void ADataManager::AddDataToDataTableFromSource(UDataTable* DataTable, FString& 
 				DataTable->AddRow(RowName, *RowValue);
 			}
 			// Log success
-			UE_LOG(LogTemp, Warning, TEXT("Added data to data table %s successfully"), *DataTablePath);
+			UE_LOG(LogTemp, Display, TEXT("Added data to data table %s successfully"), *DataTablePath);
 		}
 	}
 	else
@@ -525,7 +556,7 @@ void ADataManager::ClearDataTable(UDataTable* DataTable)
 		// Clear the data table
 		DataTable->EmptyTable();
 		// Log success
-		UE_LOG(LogTemp, Warning, TEXT("Cleared data table %s successfully"), *DataTablePath);
+		UE_LOG(LogTemp, Display, TEXT("Cleared data table %s successfully"), *DataTablePath);
 	}
 	else
 	{
@@ -669,13 +700,14 @@ void ADataManager::ForceRefresh()
 		{
 			SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(
 				TableFilePathMap[FullDatasetName]["SpatialDataFilePath"], 1000);
-			UE_LOG(LogTemp, Warning, TEXT("Loading spatial data into data table (in chunks) for dataset %s"),
-			       *FullDatasetName);
+			
+			UE_LOG(LogTemp, Display, TEXT("Loading spatial data into data table (in chunks) for dataset %s"), *FullDatasetName);
+			
 			for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Chunk %d of %d"), ChunkIndex + 1,
+				UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1,
 				       SpatialDataSourceFileContentChunks.Num());
-				UE_LOG(LogTemp, Warning, TEXT("File contents: %s"), *(SpatialDataSourceFileContentChunks[ChunkIndex]));
+				UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(SpatialDataSourceFileContentChunks[ChunkIndex]));
 				AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContentChunks[ChunkIndex],
 				                             SpatialDataSourceFileType);
 			}
@@ -684,10 +716,10 @@ void ADataManager::ForceRefresh()
 		{
 			SpatialDataSourceFileContents = GetContentFromSourceFile(
 				TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
-			UE_LOG(LogTemp, Warning, TEXT("Loading spatial data into data table for dataset %s"), *FullDatasetName);
+			UE_LOG(LogTemp, Display, TEXT("Loading spatial data into data table for dataset %s"), *FullDatasetName);
 			AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContents, SpatialDataSourceFileType);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Finished loading spatial data into data table for dataset %s"),
+		UE_LOG(LogTemp, Display, TEXT("Finished loading spatial data into data table for dataset %s"),
 		       *FullDatasetName);
 
 		// Get the corresponding spatial metadata table
@@ -703,12 +735,12 @@ void ADataManager::ForceRefresh()
 		{
 			MetadataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(
 				TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"], 1000);
-			UE_LOG(LogTemp, Warning, TEXT("Loading metadata into data table (in chunks) for dataset %s"),
+			UE_LOG(LogTemp, Display, TEXT("Loading metadata into data table (in chunks) for dataset %s"),
 			       *FullDatasetName);
 			for (int32 ChunkIndex = 0; ChunkIndex < MetadataSourceFileContentChunks.Num(); ++ChunkIndex)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Chunk %d of %d"), ChunkIndex + 1, MetadataSourceFileContentChunks.Num());
-				UE_LOG(LogTemp, Warning, TEXT("File contents: %s"), *(MetadataSourceFileContentChunks[ChunkIndex]));
+				UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1, MetadataSourceFileContentChunks.Num());
+				UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(MetadataSourceFileContentChunks[ChunkIndex]));
 				AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContentChunks[ChunkIndex],
 				                             MetadataSourceFileType);
 			}
@@ -717,10 +749,10 @@ void ADataManager::ForceRefresh()
 		{
 			MetadataSourceFileContents = GetContentFromSourceFile(
 				TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
-			UE_LOG(LogTemp, Warning, TEXT("Loading metadata into data table for dataset %s"), *FullDatasetName);
+			UE_LOG(LogTemp, Display, TEXT("Loading metadata into data table for dataset %s"), *FullDatasetName);
 			AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContents, MetadataSourceFileType);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Finished loading metadata into data table for dataset %s"), *FullDatasetName);
+		UE_LOG(LogTemp, Display, TEXT("Finished loading metadata into data table for dataset %s"), *FullDatasetName);
 	}
 	// Load the boundary points (POIs) for the current view
 	FString BoundaryPointsSourceFileContents = GetBoundaryPointsFromViewName(CurrentViewName);
