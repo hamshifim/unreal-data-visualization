@@ -207,6 +207,9 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 	return TableNames;
 }
 
+
+
+
 void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> ViewObject)
 {
 	// Get the default view name
@@ -221,14 +224,40 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 			FString AnimationName = AnimationPair.Key;
 			UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
 
-			const TSharedPtr<FJsonObject> AnimationProperties = AnimationPair.Value->AsObject();
+			const TSharedPtr<FJsonObject> AnimationObject = AnimationPair.Value->AsObject();
 
-			// Iterate over all views
-			for (const auto& AnimationPropertyPair : AnimationProperties->Values)
+			int32 Min = ExtractIntField(AnimationObject, "min");
+			int32 Max = ExtractIntField(AnimationObject, "max");
+			int32 Interval = ExtractIntField(AnimationObject, "interval");
+
+			FString DataType = ExtractStringField(AnimationObject, "data_type");
+			FString Explain = ExtractStringField(AnimationObject, "explain");
+			TArray<TSharedPtr<FJsonValue>> UpdateProperties = ExtractStringArrayField(AnimationObject, "update");
+
+			TArray<FString> UpdateColumnsNames;
+			for (const auto& ColumnName : UpdateProperties)
 			{
-				FString AnimationPropertyName = AnimationPropertyPair.Key;
-				UE_LOG(LogTemp, Display, TEXT("Animation PropertyName: %s."), *AnimationPropertyName);
+				FString Complete = ColumnName->AsString();
+
+				UpdateColumnsNames.Emplace(Complete);
+
+				UE_LOG(LogTemp, Display, TEXT("Found field to update in animation: %s."), *Complete);
+				// Add the data type name to the array
 			}
+
+			
+			FString Message = TEXT("The value of Max is: ") + FString::Printf(TEXT("Max %d"), Max);
+			UE_LOG(LogTemp, Display, TEXT("%s"), *Message);
+			// // Iterate over all animation Properties
+
+			
+			// for (const auto& AnimationPropertyPair : AnimationProperties->Values)
+			// {
+			// 	FString AnimationPropertyName = AnimationPropertyPair.Key;
+			// 	UE_LOG(LogTemp, Display, TEXT("Animation PropertyName: %s."), *AnimationPropertyName);
+			//
+			// 	
+			// }
 		}
 	}
 	else
@@ -236,6 +265,47 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 		UE_LOG(LogTemp, Display, TEXT("Animation Config not found in ViewName: %s."), *ViewName);
 	}
 }
+
+int32 ADataManager::ExtractIntField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
+{
+	int32 FField = 0;
+	if (JsonObject->TryGetNumberField(FieldName, FField))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Got field: %d."), FField);
+	}
+
+	return FField;
+}
+
+FString ADataManager::ExtractStringField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
+{
+	FString FField = "";
+	if (JsonObject->TryGetStringField(FieldName, FField))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Got field: %s."), *FField);
+	}
+
+	return FField;
+}
+
+
+TArray<TSharedPtr<FJsonValue>> ADataManager::ExtractStringArrayField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
+{
+	const TArray<TSharedPtr<FJsonValue>>* FField;
+	if (JsonObject->TryGetArrayField(FieldName, FField))
+	{
+		// for (const auto& DataTypeValue : *FField)
+		// {
+		// 	FString Complete = DataTypeValue->AsString();
+		//
+		// 	UE_LOG(LogTemp, Display, TEXT("Got field Gomez: %s."), *Complete);
+		// 	// Add the data type name to the array
+		// }
+	}
+
+	return *FField;
+}
+
 
 // Called every frame
 void ADataManager::Tick(float DeltaTime)

@@ -144,5 +144,7 @@ private:
 	TArray<FString> ExtractTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 	TArray<FString> ExtractManyToOneTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 	void ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> ViewObject);
-
+	int32 ExtractIntField(TSharedPtr<FJsonObject>JsonObject, FString FieldName);
+	FString ExtractStringField(TSharedPtr<FJsonObject>JsonObject, FString FieldName);
+	TArray<TSharedPtr<FJsonValue>> ExtractStringArrayField(TSharedPtr<FJsonObject> JsonObject, FString FieldName);
 };
