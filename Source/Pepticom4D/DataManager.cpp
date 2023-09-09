@@ -2,6 +2,9 @@
 
 #include "DataManager.h"
 
+#include "FVarStruct.h"
+#include "UAAnimationHandler.h"
+
 
 // Sets default values
 ADataManager::ADataManager()
@@ -244,20 +247,48 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 				UE_LOG(LogTemp, Display, TEXT("Found field to update in animation: %s."), *Complete);
 				// Add the data type name to the array
 			}
-
 			
 			FString Message = TEXT("The value of Max is: ") + FString::Printf(TEXT("Max %d"), Max);
 			UE_LOG(LogTemp, Display, TEXT("%s"), *Message);
-			// // Iterate over all animation Properties
 
+			const TSharedPtr<FJsonObject> ManyToOneTablesPtr = AnimationObject->GetObjectField("many_to_one_tables");
+
+
+			TArray<FVarStruct> RegexVariableRetrievalInstructions;
 			
-			// for (const auto& AnimationPropertyPair : AnimationProperties->Values)
-			// {
-			// 	FString AnimationPropertyName = AnimationPropertyPair.Key;
-			// 	UE_LOG(LogTemp, Display, TEXT("Animation PropertyName: %s."), *AnimationPropertyName);
-			//
-			// 	
-			// }
+			for (const auto& ManyToOneTablePtr: ManyToOneTablesPtr->Values)
+			{
+				FString ManyToOneTableName = ManyToOneTablePtr.Key;
+				UE_LOG(LogTemp, Display, TEXT("Many to one table name: %s."), *ManyToOneTableName);
+
+				const TSharedPtr<FJsonObject> ManyToOneTableObject = ManyToOneTablePtr.Value->AsObject();
+
+				FString KeyRegex = ExtractStringField(ManyToOneTableObject, "key_regex");
+				const TArray<TSharedPtr<FJsonValue>> RegexVars = ExtractStringArrayField(ManyToOneTableObject, "regex_variables");
+
+				
+				//iterate over regex variables which are objects
+				for (const auto& RegexVar : RegexVars)
+				{
+					const TSharedPtr<FJsonObject> RegexVarObject = RegexVar->AsObject();
+
+					FString VarName = ExtractStringField(RegexVarObject, "var");
+					FString VarSrc = ExtractStringField(RegexVarObject, "src_type");
+
+					UE_LOG(LogTemp, Display, TEXT("Regex variable name: %s."), *VarName);
+					UE_LOG(LogTemp, Display, TEXT("Regex variable source: %s."), *VarSrc);
+
+					RegexVariableRetrievalInstructions.Emplace(FVarStruct(VarName, VarSrc));
+				}
+
+				// Create an animation handler object using the extracted data
+				// UAAnimationHandler AnimationHandler = NewObject<UAAnimationHandler>(this, UAAnimationHandler::::StaticClass(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames));
+				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
+				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames);
+				AAnimationHandler->Sanity();
+				//
+				// UAAnimationHandler* AnimationHandler = NewObject<UAAnimationHandler>(this, UAAnimationHandler::StaticClass());
+			}
 		}
 	}
 	else
