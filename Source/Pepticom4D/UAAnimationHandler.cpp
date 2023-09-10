@@ -2,7 +2,7 @@
 
 
 
-// an implementation of the constructor provided in the header file
+// An Initialization of the necessary variables
 void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties)
 {
 	this->AnimationName = AAnimationName;
@@ -19,6 +19,24 @@ void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AM
 void UAAnimationHandler::Sanity()
 {
 	UE_LOG(LogTemp, Display, TEXT("Ashmagog you bastard: %s."), *this->AnimationName);
+}
+
+// 
+FString UAAnimationHandler::ReplaceVarNames(const TArray<FVarStruct>& Variables)
+{
+	FString SpecificKey = KeyRegex;
+	//iterate through the array of variables
+	for (int32 i = 0; i < Variables.Num(); i++)
+	{
+		//get the variable name
+        FString VarName = FString::Printf(TEXT("<%s>"), *Variables[i].VarName);
+		//get the variable source type
+		FString VarValue = Variables[i].SourceType;
+
+		SpecificKey = SpecificKey.Replace(*VarName, *VarValue);
+	}
+
+	return SpecificKey;
 }
 
 

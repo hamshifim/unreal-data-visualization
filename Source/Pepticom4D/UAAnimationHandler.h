@@ -27,16 +27,11 @@ private:
 	
 public:
 
-	//A constructor that takes in all the necessary parameters to create an animation handler
+	//An initializer that takes in all the necessary parameters to create an animation handler
 	void Initialize(FString AAnimationName, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties);
 
 	void Sanity();
-	// UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	// FString KeyRegex;
-	//
-	// UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	// TArray<FVarStruct> regex_variables;
-	//
-	// UFUNCTION(BlueprintCallable, Category = "Regex")
-	// FString ReplaceVarNames(const TArray<FVarStruct>& Variables);
+
+	FString ReplaceVarNames(const TArray<FVarStruct>& Variables);
+
 };

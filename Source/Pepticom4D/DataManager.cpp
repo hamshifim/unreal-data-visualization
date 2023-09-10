@@ -252,9 +252,6 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 			UE_LOG(LogTemp, Display, TEXT("%s"), *Message);
 
 			const TSharedPtr<FJsonObject> ManyToOneTablesPtr = AnimationObject->GetObjectField("many_to_one_tables");
-
-
-			TArray<FVarStruct> RegexVariableRetrievalInstructions;
 			
 			for (const auto& ManyToOneTablePtr: ManyToOneTablesPtr->Values)
 			{
@@ -266,7 +263,7 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 				FString KeyRegex = ExtractStringField(ManyToOneTableObject, "key_regex");
 				const TArray<TSharedPtr<FJsonValue>> RegexVars = ExtractStringArrayField(ManyToOneTableObject, "regex_variables");
 
-				
+				TArray<FVarStruct> RegexVariableRetrievalInstructions;
 				//iterate over regex variables which are objects
 				for (const auto& RegexVar : RegexVars)
 				{
@@ -282,12 +279,18 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 				}
 
 				// Create an animation handler object using the extracted data
-				// UAAnimationHandler AnimationHandler = NewObject<UAAnimationHandler>(this, UAAnimationHandler::::StaticClass(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames));
 				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
 				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames);
 				AAnimationHandler->Sanity();
-				//
-				// UAAnimationHandler* AnimationHandler = NewObject<UAAnimationHandler>(this, UAAnimationHandler::StaticClass());
+				
+				//Ititialize An Array of FVarStruct
+				TArray<FVarStruct> Variables;
+				Variables.Add(FVarStruct("Index", "4"));
+				Variables.Add(FVarStruct("Cycle", "3"));
+				Variables.Add(FVarStruct("BackboneSize", "6"));
+				
+				FString Key = AAnimationHandler->ReplaceVarNames(Variables);
+				UE_LOG(LogTemp, Display, TEXT("Regex replaced Drakula: %s."), *Key);
 			}
 		}
 	}
