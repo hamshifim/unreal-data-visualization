@@ -32,6 +32,8 @@ public:
 
 	void Sanity();
 
-	FString ReplaceVarNames(const TArray<FVarStruct>& Variables);
+	FString GetManyToOneKey(const TArray<FVarStruct>& Variables);
+
+	TArray<int32> GetPossibleAnimationValues();
 
 };

@@ -289,8 +289,10 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 				Variables.Add(FVarStruct("Cycle", "3"));
 				Variables.Add(FVarStruct("BackboneSize", "6"));
 				
-				FString Key = AAnimationHandler->ReplaceVarNames(Variables);
+				FString Key = AAnimationHandler->GetManyToOneKey(Variables);
 				UE_LOG(LogTemp, Display, TEXT("Regex replaced Drakula: %s."), *Key);
+
+				AAnimationHandler->GetPossibleAnimationValues();
 			}
 		}
 	}

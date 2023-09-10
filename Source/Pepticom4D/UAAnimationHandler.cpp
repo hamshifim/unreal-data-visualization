@@ -22,7 +22,7 @@ void UAAnimationHandler::Sanity()
 }
 
 // 
-FString UAAnimationHandler::ReplaceVarNames(const TArray<FVarStruct>& Variables)
+FString UAAnimationHandler::GetManyToOneKey(const TArray<FVarStruct>& Variables)
 {
 	FString SpecificKey = KeyRegex;
 	//iterate through the array of variables
@@ -39,21 +39,15 @@ FString UAAnimationHandler::ReplaceVarNames(const TArray<FVarStruct>& Variables)
 	return SpecificKey;
 }
 
+//iterate from Min to Max adding Interval adding values to array and return it
+TArray<int32> UAAnimationHandler::GetPossibleAnimationValues()
+{
+	TArray<int32> PossibleAnimationValues;
+	for (int32 i= Min; i <= Max; i+=Interval)
+	{
+		PossibleAnimationValues.Add(i);
+		UE_LOG(LogTemp, Display, TEXT("googalach: %d"), i);
+	}
 
-// FString UAAnimationHandler::ReplaceVarNames(const TArray<FVarStruct>& Variables)
-// check if VarSrc equals the string actor else if it equals the string animation
-// if (VarSrc.Equals("actor"))
-// {
-// 	// // add the variable name to the array of actor variables
-// 						
-// 	// ActorVariables.Emplace(VarName);
-// }
-// else if (VarSrc.Equals("animation"))
-// {
-// 	// // add the variable name to the array of animation variables
-// 	// AnimationVariables.Emplace(VarName);
-// }
-// else
-// {
-// 	UE_LOG(LogTemp, Display, TEXT("Regex variable source type is not actor or animation."));
-// }
+	return PossibleAnimationValues;
+}
