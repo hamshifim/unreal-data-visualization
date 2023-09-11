@@ -16,7 +16,7 @@ void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AM
 	this->UpdateProperties = AUpdateProperties;
 }
 
-void UAAnimationHandler::Sanity()
+void UAAnimationHandler::Sanity() 
 {
 	UE_LOG(LogTemp, Display, TEXT("Ashmagog you bastard: %s."), *this->AnimationName);
 }

@@ -8,6 +8,7 @@
 #include "Components/BoxComponent.h"
 #include "SpatialDataStruct.h"
 #include "UObject/UnrealType.h"
+#include "UAAnimationHandler.h"
 #include "DataManager.generated.h"
 
 UCLASS()
@@ -120,6 +121,9 @@ public:
 
 	// Map of data types to table names
 	TMap<FString, TArray<FString>> DataTypeToManyToOneTableNamesMap = TMap<FString, TArray<FString>>();
+
+	//Map of animation names to animation objects
+	TMap<FString, UAAnimationHandler*> AnimationHandlerMap;
 	
 	// Map of colors which can be applied to properties - K: view name, V: K: property name, V: K: property value, V: color
 	TMap<FString, TMap<FString, TMap<FString, FColor>>> ColorMap = TMap<FString, TMap<FString, TMap<FString, FColor>>>();

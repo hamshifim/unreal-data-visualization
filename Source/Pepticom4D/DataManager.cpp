@@ -281,7 +281,7 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 				// Create an animation handler object using the extracted data
 				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
 				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames);
-				AAnimationHandler->Sanity();
+				// AAnimationHandler->Sanity();
 				
 				//Ititialize An Array of FVarStruct
 				TArray<FVarStruct> Variables;
@@ -293,12 +293,24 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 				UE_LOG(LogTemp, Display, TEXT("Regex replaced Drakula: %s."), *Key);
 
 				AAnimationHandler->GetPossibleAnimationValues();
+
+				AnimationHandlerMap.Add(AnimationName, AAnimationHandler);
 			}
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Display, TEXT("Animation Config not found in ViewName: %s."), *ViewName);
+	}
+                                
+	//iterae AnimationH?andlerMap
+	for (const auto& AnimationHandlerPair : AnimationHandlerMap)
+	{
+		FString AnimationName = AnimationHandlerPair.Key;
+		AnimationHandlerPair.Value->Sanity();
+	
+		// UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
+		// AnimationHandler
 	}
 }
 
