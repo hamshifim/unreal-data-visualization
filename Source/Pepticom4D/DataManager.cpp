@@ -483,7 +483,7 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 	ExtractDataTypes(JsonObject);
 
 	
-	UE_LOG(LogTemp, Display, TEXT("shishkebap"));
+	UE_LOG(LogTemp, Display, TEXT("Garlik"));
 
 	//iterate over AnimationHandlerMap
 	for (const auto& AnimationHandlerPair : AnimationHandlerMap)
@@ -499,37 +499,37 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		
 	UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(TEXT("cycle"));
 	
-	UATableHandler* TY = DataTypeToTableHandlerMap.FindRef(TEXT("clustered")).FindRef(TEXT("cycle"));
+	UATableHandler* TableHandler = DataTypeToTableHandlerMap.FindRef(TEXT("clustered")).FindRef(TEXT("cycle"));
+	TableHandler->AddDataToDataTableFromSource();
 
 	if(AAnimationHandler)
 	{
-		UE_LOG(LogTemp, Display, TEXT("shishkebap 2"));
+		UE_LOG(LogTemp, Display, TEXT("Garlik 2"));
 
 		FString Pig = AAnimationHandler->GetTableName();
 
-		UE_LOG(LogTemp, Display, TEXT("shishkebap 3"));
+		UE_LOG(LogTemp, Display, TEXT("Garlik 3"));
 		
 		FString ManyToOneTableName = GetFullTableName("clustered", Pig);
 
-		UDataTable* ManyToOneTable = TY->GetDataTable();
+		UDataTable* ManyToOneTable = TableHandler->GetDataTable();
 
 		UE_LOG(LogTemp, Display, TEXT("Many to one table name: %s."), *ManyToOneTableName);
 			
 		FString FOO = ManyToOneTable->RowStruct->GetName();
 			
 		UE_LOG(LogTemp, Display, TEXT("Shamooch %s."), *FOO);
-
 		
-		FString ManyToOneDataSourceFile = "/Users/gideonbar/dev/data-wielder/unreal-data-visualization/Content/Data/clustered_cycle.csv";
-		FString ManyToOneDataSourceFileType = GetFileTypeFromSourceFile(ManyToOneDataSourceFile);
-		FString ManyToOneDataSourceFileContents = GetContentFromSourceFile(ManyToOneDataSourceFile);
-
-		UE_LOG(LogTemp, Display, TEXT("Shamooch 1 %s."), *FOO);
-
-		FString Msg = "ManyToOneDataSourceFile:" + ManyToOneDataSourceFile + "\nManyToOneDataSourceFileContents:\n" + ManyToOneDataSourceFileContents;
-		UE_LOG(LogTemp, Display, TEXT("%s"), *Msg);
-		
-		AddDataToDataTableFromSource(ManyToOneTable, ManyToOneDataSourceFileContents,ManyToOneDataSourceFileType);
+		// FString ManyToOneDataSourceFile = "/Users/gideonbar/dev/data-wielder/unreal-data-visualization/Content/Data/clustered_cycle.csv";
+		// FString ManyToOneDataSourceFileType = GetFileTypeFromSourceFile(ManyToOneDataSourceFile);
+		// FString ManyToOneDataSourceFileContents = GetContentFromSourceFile(ManyToOneDataSourceFile);
+		//
+		// UE_LOG(LogTemp, Display, TEXT("Shamooch 1 %s."), *FOO);
+		//
+		// FString Msg = "ManyToOneDataSourceFile:" + ManyToOneDataSourceFile + "\nManyToOneDataSourceFileContents:\n" + ManyToOneDataSourceFileContents;
+		// UE_LOG(LogTemp, Display, TEXT("%s"), *Msg);
+		//
+		// AddDataToDataTableFromSource(ManyToOneTable, ManyToOneDataSourceFileContents,ManyToOneDataSourceFileType);
 
 		UE_LOG(LogTemp, Display, TEXT("Shamooch 2 %s."), *FOO);
 

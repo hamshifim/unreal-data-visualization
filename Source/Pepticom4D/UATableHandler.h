@@ -32,4 +32,6 @@ public:
 	FString GetManyToOneKey(const TArray<FVarStruct>& Variables);
 	void VerbosePrint();
 	UDataTable* GetDataTable();
+	void AddDataToDataTableFromSource();
+	FString GetContentFromSourceFile(FString SourceFilePath);
 };
