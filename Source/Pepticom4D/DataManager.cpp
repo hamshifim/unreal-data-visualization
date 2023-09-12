@@ -4,6 +4,7 @@
 
 #include "FVarStruct.h"
 #include "UAAnimationHandler.h"
+#include "UATableHandler.h"
 
 
 // Sets default values
@@ -46,10 +47,8 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		// Store the table names in the map
 		DataTypeToTableNamesMap.Add(DataTypeName, TableNames);
 
-		TArray<FString> ManyToOneTableNames = ExtractManyToOneTables(DataTypeName, DataTypeObj);
+		ExtractManyToOneTables(DataTypeName, DataTypeObj);
 		// Store the table names in the map
-		
-		DataTypeToManyToOneTableNamesMap.Add(DataTypeName, ManyToOneTableNames);
 
 		// Set the default table to be the first one - set in the default_table property
 		FString DefaultTableName;
@@ -175,6 +174,12 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 			continue;
 		}
 
+		FString KeyRegex = "<Index>";
+		if (!DataTypeObj->TryGetStringField("key_regex", KeyRegex))
+		{
+			UE_LOG(LogTemp, Error, TEXT("didn't find key_regex using default %s"), *KeyRegex);
+		}		
+
 		FString ManyToOneSource;
 		if (TableObj->TryGetStringField("data_source", ManyToOneSource))
 		{
@@ -189,28 +194,20 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 
 		// Add the file paths to the map
 		FString FullTableName = GetFullTableName(DataTypeName, TableName);
-		ManyToOneTableFilePathMap.Add(FullTableName, FilePathsMap);
 		// Add the table name to the array of table names
 		TableNames.Add(TableName);
-		// Create a spatial many to one table for each data type, assuming a default many to one struct from the current table
-		FString ManyToOneStructName = StructNameFromFullTableName(FullTableName);
-		FString ManyToOneTableName = ManyToOneStructName + "DataTable";
 
-		FString Msg = "ManyToOneStructName: "  +  ManyToOneStructName
-		+ "\nManyToOneTableName: " + ManyToOneTableName
-		+ "\nFullTableName: " + FullTableName;
-		UE_LOG(LogTemp, Display, TEXT("%s"), *Msg);
-		
-		UScriptStruct* ManyToOneScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *ManyToOneStructName);
-		UDataTable* ManyToOneTable = CreateTableFromStruct(ManyToOneTableName, ManyToOneScriptStruct);
-		
-		// Add the spatial many to one table to the map
-		FullTableNameToManyToOneTableMap.Add(FullTableName, ManyToOneTable);
-		
-		// Store the many to one struct in the map of full dataset names to metadata structs
-		UStruct* ManyToOneStruct = Cast<UStruct>(ManyToOneScriptStruct);
-		FullManyToOneTableNameToMetadataStructMap.Add(FullTableName, ManyToOneStruct);
+		UATableHandler* ManyToOneTableHandler = NewObject<UATableHandler>(this);
+		ManyToOneTableHandler->Initialize(DataTypeName, TableName, KeyRegex, ManyToOneSource);
+		ManyToOneTableHandler->VerbosePrint();
 
+		UE_LOG(LogTemp, Display, TEXT("Shlflaf: %s"), *FullTableName);
+
+		TMap<FString, UATableHandler*> TableNameToTableHandlerMap = TMap<FString, UATableHandler*>();
+		TableNameToTableHandlerMap.Add(TableName, ManyToOneTableHandler);
+
+		DataTypeToTableHandlerMap.Add(DataTypeName, TableNameToTableHandlerMap);
+		
 		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Many To One Table: %s"), *FullTableName);
 	}
 
@@ -501,6 +498,8 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 	}
 		
 	UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(TEXT("cycle"));
+	
+	UATableHandler* TY = DataTypeToTableHandlerMap.FindRef(TEXT("clustered")).FindRef(TEXT("cycle"));
 
 	if(AAnimationHandler)
 	{
@@ -512,7 +511,7 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		
 		FString ManyToOneTableName = GetFullTableName("clustered", Pig);
 
-		UDataTable* ManyToOneTable = FullTableNameToManyToOneTableMap.FindRef(ManyToOneTableName);
+		UDataTable* ManyToOneTable = TY->GetDataTable();
 
 		UE_LOG(LogTemp, Display, TEXT("Many to one table name: %s."), *ManyToOneTableName);
 			
@@ -570,25 +569,6 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		{
 			UE_LOG(LogTemp, Display, TEXT("gisplash %s."), *FOO);
 		}
-		
-		
-		
-		// UStruct* SpatialDataRow = ManyToOneTable->FindRow<ManyToOneStruct->GetClass()>(RowName, TEXT(""));
-		//
-
-			
-		// //iterate over FullTableNameToManyToOneTableMap
-		// for (const auto& ManyToOneTablePair : FullTableNameToManyToOneTableMap)
-		// {
-		// 	FString ManyToOneTableName = ManyToOneTablePair.Key;
-		// 	UDataTable* ManyToOneTable = ManyToOneTablePair.Value;
-		// 	
-		// 	UE_LOG(LogTemp, Display, TEXT("Many to one table name: %s."), *ManyToOneTableName);
-		// 	
-		// 	FString FOO = ManyToOneTable->RowStruct->GetName();
-		// 	
-		// 	UE_LOG(LogTemp, Display, TEXT("Pikpook %s."), *FOO);
-		// }
 	}
 	else
 	{

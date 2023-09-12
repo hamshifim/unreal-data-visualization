@@ -9,6 +9,7 @@
 #include "SpatialDataStruct.h"
 #include "UObject/UnrealType.h"
 #include "UAAnimationHandler.h"
+#include "UATableHandler.h"
 #include "DataManager.generated.h"
 
 UCLASS()
@@ -96,21 +97,11 @@ public:
 	// Current valid keys for each TPair: "SpatialDataFilePath", "SpatialMetadataFilePath". All entries in the map should have pairs with these keys.
 	TMap<FString, TMap<FString, FString>> TableFilePathMap = TMap<FString, TMap<FString, FString>>();
 
-	// Current valid keys for each TPair: "SpatialDataFilePath", "SpatialMetadataFilePath". All entries in the map should have pairs with these keys.
-	TMap<FString, TMap<FString, FString>> ManyToOneTableFilePathMap = TMap<FString, TMap<FString, FString>>();
-	
 	// Map of full dataset names to the UStruct type of their metadata
 	TMap<FString, UStruct*> FullTableNameToMetadataStructMap = TMap<FString, UStruct*>();
-
-	// Map of full dataset names to the UStruct type of their metadata
-	TMap<FString, UStruct*> FullManyToOneTableNameToMetadataStructMap = TMap<FString, UStruct*>();
-
 	
 	// Map of data full dataset names to spatial metadata tables
 	TMap<FString, UDataTable*> FullTableNameToSpatialMetadataTableMap = TMap<FString, UDataTable*>();
-
-	// Map of data full table names to many_to_one tables
-	TMap<FString, UDataTable*> FullTableNameToManyToOneTableMap = TMap<FString, UDataTable*>();
 	
 	// Map of view names to data types/main dataset names that are displayed in that view
 	TMap<FString, TArray<FString>> ViewNameToDataTypesMap = TMap<FString, TArray<FString>>();
@@ -118,12 +109,12 @@ public:
 	TMap<FString, FString> ViewNameToBoundaryPointsMap = TMap<FString, FString>();
 	// Map of data types to table names
 	TMap<FString, TArray<FString>> DataTypeToTableNamesMap = TMap<FString, TArray<FString>>();
-
-	// Map of data types to table names
-	TMap<FString, TArray<FString>> DataTypeToManyToOneTableNamesMap = TMap<FString, TArray<FString>>();
-
+	
 	//Map of animation names to animation objects
 	TMap<FString, UAAnimationHandler*> AnimationHandlerMap;
+
+	//Map of data types to table names to TableHandlers
+	TMap<FString, TMap<FString, UATableHandler*>> DataTypeToTableHandlerMap;
 	
 	// Map of colors which can be applied to properties - K: view name, V: K: property name, V: K: property value, V: color
 	TMap<FString, TMap<FString, TMap<FString, FColor>>> ColorMap = TMap<FString, TMap<FString, TMap<FString, FColor>>>();
