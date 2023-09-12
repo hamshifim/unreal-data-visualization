@@ -48,17 +48,18 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 
 		TArray<FString> ManyToOneTableNames = ExtractManyToOneTables(DataTypeName, DataTypeObj);
 		// Store the table names in the map
+		
 		DataTypeToManyToOneTableNamesMap.Add(DataTypeName, ManyToOneTableNames);
 
 		// Set the default table to be the first one - set in the default_table property
 		FString DefaultTableName;
 		if (DataTypeObj->TryGetStringField("default_table", DefaultTableName))
 		{
-			FString FullDatasetName = GetFullTableName(DataTypeName, DefaultTableName);
+			FString FullTableName = GetFullTableName(DataTypeName, DefaultTableName);
 			// Check if this main dataset is within the current view; if so, add the full dataset name to the list of current full dataset names
 			if (ViewNameToDataTypesMap[CurrentViewName].Contains(DataTypeName))
 			{
-				CurrentFullTableNames.Add(FullDatasetName);
+				CurrentFullTableNames.Add(FullTableName);
 			}
 			// Map the current main data type name to its current table name
 			CurrentDataTypeNameToTableNameMap.Add(DataTypeName, DefaultTableName);
@@ -150,7 +151,7 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 	const TSharedPtr<FJsonObject>* TablesObjectPtr;
 	if (!DataTypeObj->TryGetObjectField("many_to_one_tables", TablesObjectPtr))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Config file JSON does not contain 'many_to_one_tables' field."));
+		UE_LOG(LogTemp, Display, TEXT("Config file JSON does not contain 'many_to_one_tables' field, DataTypeName: %s."), *DataTypeName);
 		return TableNames; // or handle the error
 	}
 	
@@ -194,23 +195,29 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 		// Create a spatial many to one table for each data type, assuming a default many to one struct from the current table
 		FString ManyToOneStructName = StructNameFromFullTableName(FullTableName);
 		FString ManyToOneTableName = ManyToOneStructName + "DataTable";
+
+		FString Msg = "ManyToOneStructName: "  +  ManyToOneStructName
+		+ "\nManyToOneTableName: " + ManyToOneTableName
+		+ "\nFullTableName: " + FullTableName;
+		UE_LOG(LogTemp, Display, TEXT("%s"), *Msg);
+		
 		UScriptStruct* ManyToOneScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *ManyToOneStructName);
 		UDataTable* ManyToOneTable = CreateTableFromStruct(ManyToOneTableName, ManyToOneScriptStruct);
+		
 		// Add the spatial many to one table to the map
 		FullTableNameToManyToOneTableMap.Add(FullTableName, ManyToOneTable);
+		
 		// Store the many to one struct in the map of full dataset names to metadata structs
 		UStruct* ManyToOneStruct = Cast<UStruct>(ManyToOneScriptStruct);
 		FullManyToOneTableNameToMetadataStructMap.Add(FullTableName, ManyToOneStruct);
 
-		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
+		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Many To One Table: %s"), *FullTableName);
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping many to one tables for DataTypeName: %s"), *DataTypeName);
 
 	return TableNames;
 }
-
-
 
 
 void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> ViewObject)
@@ -302,16 +309,6 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 	{
 		UE_LOG(LogTemp, Display, TEXT("Animation Config not found in ViewName: %s."), *ViewName);
 	}
-                                
-	//iterae AnimationH?andlerMap
-	for (const auto& AnimationHandlerPair : AnimationHandlerMap)
-	{
-		FString AnimationName = AnimationHandlerPair.Key;
-		AnimationHandlerPair.Value->Sanity();
-	
-		// UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
-		// AnimationHandler
-	}
 }
 
 int32 ADataManager::ExtractIntField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
@@ -370,6 +367,7 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
 		return;
 	}
+	CurrentViewName = DefaultViewName;
 
 	// Get the views object and make sure that it is an object that we can iterate over
 	const TSharedPtr<FJsonObject>* ViewsObjectPtr;
@@ -384,12 +382,6 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 	{
 		FString ViewName = ViewPair.Key;
 		TSharedPtr<FJsonObject> ViewObj = ViewPair.Value->AsObject();
-
-		// Set the default view
-		if (ViewName.Equals(DefaultViewName))
-		{
-			CurrentViewName = ViewName;
-		}
 
 		// Get the color maps for this view and make sure that we can iterate over them
 		const TSharedPtr<FJsonObject>* ColorMapsObjectPtr;
@@ -492,6 +484,116 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 	ExtractViews(JsonObject);
 
 	ExtractDataTypes(JsonObject);
+
+	
+	UE_LOG(LogTemp, Display, TEXT("shishkebap"));
+
+	//iterate over AnimationHandlerMap
+	for (const auto& AnimationHandlerPair : AnimationHandlerMap)
+	{
+		FString AnimationName = AnimationHandlerPair.Key;
+		UAAnimationHandler* AAnimationHandler = AnimationHandlerPair.Value;
+		
+		UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
+		
+		AAnimationHandler->Sanity();
+		// AnimationHandler
+	}
+		
+	UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(TEXT("cycle"));
+
+	if(AAnimationHandler)
+	{
+		UE_LOG(LogTemp, Display, TEXT("shishkebap 2"));
+
+		FString Pig = AAnimationHandler->GetTableName();
+
+		UE_LOG(LogTemp, Display, TEXT("shishkebap 3"));
+		
+		FString ManyToOneTableName = GetFullTableName("clustered", Pig);
+
+		UDataTable* ManyToOneTable = FullTableNameToManyToOneTableMap.FindRef(ManyToOneTableName);
+
+		UE_LOG(LogTemp, Display, TEXT("Many to one table name: %s."), *ManyToOneTableName);
+			
+		FString FOO = ManyToOneTable->RowStruct->GetName();
+			
+		UE_LOG(LogTemp, Display, TEXT("Shamooch %s."), *FOO);
+
+		
+		FString ManyToOneDataSourceFile = "/Users/gideonbar/dev/data-wielder/unreal-data-visualization/Content/Data/clustered_cycle.csv";
+		FString ManyToOneDataSourceFileType = GetFileTypeFromSourceFile(ManyToOneDataSourceFile);
+		FString ManyToOneDataSourceFileContents = GetContentFromSourceFile(ManyToOneDataSourceFile);
+
+		UE_LOG(LogTemp, Display, TEXT("Shamooch 1 %s."), *FOO);
+
+		FString Msg = "ManyToOneDataSourceFile:" + ManyToOneDataSourceFile + "\nManyToOneDataSourceFileContents:\n" + ManyToOneDataSourceFileContents;
+		UE_LOG(LogTemp, Display, TEXT("%s"), *Msg);
+		
+		AddDataToDataTableFromSource(ManyToOneTable, ManyToOneDataSourceFileContents,ManyToOneDataSourceFileType);
+
+		UE_LOG(LogTemp, Display, TEXT("Shamooch 2 %s."), *FOO);
+
+		//init an array of FVarStruct
+		TArray<FVarStruct> Variables;
+		Variables.Add(FVarStruct("Index", "69973607186440"));
+		Variables.Add(FVarStruct("Cycle", "22"));
+		Variables.Add(FVarStruct("BackboneSize", "5"));
+		
+		FString RowName = AAnimationHandler->GetManyToOneKey(Variables);
+
+		UE_LOG(LogTemp, Display, TEXT("moops RowName %s."), *RowName);
+
+		//create an FName from RowName
+		FName RowNameFName = FName(*RowName);
+
+		UE_LOG(LogTemp, Display, TEXT("RowNameFName: %s"), *RowNameFName.ToString());
+
+
+		TArray<FName> SpatialMetadataRowNames = ManyToOneTable->GetRowNames();
+
+		//iterate over SpatialMetadataRowNames printing their names
+		for (const auto& SpatialMetadataRowName : SpatialMetadataRowNames)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());
+		}
+
+
+		FTableRowBase* SpecificRow = ManyToOneTable->FindRow<FTableRowBase>(RowNameFName, TEXT(""));
+
+
+		if(SpecificRow)
+		{
+			UE_LOG(LogTemp, Display, TEXT("girgash %s."), *FOO);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Display, TEXT("gisplash %s."), *FOO);
+		}
+		
+		
+		
+		// UStruct* SpatialDataRow = ManyToOneTable->FindRow<ManyToOneStruct->GetClass()>(RowName, TEXT(""));
+		//
+
+			
+		// //iterate over FullTableNameToManyToOneTableMap
+		// for (const auto& ManyToOneTablePair : FullTableNameToManyToOneTableMap)
+		// {
+		// 	FString ManyToOneTableName = ManyToOneTablePair.Key;
+		// 	UDataTable* ManyToOneTable = ManyToOneTablePair.Value;
+		// 	
+		// 	UE_LOG(LogTemp, Display, TEXT("Many to one table name: %s."), *ManyToOneTableName);
+		// 	
+		// 	FString FOO = ManyToOneTable->RowStruct->GetName();
+		// 	
+		// 	UE_LOG(LogTemp, Display, TEXT("Pikpook %s."), *FOO);
+		// }
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("para masricha Animation Handler not found."));
+	}
 }
 
 FString ADataManager::GetFullTableName(FString DataTypeName, FString TableName)
@@ -602,8 +704,7 @@ FString ADataManager::GetFileTypeFromSourceFile(FString SourceFilePath)
 	return FileExtension;
 }
 
-void ADataManager::AddDataToDataTableFromSource(UDataTable* DataTable, FString& SourceFileContent,
-                                                FString& SourceFileType)
+void ADataManager::AddDataToDataTableFromSource(UDataTable* DataTable, FString& SourceFileContent, FString& SourceFileType)
 {
 	// Make sure that we found the data table
 	if (DataTable)
@@ -709,8 +810,8 @@ FString ADataManager::GetBoundaryPointsFromViewName(FString ViewName)
 
 FString ADataManager::GetFullDatasetNameFromDataType(FString DataType)
 {
-	FString SubDatasetName = CurrentDataTypeNameToTableNameMap.FindRef(DataType);
-	FString FullDatasetName = GetFullTableName(DataType, SubDatasetName);
+	FString TableName = CurrentDataTypeNameToTableNameMap.FindRef(DataType);
+	FString FullDatasetName = GetFullTableName(DataType, TableName);
 	return FullDatasetName;
 }
 
@@ -865,8 +966,8 @@ void ADataManager::ForceRefresh()
 		}
 		else
 		{
-			MetadataSourceFileContents = GetContentFromSourceFile(
-				TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
+			MetadataSourceFileContents = GetContentFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
+			
 			UE_LOG(LogTemp, Display, TEXT("Loading metadata into data table for dataset %s"), *FullDatasetName);
 			AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContents, MetadataSourceFileType);
 		}

@@ -36,4 +36,7 @@ public:
 
 	TArray<int32> GetPossibleAnimationValues();
 
+	void GetTableRow(const TArray<FVarStruct>& Variables);
+
+	FString GetTableName();
 };

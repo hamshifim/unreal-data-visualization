@@ -51,3 +51,16 @@ TArray<int32> UAAnimationHandler::GetPossibleAnimationValues()
 
 	return PossibleAnimationValues;
 }
+
+void UAAnimationHandler::GetTableRow(const TArray<FVarStruct>& Variables)
+{
+	FString Key = GetManyToOneKey(Variables);
+	UE_LOG(LogTemp, Display, TEXT("Regex replaced Drakula: %s."), *Key);
+
+	// FullManyToOneTableNameToMetadataStructMap
+}
+
+FString UAAnimationHandler::GetTableName()
+{
+	return TableName;;
+}
