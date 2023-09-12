@@ -175,9 +175,13 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 		}
 
 		FString KeyRegex = "<Index>";
-		if (!DataTypeObj->TryGetStringField("key_regex", KeyRegex))
+		if (TableObj->TryGetStringField("key_regex", KeyRegex))
 		{
-			UE_LOG(LogTemp, Error, TEXT("didn't find key_regex using default %s"), *KeyRegex);
+			UE_LOG(LogTemp, Display, TEXT("Shawarma found key_regex: %s"), *KeyRegex);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Shawarma didn't find key_regex using default %s"), *KeyRegex);
 		}		
 
 		FString ManyToOneSource;
@@ -286,15 +290,6 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
 				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames);
 				// AAnimationHandler->Sanity();
-				
-				//Ititialize An Array of FVarStruct
-				TArray<FVarStruct> Variables;
-				Variables.Add(FVarStruct("Index", "4"));
-				Variables.Add(FVarStruct("Cycle", "3"));
-				Variables.Add(FVarStruct("BackboneSize", "6"));
-				
-				FString Key = AAnimationHandler->GetManyToOneKey(Variables);
-				UE_LOG(LogTemp, Display, TEXT("Regex replaced Drakula: %s."), *Key);
 
 				AAnimationHandler->GetPossibleAnimationValues();
 
@@ -520,17 +515,6 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 			
 		UE_LOG(LogTemp, Display, TEXT("Shamooch %s."), *FOO);
 		
-		// FString ManyToOneDataSourceFile = "/Users/gideonbar/dev/data-wielder/unreal-data-visualization/Content/Data/clustered_cycle.csv";
-		// FString ManyToOneDataSourceFileType = GetFileTypeFromSourceFile(ManyToOneDataSourceFile);
-		// FString ManyToOneDataSourceFileContents = GetContentFromSourceFile(ManyToOneDataSourceFile);
-		//
-		// UE_LOG(LogTemp, Display, TEXT("Shamooch 1 %s."), *FOO);
-		//
-		// FString Msg = "ManyToOneDataSourceFile:" + ManyToOneDataSourceFile + "\nManyToOneDataSourceFileContents:\n" + ManyToOneDataSourceFileContents;
-		// UE_LOG(LogTemp, Display, TEXT("%s"), *Msg);
-		//
-		// AddDataToDataTableFromSource(ManyToOneTable, ManyToOneDataSourceFileContents,ManyToOneDataSourceFileType);
-
 		UE_LOG(LogTemp, Display, TEXT("Shamooch 2 %s."), *FOO);
 
 		//init an array of FVarStruct
@@ -539,7 +523,7 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		Variables.Add(FVarStruct("Cycle", "22"));
 		Variables.Add(FVarStruct("BackboneSize", "5"));
 		
-		FString RowName = AAnimationHandler->GetManyToOneKey(Variables);
+		FString RowName = TableHandler->GetManyToOneKey(Variables);
 
 		UE_LOG(LogTemp, Display, TEXT("moops RowName %s."), *RowName);
 

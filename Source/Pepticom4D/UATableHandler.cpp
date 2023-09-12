@@ -109,7 +109,7 @@ void UATableHandler::AddDataToDataTableFromSource()
 		{
 			problems = TempDataTable->CreateTableFromCSVString(SourceFileContent);
 		}
-		else if (FileExtension == "JSON")
+		else if (SourceFileContent == "JSON")
 		{
 			problems = TempDataTable->CreateTableFromJSONString(SourceFileContent);
 		}
@@ -162,4 +162,13 @@ FString UATableHandler::GetContentFromSourceFile(FString SourceFilePath)
 	}
 
 	return FileContent;
+}
+
+
+void UATableHandler::GetTableRow(const TArray<FVarStruct>& Variables)
+{
+	FString Key = GetManyToOneKey(Variables);
+	UE_LOG(LogTemp, Display, TEXT("Regex replaced Drakula: %s."), *Key);
+
+	// FullManyToOneTableNameToMetadataStructMap
 }

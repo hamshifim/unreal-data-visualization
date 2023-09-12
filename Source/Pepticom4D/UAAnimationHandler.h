@@ -32,11 +32,7 @@ public:
 
 	void Sanity();
 
-	FString GetManyToOneKey(const TArray<FVarStruct>& Variables);
-
 	TArray<int32> GetPossibleAnimationValues();
-
-	void GetTableRow(const TArray<FVarStruct>& Variables);
 
 	FString GetTableName();
 };

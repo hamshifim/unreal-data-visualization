@@ -34,4 +34,5 @@ public:
 	UDataTable* GetDataTable();
 	void AddDataToDataTableFromSource();
 	FString GetContentFromSourceFile(FString SourceFilePath);
+	void GetTableRow(const TArray<FVarStruct>& Variables);
 };
