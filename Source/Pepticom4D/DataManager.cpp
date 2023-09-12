@@ -499,23 +499,13 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 
 	if(AAnimationHandler)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Garlik 2"));
-
-		FString Pig = AAnimationHandler->GetTableName();
-
-		UE_LOG(LogTemp, Display, TEXT("Garlik 3"));
-		
-		FString ManyToOneTableName = GetFullTableName("clustered", Pig);
+		UE_LOG(LogTemp, Display, TEXT("Garlik"));
 
 		UDataTable* ManyToOneTable = TableHandler->GetDataTable();
-
-		UE_LOG(LogTemp, Display, TEXT("Many to one table name: %s."), *ManyToOneTableName);
 			
 		FString FOO = ManyToOneTable->RowStruct->GetName();
 			
 		UE_LOG(LogTemp, Display, TEXT("Shamooch %s."), *FOO);
-		
-		UE_LOG(LogTemp, Display, TEXT("Shamooch 2 %s."), *FOO);
 
 		//init an array of FVarStruct
 		TArray<FVarStruct> Variables;
@@ -541,9 +531,7 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 			UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());
 		}
 
-
 		FTableRowBase* SpecificRow = ManyToOneTable->FindRow<FTableRowBase>(RowNameFName, TEXT(""));
-
 
 		if(SpecificRow)
 		{
