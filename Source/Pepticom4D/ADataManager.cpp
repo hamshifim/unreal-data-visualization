@@ -302,10 +302,10 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 	// Iterate over all views
 	for (const auto& ViewPair : (*ViewsObjectPtr)->Values)
 	{
-		UAViewHandler* ViewHandler = NewObject<UAViewHandler>(this);
-		
 		FString ViewName = ViewPair.Key;
 		TSharedPtr<FJsonObject> ViewObj = ViewPair.Value->AsObject();
+
+		UAViewHandler* ViewHandler = NewObject<UAViewHandler>(this);
 
 		// Get the color maps for this view and make sure that we can iterate over them
 		const TSharedPtr<FJsonObject>* ColorMapsObjectPtr;
@@ -374,6 +374,7 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 
 		// Initialize the view handler object using the extracted data
 		ViewHandler->Initialize(ViewName, DataTypes);
+		ViewHandlerMap.Add(ViewName, ViewHandler);
 
 		UE_LOG(LogTemp, Display, TEXT("Shliph 4"));
 		
@@ -394,8 +395,8 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 			FString BoundaryPointsString;
 			TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&BoundaryPointsString);
 			FJsonSerializer::Serialize(BoundaryPointsArray, Writer);
-			// Add the view name and boundary points to the map
-			ViewNameToBoundaryPointsMap.Add(ViewName, BoundaryPointsString);
+
+			ViewHandler->SetBoundaryPointsString(BoundaryPointsString);
 		}
 		else
 		{
@@ -737,7 +738,8 @@ UDataTable* ADataManager::GetMetadataTableFromFullDatasetName(FString FullDatase
 
 FString ADataManager::GetBoundaryPointsFromViewName(FString ViewName)
 {
-	return ViewNameToBoundaryPointsMap.FindRef(ViewName);
+	UAViewHandler* ViewHandler = ViewHandlerMap.FindRef(ViewName);
+	return ViewHandler->GetBoundaryPointsString();
 }
 
 FString ADataManager::GetFullDatasetNameFromDataType(FString DataType)

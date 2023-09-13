@@ -17,12 +17,14 @@ class UAViewHandler : public UObject
 private:
 	FString Name;
 	TArray<FString> DataTypeNames;
+	FString BoundaryPointsString;
 	TArray<UAAnimationHandler*> AnimationHandlers;
 	//TODO: make a struct of boundaries of the view
 	//TODO: keep a Map of color maps of the view
 	
 public:
-	//initializes the view handler
 	void Initialize(FString AName, TArray<FString> ADataTypeNames);
 	void SetAnimationHandlers(TArray<UAAnimationHandler*> AAnimationHandlers);
+	void SetBoundaryPointsString(FString ABoundaryPointsString);
+	FString GetBoundaryPointsString();
 };

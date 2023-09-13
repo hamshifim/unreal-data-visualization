@@ -10,6 +10,7 @@
 #include "UObject/UnrealType.h"
 #include "UADataTypeHandler.h"
 #include "UATableHandler.h"
+#include "UAViewHandler.h"
 #include "UAAnimationHandler.h"
 #include "ADataManager.generated.h"
 
@@ -103,11 +104,14 @@ public:
 	
 	// Map of data full dataset names to spatial metadata tables
 	TMap<FString, UDataTable*> FullTableNameToSpatialMetadataTableMap = TMap<FString, UDataTable*>();
+
+
+	// map view names to UAViewHandler pointers
+	TMap<FString, UAViewHandler*> ViewHandlerMap;
 	
 	// Map of view names to data types/main dataset names that are displayed in that view
 	TMap<FString, TArray<FString>> ViewNameToDataTypesMap = TMap<FString, TArray<FString>>();
-	// Map of view names to a JSON object string representing boundary points (POIs) for that view
-	TMap<FString, FString> ViewNameToBoundaryPointsMap = TMap<FString, FString>();
+
 	// Map of data types to table names
 	TMap<FString, TArray<FString>> DataTypeToTableNamesMap = TMap<FString, TArray<FString>>();
 	
