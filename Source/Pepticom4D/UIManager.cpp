@@ -4,10 +4,10 @@
 #include "UIManager.h"
 
 // Sets default values
-AUIManager::AUIManager()
+AUIManager::AUIManager(): AActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
 
     RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSceneRoot"));
     SpawnVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnVolume"));
@@ -348,8 +348,12 @@ void AUIManager::ConfigureDataFilteringWidget() {
         DataFilteringWidgetComboBox->AddOption(DefaultOption);
         DataFilteringWidgetComboBox->SetSelectedOption(DefaultOption);
         // Add options to the combo box, if they exist
-        if (DataManager->ColorMap.Contains(DataManager->CurrentViewName)) {
-            for (const auto& PropertyNameMap : DataManager->ColorMap[DataManager->CurrentViewName]) {
+
+        // get a ViewHandler from DataManager using its current view Name
+        UAViewHandler* ViewHandler = DataManager->ViewHandlerMap.FindRef(DataManager->CurrentViewName);
+        
+        if (ViewHandler) {
+            for (const auto& PropertyNameMap : *ViewHandler->GetColorMap()) {
                 FString PropertyName = PropertyNameMap.Key;
                 DataFilteringWidgetComboBox->AddOption(PropertyName);
             }
@@ -417,7 +421,10 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
                 // Get the value of the selected property from the actor's metadata
                 FString PropertyValue = DataManager->GetPropertyValueStringFromMetadata(Metadata, MetadataStruct, SelectedItem);
                 // Get the color from the color map based on the property value
-                auto ValueColorMap = DataManager->ColorMap[DataManager->CurrentViewName][SelectedItem];
+
+                UAViewHandler* ViewHandler = DataManager->ViewHandlerMap.FindRef(DataManager->CurrentViewName);
+
+                auto ValueColorMap = ViewHandler->GetColorMap()->FindRef(SelectedItem);
                 if (ValueColorMap.Contains(PropertyValue)) {
                     FColor NewColor = ValueColorMap[PropertyValue];
                     // Cast the actor to an ActorToSpawn

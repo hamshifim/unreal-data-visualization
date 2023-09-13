@@ -16,6 +16,16 @@ void UAViewHandler::SetBoundaryPointsString(FString ABoundaryPointsString)
 	this->BoundaryPointsString = ABoundaryPointsString;
 }
 
+void UAViewHandler::SetColorMap(TMap<FString, TMap<FString, FColor>> AColorMap)
+{
+	this->ColorMap = AColorMap;
+}
+
+TMap<FString, TMap<FString, FColor>>* UAViewHandler::GetColorMap()
+{
+	return &this->ColorMap;
+}
+
 FString UAViewHandler::GetBoundaryPointsString()
 {
 	return this->BoundaryPointsString;

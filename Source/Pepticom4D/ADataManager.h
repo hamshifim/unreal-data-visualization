@@ -123,11 +123,6 @@ public:
 	
 	//Map of data types to table names to TableHandlers
 	TMap<FString, TMap<FString, UATableHandler*>> DataTypeToTableHandlerMap;
-	
-	// Map of colors which can be applied to properties - K: view name, V: K: property name, V: K: property value, V: color
-	TMap<FString, TMap<FString, TMap<FString, FColor>>> ColorMap = TMap<FString, TMap<FString, TMap<FString, FColor>>>();
-
-
 
 protected:
 	// Called when the game starts or when spawned

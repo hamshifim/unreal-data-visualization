@@ -331,8 +331,8 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 				// Add the property name and value color map to the map of property name and value color maps
 				PropertyNameAndValueColorMap.Add(PropertyName, ValueColorMap);
 			}
-			// Add the view name and property name and value color map to the map
-			ColorMap.Add(ViewName, PropertyNameAndValueColorMap);
+
+			ViewHandler->SetColorMap(PropertyNameAndValueColorMap);
 		}
 		else
 		{
