@@ -4,6 +4,7 @@
 
 #include "FVarStruct.h"
 #include "UAAnimationHandler.h"
+#include "UADataTypeHandler.h"
 #include "UATableHandler.h"
 
 
@@ -54,12 +55,11 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		FString DefaultTableName;
 		if (DataTypeObj->TryGetStringField("default_table", DefaultTableName))
 		{
-			FString FullTableName = GetFullTableName(DataTypeName, DefaultTableName);
-			// Check if this main dataset is within the current view; if so, add the full dataset name to the list of current full dataset names
-			if (ViewNameToDataTypesMap[CurrentViewName].Contains(DataTypeName))
-			{
-				CurrentFullTableNames.Add(FullTableName);
-			}
+			UADataTypeHandler* DataTypeHandler = NewObject<UADataTypeHandler>(this);
+			DataTypeHandler->Initialize(DataTypeName, DefaultTableName);
+			DataTypeHandler->Sanity();
+			DataTypeHandlerMap.Add(DataTypeName, DataTypeHandler);
+			
 			// Map the current main data type name to its current table name
 			CurrentDataTypeNameToTableNameMap.Add(DataTypeName, DefaultTableName);
 		}
@@ -352,14 +352,6 @@ void ADataManager::Tick(float DeltaTime)
 
 void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 {
-	// Get the default view name
-	FString DefaultViewName;
-	if (!JsonObject->TryGetStringField("default_view", DefaultViewName))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
-		return;
-	}
-	CurrentViewName = DefaultViewName;
 
 	// Get the views object and make sure that it is an object that we can iterate over
 	const TSharedPtr<FJsonObject>* ViewsObjectPtr;
@@ -422,9 +414,26 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 			FString DataTypeName = DataTypeValue->AsString();
 			// Add the data type name to the array
 			DataTypes.Add(DataTypeName);
+
+			UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap.FindRef(DataTypeName);
+			
+			FString DefaultTableName = DataTypeHandler->GetDefaultTableName();
+			
+			UE_LOG(LogTemp, Display, TEXT("Shliph 0"));
+
+			if(ViewName.Equals(CurrentViewName))
+			{
+				FString FullTableName = GetFullTableName(DataTypeName, DefaultTableName);
+				CurrentFullTableNames.Add(FullTableName);
+				
+				UE_LOG(LogTemp, Display, TEXT("Shliph 2"));
+			}
 		}
+
+		UE_LOG(LogTemp, Display, TEXT("Snork 3"));
 		// Add the view name and data types to the map
 		ViewNameToDataTypesMap.Add(ViewName, DataTypes);
+		
 
 		// Get the boundary points for this view
 		const TSharedPtr<FJsonObject>* BoundaryPointsObjectPtr;
@@ -473,12 +482,22 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		return;
 	}
 
-	ExtractViews(JsonObject);
-
+	// Get the default view name
+	FString DefaultViewName;
+	if (!JsonObject->TryGetStringField("default_view", DefaultViewName))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
+		return;
+	}
+	CurrentViewName = DefaultViewName;
+	
 	ExtractDataTypes(JsonObject);
 
+	UE_LOG(LogTemp, Display, TEXT("Splich 0"));
 	
-	UE_LOG(LogTemp, Display, TEXT("Garlik"));
+	ExtractViews(JsonObject);
+	
+	UE_LOG(LogTemp, Display, TEXT("Splich 1"));
 
 	//iterate over AnimationHandlerMap
 	for (const auto& AnimationHandlerPair : AnimationHandlerMap)

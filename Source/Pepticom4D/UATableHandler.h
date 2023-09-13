@@ -6,7 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "Types/SlateEnums.h"
 #include "FVarStruct.h"
-#include "Engine/DataTable.h"
 #include "UATableHandler.generated.h"
 
 UCLASS(BlueprintType)

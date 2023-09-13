@@ -8,8 +8,9 @@
 #include "Components/BoxComponent.h"
 #include "SpatialDataStruct.h"
 #include "UObject/UnrealType.h"
-#include "UAAnimationHandler.h"
+#include "UADataTypeHandler.h"
 #include "UATableHandler.h"
+#include "UAAnimationHandler.h"
 #include "ADataManager.generated.h"
 
 UCLASS()
@@ -113,6 +114,9 @@ public:
 	//Map of animation names to animation objects
 	TMap<FString, UAAnimationHandler*> AnimationHandlerMap;
 
+	//Map of DataTypeNames to UADatatypeHandlers
+	TMap<FString, UADataTypeHandler*> DataTypeHandlerMap;
+	
 	//Map of data types to table names to TableHandlers
 	TMap<FString, TMap<FString, UATableHandler*>> DataTypeToTableHandlerMap;
 	
