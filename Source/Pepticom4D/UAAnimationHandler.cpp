@@ -1,10 +1,9 @@
 #include "UAAnimationHandler.h"
-#include "ADataManager.h"
 #include "UATableHandler.h"
 
 
 // An Initialization of the necessary variables
-void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties)
+void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties, TMap<FString, TMap<FString, UATableHandler*>>* ADataTypeToTableHandlerMap)
 {
 	this->AnimationName = AAnimationName;
 	this->Min = AMin;
@@ -15,6 +14,7 @@ void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AM
 	this->KeyRegex = AKeyRegex;
 	this->RegexVariableRetrievalInstructions = ARegexVariableRetrievalInstructions;
 	this->UpdateProperties = AUpdateProperties;
+	this->DataTypeToTableHandlerMap = ADataTypeToTableHandlerMap;
 }
 
 void UAAnimationHandler::Sanity() 
@@ -45,6 +45,44 @@ FString UAAnimationHandler::GetTableName()
 
 void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 {
-	// ADataManager* DataManager = ADataManager::GetInstance();
-	// UATableHandler* TableHandler = DataManager.DataTypeToTableHandlerMap.FindRef(TEXT("clustered")).FindRef(TEXT("cycle"));
+	UATableHandler* TableHandler = DataTypeToTableHandlerMap->FindRef(this->DataType).FindRef(this->TableName);
+	// TODO initiate table in the proper context!!!!
+	TableHandler->AddDataToDataTableFromSource();
+
+	UE_LOG(LogTemp, Display, TEXT("Garlik"));
+
+	UDataTable* ManyToOneTable = TableHandler->GetDataTable();
+			
+	FString FOO = ManyToOneTable->RowStruct->GetName();
+			
+	UE_LOG(LogTemp, Display, TEXT("Shamooch %s."), *FOO);
+
+	
+	FString RowName = TableHandler->GetManyToOneKey(Variables);
+
+	UE_LOG(LogTemp, Display, TEXT("moops RowName %s."), *RowName);
+
+	//create an FName from RowName
+	FName RowNameFName = FName(*RowName);
+
+	UE_LOG(LogTemp, Display, TEXT("RowNameFName: %s"), *RowNameFName.ToString());
+	
+	TArray<FName> SpatialMetadataRowNames = ManyToOneTable->GetRowNames();
+
+	//iterate over SpatialMetadataRowNames printing their names
+	for (const auto& SpatialMetadataRowName : SpatialMetadataRowNames)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());
+	}
+
+	FTableRowBase* SpecificRow = ManyToOneTable->FindRow<FTableRowBase>(RowNameFName, TEXT(""));
+
+	if(SpecificRow)
+	{
+		UE_LOG(LogTemp, Display, TEXT("girgash %s."), *FOO);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("gisplash %s."), *FOO);
+	}
 }

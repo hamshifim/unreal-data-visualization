@@ -288,7 +288,7 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 
 				// Create an animation handler object using the extracted data
 				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
-				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames);
+				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames, &DataTypeToTableHandlerMap);
 				// AAnimationHandler->Sanity();
 
 				AAnimationHandler->GetPossibleAnimationValues();
@@ -491,60 +491,21 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		AAnimationHandler->Sanity();
 		// AnimationHandler
 	}
+
+
+	//init an array of FVarStruct
+	TArray<FVarStruct> Variables;
+	Variables.Add(FVarStruct("Index", "69973607186440"));
+	Variables.Add(FVarStruct("Cycle", "22"));
+	Variables.Add(FVarStruct("BackboneSize", "5"));
 		
 	UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(TEXT("cycle"));
-	
-	UATableHandler* TableHandler = DataTypeToTableHandlerMap.FindRef(TEXT("clustered")).FindRef(TEXT("cycle"));
-	TableHandler->AddDataToDataTableFromSource();
 
 	if(AAnimationHandler)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Garlik"));
-
-		UDataTable* ManyToOneTable = TableHandler->GetDataTable();
-			
-		FString FOO = ManyToOneTable->RowStruct->GetName();
-			
-		UE_LOG(LogTemp, Display, TEXT("Shamooch %s."), *FOO);
-
-		//init an array of FVarStruct
-		TArray<FVarStruct> Variables;
-		Variables.Add(FVarStruct("Index", "69973607186440"));
-		Variables.Add(FVarStruct("Cycle", "22"));
-		Variables.Add(FVarStruct("BackboneSize", "5"));
-		
-		FString RowName = TableHandler->GetManyToOneKey(Variables);
-
-		UE_LOG(LogTemp, Display, TEXT("moops RowName %s."), *RowName);
-
-		//create an FName from RowName
-		FName RowNameFName = FName(*RowName);
-
-		UE_LOG(LogTemp, Display, TEXT("RowNameFName: %s"), *RowNameFName.ToString());
-
-
-		TArray<FName> SpatialMetadataRowNames = ManyToOneTable->GetRowNames();
-
-		//iterate over SpatialMetadataRowNames printing their names
-		for (const auto& SpatialMetadataRowName : SpatialMetadataRowNames)
-		{
-			UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());
-		}
-
-		FTableRowBase* SpecificRow = ManyToOneTable->FindRow<FTableRowBase>(RowNameFName, TEXT(""));
-
-		if(SpecificRow)
-		{
-			UE_LOG(LogTemp, Display, TEXT("girgash %s."), *FOO);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Display, TEXT("gisplash %s."), *FOO);
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Display, TEXT("para masricha Animation Handler not found."));
+		UE_LOG(LogTemp, Display, TEXT("Powerfull"));
+		AAnimationHandler->AnimateActor(Variables);
+		UE_LOG(LogTemp, Display, TEXT("Bombardful"));
 	}
 }
 
