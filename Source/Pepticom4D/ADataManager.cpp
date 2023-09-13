@@ -28,6 +28,64 @@ void ADataManager::BeginPlay()
 	UE_LOG(LogTemp, Display, TEXT("Data manager initialized"));
 }
 
+void ADataManager::ProcessConfig(FString ConfigVarName)
+{
+	// Get the config file path
+	FString ConfigFilePath;
+	GConfig->GetString(TEXT("Data"), *ConfigVarName, ConfigFilePath, GGameIni);
+	// Read the config file, which is a JSON file. 
+	FString JsonRaw;
+	if (!FFileHelper::LoadFileToString(JsonRaw, *ConfigFilePath))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load config file: %s"), *ConfigFilePath);
+		return;
+	}
+	// Parse the JSON string into a JSON object
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonRaw);
+	if (!FJsonSerializer::Deserialize(Reader, JsonObject) || !JsonObject.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to parse JSON from config file."));
+		return;
+	}
+	
+	ExtractDataTypes(JsonObject);
+
+	UE_LOG(LogTemp, Display, TEXT("Splich 0"));
+	
+	ExtractViews(JsonObject);
+	
+	UE_LOG(LogTemp, Display, TEXT("Splich 1"));
+
+	//iterate over AnimationHandlerMap
+	for (const auto& AnimationHandlerPair : AnimationHandlerMap)
+	{
+		FString AnimationName = AnimationHandlerPair.Key;
+		UAAnimationHandler* AAnimationHandler = AnimationHandlerPair.Value;
+		
+		UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
+		
+		AAnimationHandler->Sanity();
+		// AnimationHandler
+	}
+
+
+	//init an array of FVarStruct
+	TArray<FVarStruct> Variables;
+	Variables.Add(FVarStruct("Index", "69973607186440"));
+	Variables.Add(FVarStruct("Cycle", "22"));
+	Variables.Add(FVarStruct("BackboneSize", "5"));
+		
+	UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(TEXT("cycle"));
+
+	if(AAnimationHandler)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Powerfull"));
+		AAnimationHandler->AnimateActor(Variables);
+		UE_LOG(LogTemp, Display, TEXT("Bombardful"));
+	}
+}
+
 void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 {
 		// Access the data_types field of the config file
@@ -46,6 +104,7 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		FString DataTypeName = DataTypePair.Key;
 		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
 
+		//TODO create Table handlers for each table within the data type deprecating DataTypeToTableNamesMap
 		TArray<FString> TableNames = ExtractTables(DataTypeName, DataTypeObj);
 		// Store the table names in the map
 		DataTypeToTableNamesMap.Add(DataTypeName, TableNames);
@@ -143,7 +202,6 @@ TArray<FString> ADataManager::ExtractTables(FString DataTypeName, TSharedPtr<FJs
 	return TableNames;
 }
 
-
 void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
 {
 	TArray<FString> TableNames;
@@ -218,136 +276,6 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping many to one tables for DataTypeName: %s"), *DataTypeName);
-}
-
-
-void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> ViewObject)
-{
-	// Get the default view name
-	const TSharedPtr<FJsonObject>* AnimationsObjectPtr;
-	if (ViewObject->TryGetObjectField("animations", AnimationsObjectPtr))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Animation Config found in ViewName: %s."), *ViewName);
-
-		// Iterate over all animations
-		for (const auto& AnimationPair : (*AnimationsObjectPtr)->Values)
-		{
-			FString AnimationName = AnimationPair.Key;
-			UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
-
-			const TSharedPtr<FJsonObject> AnimationObject = AnimationPair.Value->AsObject();
-
-			int32 Min = ExtractIntField(AnimationObject, "min");
-			int32 Max = ExtractIntField(AnimationObject, "max");
-			int32 Interval = ExtractIntField(AnimationObject, "interval");
-
-			FString DataType = ExtractStringField(AnimationObject, "data_type");
-			FString Explain = ExtractStringField(AnimationObject, "explain");
-			TArray<TSharedPtr<FJsonValue>> UpdateProperties = ExtractStringArrayField(AnimationObject, "update");
-
-			TArray<FString> UpdateColumnsNames;
-			for (const auto& ColumnName : UpdateProperties)
-			{
-				FString Complete = ColumnName->AsString();
-
-				UpdateColumnsNames.Emplace(Complete);
-
-				UE_LOG(LogTemp, Display, TEXT("Found field to update in animation: %s."), *Complete);
-				// Add the data type name to the array
-			}
-			
-			FString Message = TEXT("The value of Max is: ") + FString::Printf(TEXT("Max %d"), Max);
-			UE_LOG(LogTemp, Display, TEXT("%s"), *Message);
-
-			const TSharedPtr<FJsonObject> ManyToOneTablesPtr = AnimationObject->GetObjectField("many_to_one_tables");
-			
-			for (const auto& ManyToOneTablePtr: ManyToOneTablesPtr->Values)
-			{
-				FString ManyToOneTableName = ManyToOneTablePtr.Key;
-				UE_LOG(LogTemp, Display, TEXT("Many to one table name: %s."), *ManyToOneTableName);
-
-				const TSharedPtr<FJsonObject> ManyToOneTableObject = ManyToOneTablePtr.Value->AsObject();
-
-				FString KeyRegex = ExtractStringField(ManyToOneTableObject, "key_regex");
-				const TArray<TSharedPtr<FJsonValue>> RegexVars = ExtractStringArrayField(ManyToOneTableObject, "regex_variables");
-
-				TArray<FVarStruct> RegexVariableRetrievalInstructions;
-				//iterate over regex variables which are objects
-				for (const auto& RegexVar : RegexVars)
-				{
-					const TSharedPtr<FJsonObject> RegexVarObject = RegexVar->AsObject();
-
-					FString VarName = ExtractStringField(RegexVarObject, "var");
-					FString VarSrc = ExtractStringField(RegexVarObject, "src_type");
-
-					UE_LOG(LogTemp, Display, TEXT("Regex variable name: %s."), *VarName);
-					UE_LOG(LogTemp, Display, TEXT("Regex variable source: %s."), *VarSrc);
-
-					RegexVariableRetrievalInstructions.Emplace(FVarStruct(VarName, VarSrc));
-				}
-
-				// Create an animation handler object using the extracted data
-				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
-				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames, &DataTypeHandlerMap);
-				// AAnimationHandler->Sanity();
-
-				AAnimationHandler->GetPossibleAnimationValues();
-
-				AnimationHandlerMap.Add(AnimationName, AAnimationHandler);
-			}
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Display, TEXT("Animation Config not found in ViewName: %s."), *ViewName);
-	}
-}
-
-int32 ADataManager::ExtractIntField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
-{
-	int32 FField = 0;
-	if (JsonObject->TryGetNumberField(FieldName, FField))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Got field: %d."), FField);
-	}
-
-	return FField;
-}
-
-FString ADataManager::ExtractStringField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
-{
-	FString FField = "";
-	if (JsonObject->TryGetStringField(FieldName, FField))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Got field: %s."), *FField);
-	}
-
-	return FField;
-}
-
-
-TArray<TSharedPtr<FJsonValue>> ADataManager::ExtractStringArrayField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
-{
-	const TArray<TSharedPtr<FJsonValue>>* FField;
-	if (JsonObject->TryGetArrayField(FieldName, FField))
-	{
-		// for (const auto& DataTypeValue : *FField)
-		// {
-		// 	FString Complete = DataTypeValue->AsString();
-		//
-		// 	UE_LOG(LogTemp, Display, TEXT("Got field Gomez: %s."), *Complete);
-		// 	// Add the data type name to the array
-		// }
-	}
-
-	return *FField;
-}
-
-
-// Called every frame
-void ADataManager::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
@@ -469,62 +397,125 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 	}
 }
 
-void ADataManager::ProcessConfig(FString ConfigVarName)
+void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> ViewObject)
 {
-	// Get the config file path
-	FString ConfigFilePath;
-	GConfig->GetString(TEXT("Data"), *ConfigVarName, ConfigFilePath, GGameIni);
-	// Read the config file, which is a JSON file. 
-	FString JsonRaw;
-	if (!FFileHelper::LoadFileToString(JsonRaw, *ConfigFilePath))
+	// Get the default view name
+	const TSharedPtr<FJsonObject>* AnimationsObjectPtr;
+	if (ViewObject->TryGetObjectField("animations", AnimationsObjectPtr))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load config file: %s"), *ConfigFilePath);
-		return;
+		UE_LOG(LogTemp, Display, TEXT("Animation Config found in ViewName: %s."), *ViewName);
+
+		// Iterate over all animations
+		for (const auto& AnimationPair : (*AnimationsObjectPtr)->Values)
+		{
+			FString AnimationName = AnimationPair.Key;
+			UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
+
+			const TSharedPtr<FJsonObject> AnimationObject = AnimationPair.Value->AsObject();
+
+			int32 Min = ExtractIntField(AnimationObject, "min");
+			int32 Max = ExtractIntField(AnimationObject, "max");
+			int32 Interval = ExtractIntField(AnimationObject, "interval");
+
+			FString DataType = ExtractStringField(AnimationObject, "data_type");
+			FString Explain = ExtractStringField(AnimationObject, "explain");
+			TArray<TSharedPtr<FJsonValue>> UpdateProperties = ExtractStringArrayField(AnimationObject, "update");
+
+			TArray<FString> UpdateColumnsNames;
+			for (const auto& ColumnName : UpdateProperties)
+			{
+				FString Complete = ColumnName->AsString();
+
+				UpdateColumnsNames.Emplace(Complete);
+
+				UE_LOG(LogTemp, Display, TEXT("Found field to update in animation: %s."), *Complete);
+				// Add the data type name to the array
+			}
+			
+			FString Message = TEXT("The value of Max is: ") + FString::Printf(TEXT("Max %d"), Max);
+			UE_LOG(LogTemp, Display, TEXT("%s"), *Message);
+
+			const TSharedPtr<FJsonObject> ManyToOneTablesPtr = AnimationObject->GetObjectField("many_to_one_tables");
+			
+			for (const auto& ManyToOneTablePtr: ManyToOneTablesPtr->Values)
+			{
+				FString ManyToOneTableName = ManyToOneTablePtr.Key;
+				UE_LOG(LogTemp, Display, TEXT("Many to one table name: %s."), *ManyToOneTableName);
+
+				const TSharedPtr<FJsonObject> ManyToOneTableObject = ManyToOneTablePtr.Value->AsObject();
+
+				FString KeyRegex = ExtractStringField(ManyToOneTableObject, "key_regex");
+				const TArray<TSharedPtr<FJsonValue>> RegexVars = ExtractStringArrayField(ManyToOneTableObject, "regex_variables");
+
+				TArray<FVarStruct> RegexVariableRetrievalInstructions;
+				//iterate over regex variables which are objects
+				for (const auto& RegexVar : RegexVars)
+				{
+					const TSharedPtr<FJsonObject> RegexVarObject = RegexVar->AsObject();
+
+					FString VarName = ExtractStringField(RegexVarObject, "var");
+					FString VarSrc = ExtractStringField(RegexVarObject, "src_type");
+
+					UE_LOG(LogTemp, Display, TEXT("Regex variable name: %s."), *VarName);
+					UE_LOG(LogTemp, Display, TEXT("Regex variable source: %s."), *VarSrc);
+
+					RegexVariableRetrievalInstructions.Emplace(FVarStruct(VarName, VarSrc));
+				}
+
+				// Create an animation handler object using the extracted data
+				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
+				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames, &DataTypeHandlerMap);
+				// AAnimationHandler->Sanity();
+
+				AAnimationHandler->GetPossibleAnimationValues();
+
+				AnimationHandlerMap.Add(AnimationName, AAnimationHandler);
+			}
+		}
 	}
-	// Parse the JSON string into a JSON object
-	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
-	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonRaw);
-	if (!FJsonSerializer::Deserialize(Reader, JsonObject) || !JsonObject.IsValid())
+	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to parse JSON from config file."));
-		return;
+		UE_LOG(LogTemp, Display, TEXT("Animation Config not found in ViewName: %s."), *ViewName);
 	}
-	
-	ExtractDataTypes(JsonObject);
+}
 
-	UE_LOG(LogTemp, Display, TEXT("Splich 0"));
-	
-	ExtractViews(JsonObject);
-	
-	UE_LOG(LogTemp, Display, TEXT("Splich 1"));
-
-	//iterate over AnimationHandlerMap
-	for (const auto& AnimationHandlerPair : AnimationHandlerMap)
+int32 ADataManager::ExtractIntField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
+{
+	int32 FField = 0;
+	if (JsonObject->TryGetNumberField(FieldName, FField))
 	{
-		FString AnimationName = AnimationHandlerPair.Key;
-		UAAnimationHandler* AAnimationHandler = AnimationHandlerPair.Value;
-		
-		UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
-		
-		AAnimationHandler->Sanity();
-		// AnimationHandler
+		UE_LOG(LogTemp, Display, TEXT("Got field: %d."), FField);
 	}
 
+	return FField;
+}
 
-	//init an array of FVarStruct
-	TArray<FVarStruct> Variables;
-	Variables.Add(FVarStruct("Index", "69973607186440"));
-	Variables.Add(FVarStruct("Cycle", "22"));
-	Variables.Add(FVarStruct("BackboneSize", "5"));
-		
-	UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(TEXT("cycle"));
-
-	if(AAnimationHandler)
+FString ADataManager::ExtractStringField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
+{
+	FString FField = "";
+	if (JsonObject->TryGetStringField(FieldName, FField))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Powerfull"));
-		AAnimationHandler->AnimateActor(Variables);
-		UE_LOG(LogTemp, Display, TEXT("Bombardful"));
+		UE_LOG(LogTemp, Display, TEXT("Got field: %s."), *FField);
 	}
+
+	return FField;
+}
+
+TArray<TSharedPtr<FJsonValue>> ADataManager::ExtractStringArrayField(TSharedPtr<FJsonObject> JsonObject, FString FieldName)
+{
+	const TArray<TSharedPtr<FJsonValue>>* FField;
+	if (JsonObject->TryGetArrayField(FieldName, FField))
+	{
+		// for (const auto& DataTypeValue : *FField)
+		// {
+		// 	FString Complete = DataTypeValue->AsString();
+		//
+		// 	UE_LOG(LogTemp, Display, TEXT("Got field Gomez: %s."), *Complete);
+		// 	// Add the data type name to the array
+		// }
+	}
+
+	return *FField;
 }
 
 FString ADataManager::GetFullTableName(FString DataTypeName, FString TableName)
@@ -829,6 +820,12 @@ FString ADataManager::GetPropertyValueStringFromMetadata(const FTableRowBase& Me
 	FString PropertyValue = GetPropertyValueAsString(Property, const_cast<FTableRowBase&>(Metadata));
 	// Return the property value
 	return PropertyValue;
+}
+
+// Called every frame
+void ADataManager::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void ADataManager::ForceRefresh()
