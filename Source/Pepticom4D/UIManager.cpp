@@ -262,7 +262,7 @@ void AUIManager::ConfigureDataSelectorWidget() {
         // Get the vertical box which will contain all of these horizontal boxes
         UVerticalBox* VerticalBox = Cast<UVerticalBox>(DataSelectorWidget->GetWidgetFromName("DataSelectorVerticalBox"));
         // Iterate through all data types
-        for (const FString& DataType : DataManager->ViewNameToDataTypesMap[DataManager->CurrentViewName]) {
+        for (const FString& DataType : DataManager->ViewNameToDataTypesMap.FindRef(DataManager->CurrentViewName)) {
             // Create a horizontal box element inside the vertical box
             UHorizontalBox* HorizontalBox = NewObject<UHorizontalBox>(VerticalBox);
             // Add the horizontal box to the vertical box
@@ -296,14 +296,14 @@ void AUIManager::ConfigureDataSelectorWidget() {
             // Set the font size of the combo box
             ComboBox->Font.Size = 12;
             // Add the sub-dataset names to the combo box
-            for (const FString& SubDatasetName : DataManager->DataTypeToTableNamesMap[DataType]) {
+            for (const FString& SubDatasetName : DataManager->DataTypeToTableNamesMap.FindRef(DataType)) {
                 // Add the sub-dataset name to the combo box
                 ComboBox->AddOption(SubDatasetName);
             }
             // Bind to the combo box's OnSelectionChanged event
             ComboBox->OnSelectionChanged.AddDynamic(this, &AUIManager::OnDataSelectorWidgetDropdownChanged);
             // Set the default selected item
-            FString DefaultSelectedItem = DataManager->CurrentDataTypeNameToTableNameMap[DataType];
+            FString DefaultSelectedItem = DataManager->CurrentDataTypeNameToTableNameMap.FindRef(DataType);
             ComboBox->SetSelectedOption(DefaultSelectedItem);
         }
     }
@@ -373,13 +373,10 @@ void AUIManager::RefreshDataFilteringWidget() {
 void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType) {
     // PLACEHOLDER
     // Update the text on the text block
-    FString Text;
-    if (SelectedItem.Equals("Default")) {
-        Text = "Default Coloring";
-    }
-    else {
-        Text = "Coloring by " + SelectedItem;
-    }
+
+    // use ternary operator to set the text to be displayed
+    FString Text = SelectedItem.Equals("Default") ? "Default Coloring" : "Coloring by " + SelectedItem;
+    
     DataFilteringWidgetTextBlock->SetText(FText::FromString(Text));
     // Create a map of data type to a boolean - whether or not the data type supports coloring by the selected property
     TMap<FString, bool> DataTypeToSupportsColoringMap = TMap<FString, bool>();
@@ -404,7 +401,7 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
             // Check if the data type is already in the map
             if (DataTypeToSupportsColoringMap.Contains(ActorDataType)) {
                 // Check if the data type supports coloring by the selected property
-                DataTypeSupportsColoring = DataTypeToSupportsColoringMap[ActorDataType];
+                DataTypeSupportsColoring = DataTypeToSupportsColoringMap.FindRef(ActorDataType);
             }
             else {
                 // Check if the actor's data type supports coloring by the selected property
