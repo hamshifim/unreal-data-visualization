@@ -38,9 +38,11 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		return;
 	}
 
-	// Iterate over all main data types
+	// Iterate over all data type configurations
 	for (const auto& DataTypePair : (*DataTypesObjectPtr)->Values)
 	{
+		UADataTypeHandler* DataTypeHandler = NewObject<UADataTypeHandler>(this);
+		
 		FString DataTypeName = DataTypePair.Key;
 		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
 
@@ -48,14 +50,14 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		// Store the table names in the map
 		DataTypeToTableNamesMap.Add(DataTypeName, TableNames);
 
-		ExtractManyToOneTables(DataTypeName, DataTypeObj);
+		ExtractManyToOneTables(DataTypeHandler, DataTypeName, DataTypeObj);
 		// Store the table names in the map
 
 		// Set the default table to be the first one - set in the default_table property
 		FString DefaultTableName;
 		if (DataTypeObj->TryGetStringField("default_table", DefaultTableName))
 		{
-			UADataTypeHandler* DataTypeHandler = NewObject<UADataTypeHandler>(this);
+			
 			DataTypeHandler->Initialize(DataTypeName, DefaultTableName);
 			DataTypeHandler->Sanity();
 			DataTypeHandlerMap.Add(DataTypeName, DataTypeHandler);
@@ -142,7 +144,7 @@ TArray<FString> ADataManager::ExtractTables(FString DataTypeName, TSharedPtr<FJs
 }
 
 
-TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
+void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
 {
 	TArray<FString> TableNames;
 	
@@ -151,7 +153,7 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 	if (!DataTypeObj->TryGetObjectField("many_to_one_tables", TablesObjectPtr))
 	{
 		UE_LOG(LogTemp, Display, TEXT("Config file JSON does not contain 'many_to_one_tables' field, DataTypeName: %s."), *DataTypeName);
-		return TableNames; // or handle the error
+		return;
 	}
 	
 	for (const auto& TablePair : (*TablesObjectPtr)->Values)
@@ -210,14 +212,12 @@ TArray<FString> ADataManager::ExtractManyToOneTables(FString DataTypeName, TShar
 		TMap<FString, UATableHandler*> TableNameToTableHandlerMap = TMap<FString, UATableHandler*>();
 		TableNameToTableHandlerMap.Add(TableName, ManyToOneTableHandler);
 
-		DataTypeToTableHandlerMap.Add(DataTypeName, TableNameToTableHandlerMap);
+		DataTypeHandler->SetManyToOneTableHandlerMap(TableNameToTableHandlerMap);
 		
 		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Many To One Table: %s"), *FullTableName);
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping many to one tables for DataTypeName: %s"), *DataTypeName);
-
-	return TableNames;
 }
 
 
@@ -288,7 +288,7 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 
 				// Create an animation handler object using the extracted data
 				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
-				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames, &DataTypeToTableHandlerMap);
+				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames, &DataTypeHandlerMap);
 				// AAnimationHandler->Sanity();
 
 				AAnimationHandler->GetPossibleAnimationValues();
@@ -352,6 +352,14 @@ void ADataManager::Tick(float DeltaTime)
 
 void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 {
+	// Get the default view name
+	FString DefaultViewName;
+	if (!JsonObject->TryGetStringField("default_view", DefaultViewName))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
+		return;
+	}
+	CurrentViewName = DefaultViewName;
 
 	// Get the views object and make sure that it is an object that we can iterate over
 	const TSharedPtr<FJsonObject>* ViewsObjectPtr;
@@ -481,15 +489,6 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		UE_LOG(LogTemp, Error, TEXT("Failed to parse JSON from config file."));
 		return;
 	}
-
-	// Get the default view name
-	FString DefaultViewName;
-	if (!JsonObject->TryGetStringField("default_view", DefaultViewName))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
-		return;
-	}
-	CurrentViewName = DefaultViewName;
 	
 	ExtractDataTypes(JsonObject);
 

@@ -3,7 +3,7 @@
 
 
 // An Initialization of the necessary variables
-void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties, TMap<FString, TMap<FString, UATableHandler*>>* ADataTypeToTableHandlerMap)
+void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap)
 {
 	this->AnimationName = AAnimationName;
 	this->Min = AMin;
@@ -14,7 +14,7 @@ void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AM
 	this->KeyRegex = AKeyRegex;
 	this->RegexVariableRetrievalInstructions = ARegexVariableRetrievalInstructions;
 	this->UpdateProperties = AUpdateProperties;
-	this->DataTypeToTableHandlerMap = ADataTypeToTableHandlerMap;
+	this->DataTypeHandlerMap = ADataTypeHandlerMap;
 }
 
 void UAAnimationHandler::Sanity() 
@@ -45,7 +45,8 @@ FString UAAnimationHandler::GetTableName()
 
 void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 {
-	UATableHandler* TableHandler = DataTypeToTableHandlerMap->FindRef(this->DataType).FindRef(this->TableName);
+	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
+	UATableHandler* TableHandler = DataTypeHandler->GetTableHandler(this->TableName);
 	// TODO initiate table in the proper context!!!!
 	TableHandler->AddDataToDataTableFromSource();
 

@@ -17,3 +17,13 @@ FString UADataTypeHandler::GetDefaultTableName()
 {
 	return DefaultTableName;
 }
+
+void UADataTypeHandler::SetManyToOneTableHandlerMap(TMap<FString, UATableHandler*> Map)
+{
+	this->ManyToOneTableHandlerMap = Map;
+}
+
+UATableHandler* UADataTypeHandler::GetTableHandler(FString TableName)
+{
+	return ManyToOneTableHandlerMap.FindRef(TableName);
+}
