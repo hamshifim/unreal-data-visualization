@@ -1,5 +1,6 @@
 #include "UAAnimationHandler.h"
-
+#include "ADataManager.h"
+#include "UATableHandler.h"
 
 
 // An Initialization of the necessary variables
@@ -40,4 +41,10 @@ TArray<int32> UAAnimationHandler::GetPossibleAnimationValues()
 FString UAAnimationHandler::GetTableName()
 {
 	return TableName;;
+}
+
+void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
+{
+	// ADataManager* DataManager = ADataManager::GetInstance();
+	// UATableHandler* TableHandler = DataManager.DataTypeToTableHandlerMap.FindRef(TEXT("clustered")).FindRef(TEXT("cycle"));
 }

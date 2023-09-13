@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ActorToSpawn.h"
 #include "Engine/DataTable.h"
-#include "DataManager.h"
+#include "ADataManager.h"
 #include "UIManager.h"
 #include "ActorSpawner.generated.h"
 

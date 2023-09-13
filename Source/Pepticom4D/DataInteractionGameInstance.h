@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "ActorSpawner.h"
-#include "DataManager.h"
+#include "ADataManager.h"
 #include "UIManager.h"
 #include "DataInteractionGameInstance.generated.h"
 

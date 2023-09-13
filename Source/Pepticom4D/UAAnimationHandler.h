@@ -35,4 +35,6 @@ public:
 	TArray<int32> GetPossibleAnimationValues();
 
 	FString GetTableName();
+
+	void AnimateActor(TArray<FVarStruct> Variables);
 };

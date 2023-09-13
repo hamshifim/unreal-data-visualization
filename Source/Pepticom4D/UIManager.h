@@ -10,7 +10,7 @@
 #include "DataFilteringWidget.h"
 #include "DataInteractionPlayerController.h"
 #include "Engine/DataTable.h"
-#include "DataManager.h"
+#include "ADataManager.h"
 #include "ActorToSpawn.h"
 #include "Types/SlateEnums.h"
 #include "DataInteractionHUD.h"

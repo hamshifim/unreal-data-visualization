@@ -10,7 +10,7 @@
 #include "UObject/UnrealType.h"
 #include "UAAnimationHandler.h"
 #include "UATableHandler.h"
-#include "DataManager.generated.h"
+#include "ADataManager.generated.h"
 
 UCLASS()
 class PEPTICOM4D_API ADataManager : public AActor
