@@ -6,6 +6,7 @@
 #include "UAAnimationHandler.h"
 #include "UADataTypeHandler.h"
 #include "UATableHandler.h"
+#include "UAViewHandler.h"
 
 
 // Sets default values
@@ -287,7 +288,6 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
 		return;
 	}
-	CurrentViewName = DefaultViewName;
 
 	// Get the views object and make sure that it is an object that we can iterate over
 	const TSharedPtr<FJsonObject>* ViewsObjectPtr;
@@ -297,9 +297,13 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 		return;
 	}
 
+	CurrentViewName = DefaultViewName;
+
 	// Iterate over all views
 	for (const auto& ViewPair : (*ViewsObjectPtr)->Values)
 	{
+		UAViewHandler* ViewHandler = NewObject<UAViewHandler>(this);
+		
 		FString ViewName = ViewPair.Key;
 		TSharedPtr<FJsonObject> ViewObj = ViewPair.Value->AsObject();
 
@@ -366,7 +370,13 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 			}
 		}
 
-		UE_LOG(LogTemp, Display, TEXT("Snork 3"));
+		UE_LOG(LogTemp, Display, TEXT("Shliph 3"));
+
+		// Initialize the view handler object using the extracted data
+		ViewHandler->Initialize(ViewName, DataTypes);
+
+		UE_LOG(LogTemp, Display, TEXT("Shliph 4"));
+		
 		// Add the view name and data types to the map
 		ViewNameToDataTypesMap.Add(ViewName, DataTypes);
 		
