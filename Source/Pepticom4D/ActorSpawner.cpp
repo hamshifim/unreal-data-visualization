@@ -128,32 +128,32 @@ void AActorSpawner::SpawnActorsFromQueue() {
 				// Set actor rotation to be the same as the rotation of the spawner
 				FRotator SpawnRotation = GetActorRotation();
 				// Spawn the actor
-				ADataPointActor* Actor = GetWorld()->SpawnActor<ADataPointActor>(SpawnLocation, SpawnRotation);
+				ADataPointActor* DataPointActor = GetWorld()->SpawnActor<ADataPointActor>(SpawnLocation, SpawnRotation);
 
 				// Get the spatial data type in order to be able to apply rendering properties (color, size, etc.)
-				UStruct* SpatialDataType = FSpatialDataStruct::StaticStruct();
-				if (Actor) {
+				UStruct* SpatialDataStruct = FSpatialDataStruct::StaticStruct();
+				if (DataPointActor) {
 					// Check if the spatial data has a color property and set the actor's color to that color
 					FName ColorPropertyName = FName(TEXT("color"));
-					FProperty* ColorProperty = SpatialDataType->FindPropertyByName(ColorPropertyName);
+					FProperty* ColorProperty = SpatialDataStruct->FindPropertyByName(ColorPropertyName);
 					if (ColorProperty) {
 						FStrProperty* StrProp = CastField<FStrProperty>(ColorProperty);
 						FString ColorHex = StrProp->GetPropertyValue_InContainer(SpatialData);
-						Actor->ChangeColor(ColorHex);
+						DataPointActor->ChangeColor(ColorHex);
 					}
 					// Check if the spatial data has a radius property and set the actor's size to that radius
 					FName RadiusPropertyName = FName(TEXT("size"));
-					FProperty* RadiusProperty = SpatialDataType->FindPropertyByName(RadiusPropertyName);
+					FProperty* RadiusProperty = SpatialDataStruct->FindPropertyByName(RadiusPropertyName);
 					if (RadiusProperty) {
 						FDoubleProperty* DoubleProp = CastField<FDoubleProperty>(RadiusProperty);
 						float Radius = DoubleProp->GetPropertyValue_InContainer(SpatialData);
-						Actor->ChangeScale(Radius);
+						DataPointActor->ChangeScale(Radius);
 					}
 					
 					// Get the actor's type
 					FString ActorDataType = TEXT("");
 					FName TypePropertyName = FName(TEXT("type"));
-					FProperty* TypeProperty = SpatialDataType->FindPropertyByName(TypePropertyName);
+					FProperty* TypeProperty = SpatialDataStruct->FindPropertyByName(TypePropertyName);
 					if (TypeProperty) {
 						FStrProperty* StrProp = CastField<FStrProperty>(TypeProperty);
 						ActorDataType = StrProp->GetPropertyValue_InContainer(SpatialData);
@@ -164,11 +164,13 @@ void AActorSpawner::SpawnActorsFromQueue() {
 					}
 
 					// Map the actor to its metadata
-					DataManager->ActorToMetadataMap.Add(TPair<AActor*, FTableRowBase*>(Actor, Metadata));
+					DataManager->ActorToMetadataMap.Add(TPair<AActor*, FTableRowBase*>(DataPointActor, Metadata));
 					// Map the actor to its spatial data
-					DataManager->ActorToSpatialDataMap.Add(TPair<AActor*, FSpatialDataStruct*>(Actor, SpatialData));
+					DataManager->ActorToSpatialDataMap.Add(TPair<AActor*, FSpatialDataStruct*>(DataPointActor, SpatialData));
 					// Map the actor to its data type
-					DataManager->ActorToDataTypeMap.Add(TPair<AActor*, FString>(Actor, ActorDataType));
+					DataManager->ActorToDataTypeMap.Add(TPair<AActor*, FString>(DataPointActor, ActorDataType));
+
+					DataPointActor->Initialize(ActorDataType, SpatialData, Metadata);
 				}
 				else {
 					UE_LOG(LogTemp, Warning, TEXT("Actor not ready yet"));

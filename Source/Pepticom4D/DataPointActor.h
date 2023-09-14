@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/PostProcessComponent.h"
+#include "SpatialDataStruct.h"
 #include "DataPointActor.generated.h"
 
 UCLASS()
@@ -16,10 +17,14 @@ public:
 	// Sets default values for this actor's properties
 	ADataPointActor();
 	void Create();
+	void Initialize(FString ADataType, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataStruct);
 	void ChangeColor(FString ColorHex);
 	void ChangeColor(FColor NewColor);
 	void ChangeScale(const float NewScale) const;
 	void ExtractDataTypes(const TTuple<FString, TSharedPtr<FJsonValue, ESPMode::ThreadSafe>>&);
+	FString GetDataType() const;
+	FSpatialDataStruct* GetSpatialDataStruct() const;
+	FTableRowBase* GetMetadataStruct() const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -44,4 +49,7 @@ public:
 private:
 	UFUNCTION()
 	void OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed);
+	FString DataType;
+	FSpatialDataStruct* SpatialDataStruct;
+	FTableRowBase* MetadataStruct;
 };

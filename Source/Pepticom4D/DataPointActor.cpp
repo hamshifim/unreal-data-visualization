@@ -53,6 +53,14 @@ void ADataPointActor::Create() {
     //ParticleComp->SetTemplate(ParticleCompAsset.Object);
 }
 
+void ADataPointActor::Initialize(FString ADataType, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataStruct)
+{
+    //init variables
+    DataType = ADataType;
+    SpatialDataStruct = ASpatialDataStruct;
+    MetadataStruct = AMetadataStruct;
+}
+
 // Sets default values
 ADataPointActor::ADataPointActor(): AActor()
 {
@@ -111,4 +119,22 @@ void ADataPointActor::ChangeScale(const float NewScale) const {
 void ADataPointActor::ExtractDataTypes(const TTuple<FString, TSharedPtr<FJsonValue, ESPMode::ThreadSafe>>& MainPair)
 {
     
+}
+
+
+FString ADataPointActor::GetDataType() const
+{
+    return DataType;
+}
+
+
+FSpatialDataStruct* ADataPointActor::GetSpatialDataStruct() const
+{
+    return SpatialDataStruct;
+}
+
+//create getters for the variables
+FTableRowBase* ADataPointActor::GetMetadataStruct() const
+{
+    return MetadataStruct;
 }
