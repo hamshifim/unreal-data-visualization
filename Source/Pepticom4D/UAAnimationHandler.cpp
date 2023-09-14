@@ -47,8 +47,6 @@ void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 {
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
 	UATableHandler* TableHandler = DataTypeHandler->GetManyToOneTableHandler(this->TableName);
-	// TODO initiate table in the proper context!!!!
-	TableHandler->AddDataToDataTableFromSource();
 
 	UE_LOG(LogTemp, Display, TEXT("Garlik"));
 
@@ -86,4 +84,11 @@ void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 	{
 		UE_LOG(LogTemp, Display, TEXT("gisplash %s."), *FOO);
 	}
+}
+
+void UAAnimationHandler::LoadData()
+{
+	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
+	UATableHandler* TableHandler = DataTypeHandler->GetManyToOneTableHandler(this->TableName);
+	TableHandler->AddDataToDataTableFromSource();
 }

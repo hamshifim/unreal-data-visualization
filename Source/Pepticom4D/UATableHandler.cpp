@@ -165,10 +165,15 @@ FString UATableHandler::GetContentFromSourceFile(FString SourceFilePath)
 }
 
 
+void UATableHandler::ClearData()
+{
+	this->DataTable->EmptyTable();
+}
+
+
 void UATableHandler::GetTableRow(const TArray<FVarStruct>& Variables)
 {
 	FString Key = GetManyToOneKey(Variables);
 	UE_LOG(LogTemp, Display, TEXT("Regex replaced Drakula: %s."), *Key);
-
-	// FullManyToOneTableNameToMetadataStructMap
+	
 }

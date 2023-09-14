@@ -40,4 +40,5 @@ public:
 	FString GetTableName();
 
 	void AnimateActor(TArray<FVarStruct> Variables);
+	void LoadData();
 };

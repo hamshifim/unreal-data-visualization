@@ -55,6 +55,8 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 	UE_LOG(LogTemp, Display, TEXT("Splich 0"));
 	
 	ExtractViews(JsonObject);
+
+	
 	
 	UE_LOG(LogTemp, Display, TEXT("Splich 1"));
 
@@ -483,6 +485,11 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 				AAnimationHandler->GetPossibleAnimationValues();
 
 				AnimationHandlerMap.Add(AnimationName, AAnimationHandler);
+
+				if(ViewName.Equals(CurrentViewName))
+				{
+					AAnimationHandler->LoadData();
+				}
 			}
 		}
 	}
