@@ -53,7 +53,7 @@ void UATableHandler::InitTable()
 	this->DataTable = ADataTable;
 }
 
-FString UATableHandler::GetManyToOneKey(const TArray<FVarStruct>& Variables)
+FName UATableHandler::GetSpecificKey(const TArray<FVarStruct>& Variables)
 {
 	FString SpecificKey = KeyRegex;
 	//iterate through the array of variables
@@ -67,7 +67,7 @@ FString UATableHandler::GetManyToOneKey(const TArray<FVarStruct>& Variables)
 		SpecificKey = SpecificKey.Replace(*VarName, *VarValue);
 	}
 
-	return SpecificKey;
+	return FName(*SpecificKey);
 }
 
 //To String method
@@ -173,7 +173,21 @@ void UATableHandler::ClearData()
 
 void UATableHandler::GetTableRow(const TArray<FVarStruct>& Variables)
 {
-	FString Key = GetManyToOneKey(Variables);
-	UE_LOG(LogTemp, Display, TEXT("Regex replaced Drakula: %s."), *Key);
+	// FString StructName = DataTable->RowStruct->GetName();
+	// UE_LOG(LogTemp, Display, TEXT("Shamooch %s."), *StructName);
 	
+	FName Key = GetSpecificKey(Variables);
+
+	UE_LOG(LogTemp, Display, TEXT("RowKey: %s"), *Key.ToString());
+
+	FTableRowBase* SpecificRow = DataTable->FindRow<FTableRowBase>(Key, TEXT(""));
+
+	if(SpecificRow)
+	{
+		UE_LOG(LogTemp, Display, TEXT("girgash tov  yesh shoora %s."), *StructName);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("girgash ra ein shoora %s."), *StructName);
+	}
 }

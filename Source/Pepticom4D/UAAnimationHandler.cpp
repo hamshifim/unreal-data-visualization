@@ -46,25 +46,17 @@ FString UAAnimationHandler::GetTableName()
 void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 {
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
+	
 	UATableHandler* TableHandler = DataTypeHandler->GetManyToOneTableHandler(this->TableName);
 
-	UE_LOG(LogTemp, Display, TEXT("Garlik"));
+	UE_LOG(LogTemp, Display, TEXT("Zroobabvel"));
 
+	TableHandler->GetTableRow(Variables);
+
+	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 1"));
+
+	//TODO move this away it's a sanity check
 	UDataTable* ManyToOneTable = TableHandler->GetDataTable();
-			
-	FString FOO = ManyToOneTable->RowStruct->GetName();
-			
-	UE_LOG(LogTemp, Display, TEXT("Shamooch %s."), *FOO);
-
-	
-	FString RowName = TableHandler->GetManyToOneKey(Variables);
-
-	UE_LOG(LogTemp, Display, TEXT("moops RowName %s."), *RowName);
-
-	//create an FName from RowName
-	FName RowNameFName = FName(*RowName);
-
-	UE_LOG(LogTemp, Display, TEXT("RowNameFName: %s"), *RowNameFName.ToString());
 	
 	TArray<FName> SpatialMetadataRowNames = ManyToOneTable->GetRowNames();
 
@@ -72,17 +64,6 @@ void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 	for (const auto& SpatialMetadataRowName : SpatialMetadataRowNames)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());
-	}
-
-	FTableRowBase* SpecificRow = ManyToOneTable->FindRow<FTableRowBase>(RowNameFName, TEXT(""));
-
-	if(SpecificRow)
-	{
-		UE_LOG(LogTemp, Display, TEXT("girgash %s."), *FOO);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Display, TEXT("gisplash %s."), *FOO);
 	}
 }
 

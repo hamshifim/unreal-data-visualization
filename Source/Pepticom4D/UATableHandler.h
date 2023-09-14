@@ -28,7 +28,7 @@ private:
 public:
 	void Initialize(FString ADataType, FString ATableName, FString AKeyRegex, FString ASourcePath);
 	FString GetFullTableName();
-	FString GetManyToOneKey(const TArray<FVarStruct>& Variables);
+	FName GetSpecificKey(const TArray<FVarStruct>& Variables);
 	void VerbosePrint();
 	UDataTable* GetDataTable();
 	void AddDataToDataTableFromSource();
