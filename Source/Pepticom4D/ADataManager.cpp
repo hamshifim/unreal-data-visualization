@@ -378,10 +378,6 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 
 		UE_LOG(LogTemp, Display, TEXT("Shliph 4"));
 		
-		// Add the view name and data types to the map
-		ViewNameToDataTypesMap.Add(ViewName, DataTypes);
-		
-
 		// Get the boundary points for this view
 		const TSharedPtr<FJsonObject>* BoundaryPointsObjectPtr;
 		if (ViewObj->TryGetObjectField("boundaries", BoundaryPointsObjectPtr))

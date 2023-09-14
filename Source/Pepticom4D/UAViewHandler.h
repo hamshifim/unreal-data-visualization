@@ -31,4 +31,5 @@ public:
 	void SetColorMap(TMap<FString, TMap<FString, FColor>> AColorMap);
 	TMap<FString, TMap<FString, FColor>>* GetColorMap();
 	FString GetBoundaryPointsString();
+	TArray<FString> GetDataTypes();
 };

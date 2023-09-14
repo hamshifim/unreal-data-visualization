@@ -108,9 +108,6 @@ public:
 
 	// map view names to UAViewHandler pointers
 	TMap<FString, UAViewHandler*> ViewHandlerMap;
-	
-	// Map of view names to data types/main dataset names that are displayed in that view
-	TMap<FString, TArray<FString>> ViewNameToDataTypesMap = TMap<FString, TArray<FString>>();
 
 	// Map of data types to table names
 	TMap<FString, TArray<FString>> DataTypeToTableNamesMap = TMap<FString, TArray<FString>>();

@@ -261,8 +261,12 @@ void AUIManager::ConfigureDataSelectorWidget() {
         // Generate horizontal boxes containing the data type and a combo box for the sub-dataset name
         // Get the vertical box which will contain all of these horizontal boxes
         UVerticalBox* VerticalBox = Cast<UVerticalBox>(DataSelectorWidget->GetWidgetFromName("DataSelectorVerticalBox"));
+
+        // get a ViewHandler from DataManager using its current view Name
+        UAViewHandler* ViewHandler = DataManager->ViewHandlerMap.FindRef(DataManager->CurrentViewName);
+        
         // Iterate through all data types
-        for (const FString& DataType : DataManager->ViewNameToDataTypesMap.FindRef(DataManager->CurrentViewName)) {
+        for (const FString& DataType : ViewHandler->GetDataTypes()) {
             // Create a horizontal box element inside the vertical box
             UHorizontalBox* HorizontalBox = NewObject<UHorizontalBox>(VerticalBox);
             // Add the horizontal box to the vertical box

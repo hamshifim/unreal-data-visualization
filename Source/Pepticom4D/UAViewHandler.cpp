@@ -30,3 +30,8 @@ FString UAViewHandler::GetBoundaryPointsString()
 {
 	return this->BoundaryPointsString;
 }
+
+TArray<FString> UAViewHandler::GetDataTypes()
+{
+	return this->DataTypeNames;
+}
