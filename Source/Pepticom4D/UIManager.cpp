@@ -394,7 +394,7 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
             // Get the color to set on the actor
             FColor NewColor = FColor::FromHex(SpatialData.color);
             // Cast the actor to an ActorToSpawn
-            AActorToSpawn* ActorToSpawn = Cast<AActorToSpawn>(Actor);
+            ADataPointActor* ActorToSpawn = Cast<ADataPointActor>(Actor);
             // Set the actor's color
             ActorToSpawn->ChangeColor(NewColor);
         }
@@ -429,7 +429,7 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
                 if (ValueColorMap.Contains(PropertyValue)) {
                     FColor NewColor = ValueColorMap[PropertyValue];
                     // Cast the actor to an ActorToSpawn
-                    AActorToSpawn* ActorToSpawn = Cast<AActorToSpawn>(Actor);
+                    ADataPointActor* ActorToSpawn = Cast<ADataPointActor>(Actor);
                     // Set the actor's color
                     ActorToSpawn->ChangeColor(NewColor);
                 }

@@ -128,7 +128,7 @@ void AActorSpawner::SpawnActorsFromQueue() {
 				// Set actor rotation to be the same as the rotation of the spawner
 				FRotator SpawnRotation = GetActorRotation();
 				// Spawn the actor
-				AActorToSpawn* Actor = GetWorld()->SpawnActor<AActorToSpawn>(SpawnLocation, SpawnRotation);
+				ADataPointActor* Actor = GetWorld()->SpawnActor<ADataPointActor>(SpawnLocation, SpawnRotation);
 
 				// Get the spatial data type in order to be able to apply rendering properties (color, size, etc.)
 				UStruct* SpatialDataType = FSpatialDataStruct::StaticStruct();

@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ActorToSpawn.h"
+#include "DataPointActor.h"
 #include "Components/SphereComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "PlayerCameraPawn.h"
 
-void AActorToSpawn::Create() {
+void ADataPointActor::Create() {
     // Creating our Default Components
     SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
     StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
@@ -29,7 +29,7 @@ void AActorToSpawn::Create() {
     StaticMeshComp->Mobility = EComponentMobility::Movable;
 
     // Allow the actor to be clicked
-    StaticMeshComp->OnClicked.AddDynamic(this, &AActorToSpawn::OnMeshClicked);
+    StaticMeshComp->OnClicked.AddDynamic(this, &ADataPointActor::OnMeshClicked);
 
     // Using Constructor Helpers to set our Static Mesh Comp with a Sphere Shape.
     static ConstructorHelpers::FObjectFinder<UStaticMesh>SphereMeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
@@ -54,7 +54,7 @@ void AActorToSpawn::Create() {
 }
 
 // Sets default values
-AActorToSpawn::AActorToSpawn()
+ADataPointActor::ADataPointActor(): AActor()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
@@ -63,18 +63,18 @@ AActorToSpawn::AActorToSpawn()
 }
 
 // Called when the game starts or when spawned
-void AActorToSpawn::BeginPlay()
+void ADataPointActor::BeginPlay()
 {
     Super::BeginPlay();
 }
 
 // Called every frame
-void AActorToSpawn::Tick(float DeltaTime)
+void ADataPointActor::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 }
 
-void AActorToSpawn::OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed) {
+void ADataPointActor::OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed) {
     // Get the player camera pawn
     APlayerCameraPawn* PlayerCameraPawn = Cast<APlayerCameraPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
     if (PlayerCameraPawn) {
@@ -86,20 +86,20 @@ void AActorToSpawn::OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonP
     }
 }
 
-void AActorToSpawn::ChangeColor(FString ColorHex) {
+void ADataPointActor::ChangeColor(FString ColorHex) {
 	/* Converts the hex string to a linear color and updates the actor's color. Hex string should be in the format #RRGGBB or RRGGBB */
     // Convert the hex string to a linear color
     FColor Color = FColor::FromHex(ColorHex);
     ChangeColor(Color);
 }
 
-void AActorToSpawn::ChangeColor(FColor NewColor) {
+void ADataPointActor::ChangeColor(FColor NewColor) {
     // Set the emissive color of the material to be the color
     DynamicMaterial->SetVectorParameterValue(FName("EmissiveColor"), NewColor);
 }
 
 
-void AActorToSpawn::ChangeScale(const float NewScale) const {
+void ADataPointActor::ChangeScale(const float NewScale) const {
 
     // FString Message = FString::Printf(TEXT("Scale foo: %f"), NewScale);
     // UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
@@ -108,7 +108,7 @@ void AActorToSpawn::ChangeScale(const float NewScale) const {
 }
 
 
-void AActorToSpawn::ExtractDataTypes(const TTuple<FString, TSharedPtr<FJsonValue, ESPMode::ThreadSafe>>& MainPair)
+void ADataPointActor::ExtractDataTypes(const TTuple<FString, TSharedPtr<FJsonValue, ESPMode::ThreadSafe>>& MainPair)
 {
     
 }

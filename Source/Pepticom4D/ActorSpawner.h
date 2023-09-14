@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ActorToSpawn.h"
+#include "DataPointActor.h"
 #include "Engine/DataTable.h"
 #include "ADataManager.h"
 #include "UIManager.h"

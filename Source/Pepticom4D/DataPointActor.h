@@ -5,16 +5,16 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/PostProcessComponent.h"
-#include "ActorToSpawn.generated.h"
+#include "DataPointActor.generated.h"
 
 UCLASS()
-class PEPTICOM4D_API AActorToSpawn : public AActor
+class PEPTICOM4D_API ADataPointActor : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	AActorToSpawn();
+	ADataPointActor();
 	void Create();
 	void ChangeColor(FString ColorHex);
 	void ChangeColor(FColor NewColor);

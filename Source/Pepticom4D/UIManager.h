@@ -11,7 +11,7 @@
 #include "DataInteractionPlayerController.h"
 #include "Engine/DataTable.h"
 #include "ADataManager.h"
-#include "ActorToSpawn.h"
+#include "DataPointActor.h"
 #include "Types/SlateEnums.h"
 #include "DataInteractionHUD.h"
 #include "Runtime/UMG/Public/UMG.h"

@@ -5,7 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "DataInteractionPlayerController.h"
-#include "ActorToSpawn.h"
+#include "DataPointActor.h"
 #include "POIStruct.h"
 #include "Kismet/GameplayStatics.h"
 
