@@ -36,16 +36,16 @@ public:
 	void UpdateViewNameWidget(FString NewViewName);
 
 	UFUNCTION()
-	void DisplayActorDataWidget(AActor* Actor);
+	void DisplayActorDataWidget(ADataPointActor* Actor);
 
 	UFUNCTION()
-	void RefreshActorDataWidget(AActor* Actor);
+	void RefreshActorDataWidget(ADataPointActor* Actor);
 
 	UFUNCTION()
 	void HideActorDataWidget();
 
 	UFUNCTION()
-	void StartDrawingConnectingLineToActorDataWidget(AActor* Actor);
+	void StartDrawingConnectingLineToActorDataWidget(ADataPointActor* Actor);
 
 	UFUNCTION()
 	void StopDrawingConnectingLineToActorDataWidget();

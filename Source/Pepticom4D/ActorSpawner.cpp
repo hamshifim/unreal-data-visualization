@@ -164,11 +164,11 @@ void AActorSpawner::SpawnActorsFromQueue() {
 					}
 
 					// Map the actor to its metadata
-					DataManager->ActorToMetadataMap.Add(TPair<AActor*, FTableRowBase*>(DataPointActor, Metadata));
+					DataManager->ActorToMetadataMap.Add(TPair<ADataPointActor*, FTableRowBase*>(DataPointActor, Metadata));
 					// Map the actor to its spatial data
-					DataManager->ActorToSpatialDataMap.Add(TPair<AActor*, FSpatialDataStruct*>(DataPointActor, SpatialData));
+					DataManager->ActorToSpatialDataMap.Add(TPair<ADataPointActor*, FSpatialDataStruct*>(DataPointActor, SpatialData));
 					// Map the actor to its data type
-					DataManager->ActorToDataTypeMap.Add(TPair<AActor*, FString>(DataPointActor, ActorDataType));
+					DataManager->ActorToDataTypeMap.Add(TPair<ADataPointActor*, FString>(DataPointActor, ActorDataType));
 
 					DataPointActor->Initialize(ActorDataType, SpatialData, Metadata);
 				}

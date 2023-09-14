@@ -12,6 +12,7 @@
 #include "UATableHandler.h"
 #include "UAViewHandler.h"
 #include "UAAnimationHandler.h"
+#include "DataPointActor.h"
 #include "ADataManager.generated.h"
 
 UCLASS()
@@ -51,13 +52,13 @@ public:
 	void ClearDataTable(UDataTable* DataTable);
 
 	UFUNCTION()
-	FTableRowBase& GetMetadataFromActor(AActor* Actor);
+	FTableRowBase& GetMetadataFromActor(ADataPointActor* Actor);
 
 	UFUNCTION()
-	FSpatialDataStruct& GetSpatialDataFromActor(AActor* Actor);
+	FSpatialDataStruct& GetSpatialDataFromActor(ADataPointActor* Actor);
 
 	UFUNCTION()
-	FString GetDataTypeFromActor(AActor* Actor);
+	FString GetDataTypeFromActor(ADataPointActor* Actor);
 
 	UFUNCTION()
 	UDataTable* GetMetadataTableFromFullDatasetName(FString FullDatasetName);
@@ -69,10 +70,10 @@ public:
 	FString GetFullDatasetNameFromDataType(FString DataType);
 
 	UFUNCTION()
-	UStruct* GetMetadataStructFromActor(AActor* Actor);
+	UStruct* GetMetadataStructFromActor(ADataPointActor* Actor);
 
 	UFUNCTION()
-	bool ActorHasMetadataProperty(AActor* Actor, FString PropertyName);
+	bool ActorHasMetadataProperty(ADataPointActor* Actor, FString PropertyName);
 
 	UFUNCTION()
 	FString GetPropertyValueStringFromMetadata(const FTableRowBase& Metadata, UStruct* MetadataStruct, FString PropertyName);
@@ -85,11 +86,11 @@ public:
 	// Properties
 	// Map of actors that have been spawned; key is metadata, value is the actor
 	// TODO: Change map to be from unique ID within metadata to actor, or create an additional map
-	TMap<AActor*, FTableRowBase*> ActorToMetadataMap = TMap<AActor*, FTableRowBase*>();
+	TMap<ADataPointActor*, FTableRowBase*> ActorToMetadataMap = TMap<ADataPointActor*, FTableRowBase*>();
 	// Map of actors to their spatial data
-	TMap<AActor*, FSpatialDataStruct*> ActorToSpatialDataMap = TMap<AActor*, FSpatialDataStruct*>();
+	TMap<ADataPointActor*, FSpatialDataStruct*> ActorToSpatialDataMap = TMap<ADataPointActor*, FSpatialDataStruct*>();
 	// Map of actors to their data type
-	TMap<AActor*, FString> ActorToDataTypeMap = TMap<AActor*, FString>();
+	TMap<ADataPointActor*, FString> ActorToDataTypeMap = TMap<ADataPointActor*, FString>();
 	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.
 	FString CurrentViewName = TEXT("");
 	// Combination of main and sub dataset names within the current view

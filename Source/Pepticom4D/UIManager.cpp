@@ -133,7 +133,7 @@ void AUIManager::UpdateViewNameWidget(FString NewViewName) {
 	}
 }
 
-void AUIManager::DisplayActorDataWidget(AActor* Actor) {
+void AUIManager::DisplayActorDataWidget(ADataPointActor* Actor) {
     FVector ActorLocation = Actor->GetActorLocation();
     FVector2D ScreenPosition;
     if (UGameplayStatics::ProjectWorldToScreen(DataInteractionPlayerController, ActorLocation, ScreenPosition)) {
@@ -169,7 +169,10 @@ FString AUIManager::GetFriendlyPropertyName(FString PropertyName) {
     return FriendlyPropertyName;
 }
 
-void AUIManager::RefreshActorDataWidget(AActor* Actor) {
+void AUIManager::RefreshActorDataWidget(ADataPointActor* DataPointActor) {
+
+    // cast Actor to ADataPointActor
+    
     // Get the widget's vertical box, assuming that all text blocks are children of a vertical box
     UVerticalBox* VerticalBox = Cast<UVerticalBox>(ActorDataWidget->GetWidgetFromName("ActorDataVerticalBox"));
     // Get the border, which is the parent of the vertical box
@@ -177,9 +180,9 @@ void AUIManager::RefreshActorDataWidget(AActor* Actor) {
     // Clear all of the existing fields from the widget. 
     VerticalBox->ClearChildren();
     // Get the metadata from the actor
-    FTableRowBase& Metadata = DataManager->GetMetadataFromActor(Actor);
+    FTableRowBase& Metadata = DataManager->GetMetadataFromActor(DataPointActor);
     // Get the data type from the actor
-    UStruct* MetadataStruct = DataManager->GetMetadataStructFromActor(Actor);
+    UStruct* MetadataStruct = DataManager->GetMetadataStructFromActor(DataPointActor);
     // Iterate through all properties of the struct and extract the property name and value
     for (TFieldIterator<FProperty> PropertyIt(MetadataStruct); PropertyIt; ++PropertyIt)
     {
@@ -240,7 +243,7 @@ void AUIManager::HideActorDataWidget() {
 	}
 }
 
-void AUIManager::StartDrawingConnectingLineToActorDataWidget(AActor* Actor) {
+void AUIManager::StartDrawingConnectingLineToActorDataWidget(ADataPointActor* Actor) {
     // Set the start point of the line to be the center of the ActorDataWidget Border
     FVector2D LineStart = ActorDataWidgetBorder->GetCachedGeometry().GetAbsolutePosition() + ActorDataWidgetBorder->GetCachedGeometry().GetAbsoluteSize() / 2.0f;
     // Tell the HUD to draw a line (and keep updating it) from the actor to the actor data widget
@@ -386,22 +389,21 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
     TMap<FString, bool> DataTypeToSupportsColoringMap = TMap<FString, bool>();
     // Iterate through all actors
     for (const auto& ActorDataPair : DataManager->ActorToSpatialDataMap) {
-        AActor* Actor = ActorDataPair.Key;
+        ADataPointActor* DataPointActor = ActorDataPair.Key;
         if (SelectedItem.Equals("Default")) {
             // Apply coloring from spatial data
             // Get the actor's spatial data
-            FSpatialDataStruct& SpatialData = DataManager->GetSpatialDataFromActor(Actor);
+            FSpatialDataStruct& SpatialData = DataManager->GetSpatialDataFromActor(DataPointActor);
             // Get the color to set on the actor
             FColor NewColor = FColor::FromHex(SpatialData.color);
             // Cast the actor to an ActorToSpawn
-            ADataPointActor* ActorToSpawn = Cast<ADataPointActor>(Actor);
             // Set the actor's color
-            ActorToSpawn->ChangeColor(NewColor);
+            DataPointActor->ChangeColor(NewColor);
         }
         else {
             bool DataTypeSupportsColoring;
             // Get the actor's data type
-            FString ActorDataType = DataManager->GetDataTypeFromActor(Actor);
+            FString ActorDataType = DataManager->GetDataTypeFromActor(DataPointActor);
             // Check if the data type is already in the map
             if (DataTypeToSupportsColoringMap.Contains(ActorDataType)) {
                 // Check if the data type supports coloring by the selected property
@@ -409,16 +411,16 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
             }
             else {
                 // Check if the actor's data type supports coloring by the selected property
-                DataTypeSupportsColoring = DataManager->ActorHasMetadataProperty(Actor, SelectedItem);
+                DataTypeSupportsColoring = DataManager->ActorHasMetadataProperty(DataPointActor, SelectedItem);
                 // Add the data type to the map
                 DataTypeToSupportsColoringMap.Add(ActorDataType, DataTypeSupportsColoring);
             }
             // Apply coloring to the actor if the actor supports coloring by the selected property
             if (DataTypeSupportsColoring) {
                 // Get the actor's metadata
-                FTableRowBase& Metadata = DataManager->GetMetadataFromActor(Actor);
+                FTableRowBase& Metadata = DataManager->GetMetadataFromActor(DataPointActor);
                 // Get the metadata struct from the actor
-                UStruct* MetadataStruct = DataManager->GetMetadataStructFromActor(Actor);
+                UStruct* MetadataStruct = DataManager->GetMetadataStructFromActor(DataPointActor);
                 // Get the value of the selected property from the actor's metadata
                 FString PropertyValue = DataManager->GetPropertyValueStringFromMetadata(Metadata, MetadataStruct, SelectedItem);
                 // Get the color from the color map based on the property value
@@ -429,7 +431,7 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
                 if (ValueColorMap.Contains(PropertyValue)) {
                     FColor NewColor = ValueColorMap[PropertyValue];
                     // Cast the actor to an ActorToSpawn
-                    ADataPointActor* ActorToSpawn = Cast<ADataPointActor>(Actor);
+                    ADataPointActor* ActorToSpawn = Cast<ADataPointActor>(DataPointActor);
                     // Set the actor's color
                     ActorToSpawn->ChangeColor(NewColor);
                 }

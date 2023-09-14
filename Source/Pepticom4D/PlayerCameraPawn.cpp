@@ -245,7 +245,7 @@ FString APlayerCameraPawn::GetCurrentViewName() {
     return CurrentViewName;
 }
 
-void APlayerCameraPawn::MoveCameraToActor(AActor* Target) {
+void APlayerCameraPawn::MoveCameraToActor(ADataPointActor* Target) {
     TargetActor = Target;
     // Get the bounds of the target
     FVector Origin, BoxExtent;

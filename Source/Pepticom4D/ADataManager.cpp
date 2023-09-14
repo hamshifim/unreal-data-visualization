@@ -725,17 +725,17 @@ void ADataManager::ClearDataTable(UDataTable* DataTable)
 	}
 }
 
-FTableRowBase& ADataManager::GetMetadataFromActor(AActor* Actor)
+FTableRowBase& ADataManager::GetMetadataFromActor(ADataPointActor* Actor)
 {
 	return *(ActorToMetadataMap.FindRef(Actor));
 }
 
-FSpatialDataStruct& ADataManager::GetSpatialDataFromActor(AActor* Actor)
+FSpatialDataStruct& ADataManager::GetSpatialDataFromActor(ADataPointActor* Actor)
 {
 	return *(ActorToSpatialDataMap.FindRef(Actor));
 }
 
-FString ADataManager::GetDataTypeFromActor(AActor* Actor)
+FString ADataManager::GetDataTypeFromActor(ADataPointActor* Actor)
 {
 	return ActorToDataTypeMap.FindRef(Actor);
 }
@@ -758,7 +758,7 @@ FString ADataManager::GetFullDatasetNameFromDataType(FString DataType)
 	return FullDatasetName;
 }
 
-UStruct* ADataManager::GetMetadataStructFromActor(AActor* Actor)
+UStruct* ADataManager::GetMetadataStructFromActor(ADataPointActor* Actor)
 {
 	// Get the data type from the actor
 	FString DataType = GetDataTypeFromActor(Actor);
@@ -770,7 +770,7 @@ UStruct* ADataManager::GetMetadataStructFromActor(AActor* Actor)
 	return MetadataStruct;
 }
 
-bool ADataManager::ActorHasMetadataProperty(AActor* Actor, FString PropertyName)
+bool ADataManager::ActorHasMetadataProperty(ADataPointActor* Actor, FString PropertyName)
 {
 	// Get the metadata type from the actor
 	UStruct* MetadataType = GetMetadataStructFromActor(Actor);

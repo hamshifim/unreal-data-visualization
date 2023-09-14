@@ -36,7 +36,7 @@ public:
 	FString GetCurrentViewName();
 
 	UFUNCTION()
-	void MoveCameraToActor(AActor* Target);
+	void MoveCameraToActor(ADataPointActor* Target);
 
 	UFUNCTION()
 	void ResetCameraZoomAndRotation(double RadiusOfTarget, FVector CenterOfTarget, bool Animate);
@@ -105,7 +105,7 @@ private:
 	TMap<int, FViewPositionStruct*> ViewNumberToRowMap;
 
 	// Store a target towards which the camera should move
-	AActor* TargetActor = nullptr;
+	ADataPointActor* TargetActor = nullptr;
 
 	// Store the UI Manager
 	class AUIManager* UIManager;
