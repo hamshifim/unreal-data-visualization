@@ -46,7 +46,7 @@ FString UAAnimationHandler::GetTableName()
 void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 {
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
-	UATableHandler* TableHandler = DataTypeHandler->GetTableHandler(this->TableName);
+	UATableHandler* TableHandler = DataTypeHandler->GetManyToOneTableHandler(this->TableName);
 	// TODO initiate table in the proper context!!!!
 	TableHandler->AddDataToDataTableFromSource();
 

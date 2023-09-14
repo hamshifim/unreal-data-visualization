@@ -18,6 +18,7 @@ private:
 
 	FString Name;
 	FString DefaultTableName;
+	TMap<FString, UATableHandler*> TableHandlerMap;
 	TMap<FString, UATableHandler*> ManyToOneTableHandlerMap;
 
 public:
@@ -26,5 +27,7 @@ public:
 	void Sanity();
 	FString GetDefaultTableName();
 	void SetManyToOneTableHandlerMap(TMap<FString, UATableHandler*> Map);
+	UATableHandler* GetManyToOneTableHandler(FString TableName);
 	UATableHandler* GetTableHandler(FString TableName);
+	void AddTableHandler(FString TableName, UATableHandler* TableHandler);
 };

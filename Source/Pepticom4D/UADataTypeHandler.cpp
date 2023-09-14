@@ -23,7 +23,18 @@ void UADataTypeHandler::SetManyToOneTableHandlerMap(TMap<FString, UATableHandler
 	this->ManyToOneTableHandlerMap = Map;
 }
 
-UATableHandler* UADataTypeHandler::GetTableHandler(FString TableName)
+UATableHandler* UADataTypeHandler::GetManyToOneTableHandler(FString TableName)
 {
 	return ManyToOneTableHandlerMap.FindRef(TableName);
 }
+
+UATableHandler* UADataTypeHandler::GetTableHandler(FString TableName)
+{
+	return TableHandlerMap.FindRef(TableName);
+}
+
+void UADataTypeHandler::AddTableHandler(FString TableName, UATableHandler* TableHandler)
+{
+	this->TableHandlerMap.Add(TableName, TableHandler);
+}
+

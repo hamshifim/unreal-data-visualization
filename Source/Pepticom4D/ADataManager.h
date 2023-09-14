@@ -104,8 +104,7 @@ public:
 	
 	// Map of data full dataset names to spatial metadata tables
 	TMap<FString, UDataTable*> FullTableNameToSpatialMetadataTableMap = TMap<FString, UDataTable*>();
-
-
+	
 	// map view names to UAViewHandler pointers
 	TMap<FString, UAViewHandler*> ViewHandlerMap;
 
@@ -136,7 +135,7 @@ private:
 
 	void ExtractViews(TSharedPtr<FJsonObject> JsonObject);
 	void ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject);
-	TArray<FString> ExtractTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
+	TArray<FString> ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 	void ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 	void ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> ViewObject);
 	int32 ExtractIntField(TSharedPtr<FJsonObject>JsonObject, FString FieldName);

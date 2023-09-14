@@ -106,7 +106,7 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
 
 		//TODO create Table handlers for each table within the data type deprecating DataTypeToTableNamesMap
-		TArray<FString> TableNames = ExtractTables(DataTypeName, DataTypeObj);
+		TArray<FString> TableNames = ExtractTables(DataTypeHandler, DataTypeName, DataTypeObj);
 		// Store the table names in the map
 		DataTypeToTableNamesMap.Add(DataTypeName, TableNames);
 
@@ -135,7 +135,7 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 	}
 }
 
-TArray<FString> ADataManager::ExtractTables(FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
+TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
 {
 	TArray<FString> TableNames;
 	
@@ -149,6 +149,7 @@ TArray<FString> ADataManager::ExtractTables(FString DataTypeName, TSharedPtr<FJs
 	
 	for (const auto& TablePair : (*TablesObjectPtr)->Values)
 	{
+		UATableHandler* TableHandler = NewObject<UATableHandler>(this);
 		// Get the table name and object
 		FString TableName = TablePair.Key;
 		TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
@@ -166,6 +167,11 @@ TArray<FString> ADataManager::ExtractTables(FString DataTypeName, TSharedPtr<FJs
 			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
 			continue;
 		}
+
+		FString KeyRegex = "<Index>";
+		TableHandler->Initialize(DataTypeName, TableName, KeyRegex, DataSource);
+		TableHandler->VerbosePrint();
+		DataTypeHandler->AddTableHandler(TableName, TableHandler);
 
 		FString MetadataSource;
 		if (TableObj->TryGetStringField("data_source", MetadataSource))
