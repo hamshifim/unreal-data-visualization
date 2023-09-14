@@ -725,11 +725,6 @@ void ADataManager::ClearDataTable(UDataTable* DataTable)
 	}
 }
 
-FTableRowBase& ADataManager::GetMetadataFromActor(ADataPointActor* Actor)
-{
-	return *(ActorToMetadataMap.FindRef(Actor));
-}
-
 FSpatialDataStruct& ADataManager::GetSpatialDataFromActor(ADataPointActor* Actor)
 {
 	return *(ActorToSpatialDataMap.FindRef(Actor));

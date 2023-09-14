@@ -180,7 +180,7 @@ void AUIManager::RefreshActorDataWidget(ADataPointActor* DataPointActor) {
     // Clear all of the existing fields from the widget. 
     VerticalBox->ClearChildren();
     // Get the metadata from the actor
-    FTableRowBase& Metadata = DataManager->GetMetadataFromActor(DataPointActor);
+    FTableRowBase& Metadata = DataPointActor->GetMetadataStruct();
     // Get the data type from the actor
     UStruct* MetadataStruct = DataManager->GetMetadataStructFromActor(DataPointActor);
     // Iterate through all properties of the struct and extract the property name and value
@@ -418,7 +418,7 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
             // Apply coloring to the actor if the actor supports coloring by the selected property
             if (DataTypeSupportsColoring) {
                 // Get the actor's metadata
-                FTableRowBase& Metadata = DataManager->GetMetadataFromActor(DataPointActor);
+                FTableRowBase& Metadata = DataPointActor->GetMetadataStruct();
                 // Get the metadata struct from the actor
                 UStruct* MetadataStruct = DataManager->GetMetadataStructFromActor(DataPointActor);
                 // Get the value of the selected property from the actor's metadata

@@ -52,9 +52,6 @@ public:
 	void ClearDataTable(UDataTable* DataTable);
 
 	UFUNCTION()
-	FTableRowBase& GetMetadataFromActor(ADataPointActor* Actor);
-
-	UFUNCTION()
 	FSpatialDataStruct& GetSpatialDataFromActor(ADataPointActor* Actor);
 
 	UFUNCTION()
