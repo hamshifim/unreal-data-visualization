@@ -37,7 +37,6 @@ TArray<int32> UAAnimationHandler::GetPossibleAnimationValues()
 }
 
 
-
 FString UAAnimationHandler::GetTableName()
 {
 	return TableName;;
@@ -47,16 +46,16 @@ void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 {
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
 	
-	UATableHandler* TableHandler = DataTypeHandler->GetManyToOneTableHandler(this->TableName);
+	UATableHandler* ManyToOneTableHandler = DataTypeHandler->GetManyToOneTableHandler(this->TableName);
 
 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel"));
 
-	TableHandler->GetTableRow(Variables);
+	ManyToOneTableHandler->GetTableRow(Variables);
 
 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 1"));
 
-	//TODO move this away it's a sanity check
-	UDataTable* ManyToOneTable = TableHandler->GetDataTable();
+	//TODO use the data to animate the actors
+	UDataTable* ManyToOneTable = ManyToOneTableHandler->GetDataTable();
 	
 	TArray<FName> SpatialMetadataRowNames = ManyToOneTable->GetRowNames();
 

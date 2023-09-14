@@ -171,7 +171,7 @@ void UATableHandler::ClearData()
 }
 
 
-void UATableHandler::GetTableRow(const TArray<FVarStruct>& Variables)
+FTableRowBase* UATableHandler::GetTableRow(const TArray<FVarStruct>& Variables)
 {
 	// FString StructName = DataTable->RowStruct->GetName();
 	// UE_LOG(LogTemp, Display, TEXT("Shamooch %s."), *StructName);
@@ -184,10 +184,12 @@ void UATableHandler::GetTableRow(const TArray<FVarStruct>& Variables)
 
 	if(SpecificRow)
 	{
-		UE_LOG(LogTemp, Display, TEXT("girgash tov  yesh shoora %s."), *StructName);
+		UE_LOG(LogTemp, Display, TEXT("girgash tov yesh shoora %s."), *StructName);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Display, TEXT("girgash ra ein shoora %s."), *StructName);
 	}
+
+	return SpecificRow;
 }

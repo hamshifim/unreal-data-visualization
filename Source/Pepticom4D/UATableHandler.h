@@ -34,5 +34,5 @@ public:
 	void AddDataToDataTableFromSource();
 	FString GetContentFromSourceFile(FString SourceFilePath);
 	void ClearData();
-	void GetTableRow(const TArray<FVarStruct>& Variables);
+	FTableRowBase* GetTableRow(const TArray<FVarStruct>& Variables);
 };
