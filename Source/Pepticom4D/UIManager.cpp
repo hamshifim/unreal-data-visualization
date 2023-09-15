@@ -403,7 +403,7 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
         else {
             bool DataTypeSupportsColoring;
             // Get the actor's data type
-            FString ActorDataType = DataManager->GetDataTypeFromActor(DataPointActor);
+            FString ActorDataType = DataPointActor->GetDataType();
             // Check if the data type is already in the map
             if (DataTypeToSupportsColoringMap.Contains(ActorDataType)) {
                 // Check if the data type supports coloring by the selected property

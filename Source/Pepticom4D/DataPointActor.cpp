@@ -134,7 +134,7 @@ FSpatialDataStruct* ADataPointActor::GetSpatialDataStruct() const
 }
 
 //create getters for the variables
-FTableRowBase& ADataPointActor::GetMetadataStruct()
+FTableRowBase& ADataPointActor::GetMetadataStruct() const
 {
     //return the metadata struct
     return *MetadataStruct;

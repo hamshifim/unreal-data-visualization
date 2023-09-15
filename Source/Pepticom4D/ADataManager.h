@@ -55,9 +55,6 @@ public:
 	FSpatialDataStruct& GetSpatialDataFromActor(ADataPointActor* Actor);
 
 	UFUNCTION()
-	FString GetDataTypeFromActor(ADataPointActor* Actor);
-
-	UFUNCTION()
 	UDataTable* GetMetadataTableFromFullDatasetName(FString FullDatasetName);
 
 	UFUNCTION()

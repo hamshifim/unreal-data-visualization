@@ -24,7 +24,7 @@ public:
 	void ExtractDataTypes(const TTuple<FString, TSharedPtr<FJsonValue, ESPMode::ThreadSafe>>&);
 	FString GetDataType() const;
 	FSpatialDataStruct* GetSpatialDataStruct() const;
-	FTableRowBase& GetMetadataStruct();
+	FTableRowBase& GetMetadataStruct() const;
 
 protected:
 	// Called when the game starts or when spawned
