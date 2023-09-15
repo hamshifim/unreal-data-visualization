@@ -162,9 +162,7 @@ void AActorSpawner::SpawnActorsFromQueue() {
 						UE_LOG(LogTemp, Error, TEXT("Could not find type property for at least one actor"));
 						continue;
 					}
-
-					// Map the actor to its metadata
-					DataManager->ActorToMetadataMap.Add(TPair<ADataPointActor*, FTableRowBase*>(DataPointActor, Metadata));
+					
 					// Map the actor to its spatial data
 					DataManager->ActorToSpatialDataMap.Add(TPair<ADataPointActor*, FSpatialDataStruct*>(DataPointActor, SpatialData));
 					// Map the actor to its data type
@@ -187,11 +185,11 @@ void AActorSpawner::SpawnActorsFromQueue() {
 
 void AActorSpawner::DestroySpawnedActors() {
 	/* Destroys all actors which have been spawned by this actor spawner */
-	for (auto& Elem : DataManager->ActorToMetadataMap) {
+	for (auto& Elem : DataManager->ActorToSpatialDataMap) {
 		// Destroy the actor
 		Elem.Key->Destroy();
 	}
-	DataManager->ActorToMetadataMap.Empty();
+
 	DataManager->ActorToSpatialDataMap.Empty();
 	DataManager->ActorToDataTypeMap.Empty();
 }

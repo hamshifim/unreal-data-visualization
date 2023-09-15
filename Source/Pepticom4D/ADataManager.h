@@ -79,9 +79,7 @@ public:
 
 	// Properties
 	// Map of actors that have been spawned; key is metadata, value is the actor
-	// TODO: Change map to be from unique ID within metadata to actor, or create an additional map
-	TMap<ADataPointActor*, FTableRowBase*> ActorToMetadataMap = TMap<ADataPointActor*, FTableRowBase*>();
-	// Map of actors to their spatial data
+
 	TMap<ADataPointActor*, FSpatialDataStruct*> ActorToSpatialDataMap = TMap<ADataPointActor*, FSpatialDataStruct*>();
 	// Map of actors to their data type
 	TMap<ADataPointActor*, FString> ActorToDataTypeMap = TMap<ADataPointActor*, FString>();
