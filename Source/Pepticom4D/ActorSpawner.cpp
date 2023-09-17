@@ -163,9 +163,8 @@ void AActorSpawner::SpawnActorsFromQueue() {
 						continue;
 					}
 
+					DataManager->DataPointActors.Add(DataPointActor);
 					
-					// Map the actor to its spatial data
-					DataManager->ActorToSpatialDataMap.Add(TPair<ADataPointActor*, FSpatialDataStruct*>(DataPointActor, SpatialData));
 					// Map the actor to its data type
 					DataManager->ActorToDataTypeMap.Add(TPair<ADataPointActor*, FString>(DataPointActor, ActorDataType));
 
@@ -186,12 +185,13 @@ void AActorSpawner::SpawnActorsFromQueue() {
 
 void AActorSpawner::DestroySpawnedActors() {
 	/* Destroys all actors which have been spawned by this actor spawner */
-	for (auto& Elem : DataManager->ActorToSpatialDataMap) {
-		// Destroy the actor
-		Elem.Key->Destroy();
-	}
 
-	DataManager->ActorToSpatialDataMap.Empty();
+	// Iterate through all actors DataPointActors and destroy them
+	for (auto& Actor : DataManager->DataPointActors) {
+		// Destroy the actor
+		Actor->Destroy();
+	}
+	
 	DataManager->ActorToDataTypeMap.Empty();
 }
 

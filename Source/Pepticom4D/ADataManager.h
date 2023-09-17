@@ -52,9 +52,6 @@ public:
 	void ClearDataTable(UDataTable* DataTable);
 
 	UFUNCTION()
-	FSpatialDataStruct& GetSpatialDataFromActor(ADataPointActor* Actor);
-
-	UFUNCTION()
 	UDataTable* GetMetadataTableFromFullDatasetName(FString FullDatasetName);
 
 	UFUNCTION()
@@ -79,8 +76,8 @@ public:
 
 	// Properties
 	// Map of actors that have been spawned; key is metadata, value is the actor
+	TArray<ADataPointActor*> DataPointActors = TArray<ADataPointActor*>();
 
-	TMap<ADataPointActor*, FSpatialDataStruct*> ActorToSpatialDataMap = TMap<ADataPointActor*, FSpatialDataStruct*>();
 	// Map of actors to their data type
 	TMap<ADataPointActor*, FString> ActorToDataTypeMap = TMap<ADataPointActor*, FString>();
 	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.

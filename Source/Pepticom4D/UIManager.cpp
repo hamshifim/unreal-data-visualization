@@ -387,15 +387,19 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
     DataFilteringWidgetTextBlock->SetText(FText::FromString(Text));
     // Create a map of data type to a boolean - whether or not the data type supports coloring by the selected property
     TMap<FString, bool> DataTypeToSupportsColoringMap = TMap<FString, bool>();
+
+    //iterate through all DataPointActors in DataManager->DataPointActors
+    
+
+    
     // Iterate through all actors
-    for (const auto& ActorDataPair : DataManager->ActorToSpatialDataMap) {
-        ADataPointActor* DataPointActor = ActorDataPair.Key;
+    for (auto& DataPointActor : DataManager->DataPointActors) {
         if (SelectedItem.Equals("Default")) {
             // Apply coloring from spatial data
             // Get the actor's spatial data
-            FSpatialDataStruct& SpatialData = DataManager->GetSpatialDataFromActor(DataPointActor);
+            FSpatialDataStruct* SpatialData = DataPointActor->GetSpatialDataStruct();
             // Get the color to set on the actor
-            FColor NewColor = FColor::FromHex(SpatialData.color);
+            FColor NewColor = FColor::FromHex(SpatialData->color);
             // Cast the actor to an ActorToSpawn
             // Set the actor's color
             DataPointActor->ChangeColor(NewColor);
