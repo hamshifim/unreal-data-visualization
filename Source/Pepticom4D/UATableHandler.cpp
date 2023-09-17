@@ -147,6 +147,53 @@ void UATableHandler::AddDataToDataTableFromSource()
 }
 
 
+TArray<FString> UATableHandler::GetChunkedContentFromCSVSourceFile(int ChunkSize)
+{
+	// Validate the file extension
+	FString FileExtension = FPaths::GetExtension(SourcePath).ToUpper();
+	if (!FileExtension.Equals("CSV"))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Source file passed to get chunked content is not a CSV file: %s"),
+			   *SourcePath);
+		return TArray<FString>();
+	}
+	FString FileContent = GetContentFromSourceFile(SourcePath);
+	TArray<FString> Chunks;
+	TArray<FString> Lines;
+	// Split the file content into lines
+	FileContent.ParseIntoArrayLines(Lines);
+	FString CurrentChunk;
+	// Loop over the lines
+	for (int32 i = 0; i < Lines.Num(); i++)
+	{
+		if (i % ChunkSize == 0)
+		{
+			// If we have read ChunkSize lines, add the current chunk to the chunks array
+			if (!CurrentChunk.IsEmpty())
+			{
+				Chunks.Add(CurrentChunk);
+			}
+			// Start a new chunk with the column row
+			CurrentChunk = Lines[0] + TEXT("\n");
+		}
+		if (i == 0)
+		{
+			// Skip the column row
+			continue;
+		}
+		// Add the line to the current chunk
+		CurrentChunk += Lines[i] + TEXT("\n");
+	}
+	// Add the last chunk if it is not empty
+	if (!CurrentChunk.IsEmpty() && CurrentChunk != Lines[0] + TEXT("\n"))
+	{
+		Chunks.Add(CurrentChunk);
+	}
+	// Return the chunks
+	return Chunks;
+}
+
+
 FString UATableHandler::GetContentFromSourceFile(FString SourceFilePath)
 {
 	FString FileContent = TEXT("");

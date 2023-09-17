@@ -32,6 +32,7 @@ public:
 	void VerbosePrint();
 	UDataTable* GetDataTable();
 	void AddDataToDataTableFromSource();
+	TArray<FString> GetChunkedContentFromCSVSourceFile(int ChunkSize);
 	FString GetContentFromSourceFile(FString SourceFilePath);
 	void ClearData();
 	FTableRowBase* GetTableRow(const TArray<FVarStruct>& Variables);
