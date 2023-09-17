@@ -730,6 +730,7 @@ FSpatialDataStruct& ADataManager::GetSpatialDataFromActor(ADataPointActor* Actor
 	return *(ActorToSpatialDataMap.FindRef(Actor));
 }
 
+
 UDataTable* ADataManager::GetMetadataTableFromFullDatasetName(FString FullDatasetName)
 {
 	return FullTableNameToSpatialMetadataTableMap.FindRef(FullDatasetName);

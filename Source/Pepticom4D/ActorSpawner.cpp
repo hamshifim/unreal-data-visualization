@@ -162,6 +162,7 @@ void AActorSpawner::SpawnActorsFromQueue() {
 						UE_LOG(LogTemp, Error, TEXT("Could not find type property for at least one actor"));
 						continue;
 					}
+
 					
 					// Map the actor to its spatial data
 					DataManager->ActorToSpatialDataMap.Add(TPair<ADataPointActor*, FSpatialDataStruct*>(DataPointActor, SpatialData));
