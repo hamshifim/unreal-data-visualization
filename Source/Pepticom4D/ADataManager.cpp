@@ -228,20 +228,6 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 		// Get the table name and object
 		FString TableName = TablePair.Key;
 		TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
-		// Create a map of file paths
-		TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
-		// Get the file paths and populate the array
-		FString DataSource;
-		if (DataTypeObj->TryGetStringField("data_source", DataSource))
-		{
-			TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
-			FilePathsMap.Add(Pair);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
-			continue;
-		}
 
 		FString KeyRegex = "<Index>";
 		if (TableObj->TryGetStringField("key_regex", KeyRegex))
@@ -256,8 +242,7 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 		FString ManyToOneSource;
 		if (TableObj->TryGetStringField("data_source", ManyToOneSource))
 		{
-			TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), ManyToOneSource);
-			FilePathsMap.Add(Pair);
+		
 		}
 		else
 		{

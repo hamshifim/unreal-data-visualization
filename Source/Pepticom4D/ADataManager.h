@@ -106,9 +106,7 @@ public:
 
 	//Map of DataTypeNames to UADatatypeHandlers
 	TMap<FString, UADataTypeHandler*> DataTypeHandlerMap;
-	
-	//Map of data types to table names to TableHandlers
-	TMap<FString, TMap<FString, UATableHandler*>> DataTypeToTableHandlerMap;
+
 
 protected:
 	// Called when the game starts or when spawned
