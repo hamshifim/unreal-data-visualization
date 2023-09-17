@@ -744,10 +744,10 @@ FString ADataManager::GetFullDatasetNameFromDataType(FString DataType)
 	return FullDatasetName;
 }
 
-UStruct* ADataManager::GetMetadataStructFromActor(ADataPointActor* Actor)
+UStruct* ADataManager::GetMetadataStructFromActor(ADataPointActor* DataPointActor)
 {
 	// Get the data type from the actor
-	FString DataType = Actor->GetDataType();
+	FString DataType = DataPointActor->GetDataType();
 	// Get the full dataset name from the data type
 	FString FullDatasetName = GetFullDatasetNameFromDataType(DataType);
 	// Get the metadata struct from the full dataset name

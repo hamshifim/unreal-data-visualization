@@ -61,7 +61,7 @@ public:
 	FString GetFullDatasetNameFromDataType(FString DataType);
 
 	UFUNCTION()
-	UStruct* GetMetadataStructFromActor(ADataPointActor* Actor);
+	UStruct* GetMetadataStructFromActor(ADataPointActor* DataPointActor);
 
 	UFUNCTION()
 	bool ActorHasMetadataProperty(ADataPointActor* Actor, FString PropertyName);
