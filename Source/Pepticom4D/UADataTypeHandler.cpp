@@ -38,3 +38,12 @@ void UADataTypeHandler::AddTableHandler(FString TableName, UATableHandler* Table
 	this->TableHandlerMap.Add(TableName, TableHandler);
 }
 
+void UADataTypeHandler::SetDefaultTableHandler(UATableHandler* TableHandler)
+{
+	this->DefaultTableHandler = TableHandler;
+}
+
+UATableHandler* UADataTypeHandler::GetDefaultTableHandler() const
+{
+	return this->DefaultTableHandler;
+}

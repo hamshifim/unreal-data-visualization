@@ -140,6 +140,27 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
 {
 	TArray<FString> TableNames;
+
+	TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
+	// Get the file paths and populate the array
+	FString DataSource;
+	if (DataTypeObj->TryGetStringField("data_source", DataSource))
+	{
+		TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
+		FilePathsMap.Add(Pair);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
+		return TableNames; // or handle the error
+	}
+
+	FString KeyRegex = "<Index>";
+
+	UATableHandler* MainTableHandler = NewObject<UATableHandler>(this);
+	MainTableHandler->Initialize(DataTypeName, DataTypeName, KeyRegex, DataSource);
+	MainTableHandler->VerbosePrint();
+	DataTypeHandler->SetDefaultTableHandler(MainTableHandler);
 	
 	// Get the tables object and make sure that it is an object that we can iterate over
 	const TSharedPtr<FJsonObject>* TablesObjectPtr;
@@ -156,21 +177,7 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 		FString TableName = TablePair.Key;
 		TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
 		// Create a map of file paths
-		TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
-		// Get the file paths and populate the array
-		FString DataSource;
-		if (DataTypeObj->TryGetStringField("data_source", DataSource))
-		{
-			TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
-			FilePathsMap.Add(Pair);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
-			continue;
-		}
-
-		FString KeyRegex = "<Index>";
+		
 		TableHandler->Initialize(DataTypeName, TableName, KeyRegex, DataSource);
 		TableHandler->VerbosePrint();
 		DataTypeHandler->AddTableHandler(TableName, TableHandler);

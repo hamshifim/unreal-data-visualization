@@ -18,6 +18,7 @@ private:
 
 	FString Name;
 	FString DefaultTableName;
+	UATableHandler* DefaultTableHandler;
 	TMap<FString, UATableHandler*> TableHandlerMap;
 	TMap<FString, UATableHandler*> ManyToOneTableHandlerMap;
 
@@ -30,4 +31,6 @@ public:
 	UATableHandler* GetManyToOneTableHandler(FString TableName);
 	UATableHandler* GetTableHandler(FString TableName);
 	void AddTableHandler(FString TableName, UATableHandler* TableHandler);
+	void SetDefaultTableHandler(UATableHandler* TableHandler);
+	UATableHandler* GetDefaultTableHandler() const;
 };
