@@ -166,6 +166,20 @@ void UATableHandler::AddDataToDataTableFromSource()
 }
 
 
+void UATableHandler::AddDataToDataTableFromSource(int ChunkSize)
+{
+	TArray<FString> SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(1000);
+
+	for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1,
+			   SpatialDataSourceFileContentChunks.Num());
+		UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(SpatialDataSourceFileContentChunks[ChunkIndex]));
+		AddContentToTable(SpatialDataSourceFileContentChunks[ChunkIndex], DataType);
+	}
+}
+
+
 TArray<FString> UATableHandler::GetChunkedContentFromCSVSourceFile(int ChunkSize)
 {
 	// Validate the file extension

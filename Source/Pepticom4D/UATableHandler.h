@@ -34,6 +34,7 @@ public:
 	UDataTable* GetDataTable();
 	void AddContentToTable(FString Content, FString FileType);
 	void AddDataToDataTableFromSource();
+	void AddDataToDataTableFromSource(int ChunkSize);
 	TArray<FString> GetChunkedContentFromCSVSourceFile(int ChunkSize);
 	FString GetContentFromSourceFile(FString SourceFilePath);
 	void ClearData();
