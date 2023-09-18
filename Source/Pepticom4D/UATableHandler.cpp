@@ -96,6 +96,59 @@ UDataTable* UATableHandler::GetDataTable()
 	return DataTable;
 }
 
+void UATableHandler::AddContentToTable(FString Content, FString FileType)
+{
+	// Create a temporary data table to hold the new data and copy the row struct from the original data table
+	UDataTable* TempDataTable = NewObject<UDataTable>();
+	TempDataTable->RowStruct = DataTable->RowStruct;
+	// Get data table path names
+	FString TempDataTablePath = TempDataTable->GetPathName();
+	FString DataTablePath = DataTable->GetPathName();
+	// Make sure that the file content is not empty
+	if (Content.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Source file content for %s data table is empty."), *DataTablePath);
+		return;
+	}
+
+	TArray<FString> problems = TArray<FString>();
+	// Check if the file is a CSV or JSON file and parse it accordingly
+	if (FileType == "CSV")
+	{
+		problems = TempDataTable->CreateTableFromCSVString(Content);
+	}
+	else if (FileType == "JSON")
+	{
+		problems = TempDataTable->CreateTableFromJSONString(Content);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("File source for %s is not a CSV or JSON file"), *TempDataTablePath);
+		return;
+	}
+	// Make sure that there were no problems
+	if (problems.Num() > 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("There were problems importing %s"), *TempDataTablePath);
+		for (auto& problem : problems)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *problem);
+		}
+	}
+	else
+	{
+		// Add the new data to the existing data table
+		for (auto& Row : TempDataTable->GetRowMap())
+		{
+			FName RowName = Row.Key;
+			FTableRowBase* RowValue = (FTableRowBase*)Row.Value;
+			DataTable->AddRow(RowName, *RowValue);
+		}
+		// Log success
+		UE_LOG(LogTemp, Display, TEXT("Added data to data table %s successfully"), *DataTablePath);
+	}
+}
+
 void UATableHandler::AddDataToDataTableFromSource()
 {
 	FString FileExtension = FPaths::GetExtension(SourcePath).ToUpper();
@@ -104,55 +157,7 @@ void UATableHandler::AddDataToDataTableFromSource()
 	// Make sure that we found the data table
 	if (DataTable)
 	{
-		// Create a temporary data table to hold the new data and copy the row struct from the original data table
-		UDataTable* TempDataTable = NewObject<UDataTable>();
-		TempDataTable->RowStruct = DataTable->RowStruct;
-		// Get data table path names
-		FString TempDataTablePath = TempDataTable->GetPathName();
-		FString DataTablePath = DataTable->GetPathName();
-		// Make sure that the file content is not empty
-		if (SourceFileContent.IsEmpty())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Source file content for %s data table is empty."), *DataTablePath);
-			return;
-		}
-
-		TArray<FString> problems = TArray<FString>();
-		// Check if the file is a CSV or JSON file and parse it accordingly
-		if (FileExtension == "CSV")
-		{
-			problems = TempDataTable->CreateTableFromCSVString(SourceFileContent);
-		}
-		else if (SourceFileContent == "JSON")
-		{
-			problems = TempDataTable->CreateTableFromJSONString(SourceFileContent);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("File source for %s is not a CSV or JSON file"), *TempDataTablePath);
-			return;
-		}
-		// Make sure that there were no problems
-		if (problems.Num() > 0)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("There were problems importing %s"), *TempDataTablePath);
-			for (auto& problem : problems)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s"), *problem);
-			}
-		}
-		else
-		{
-			// Add the new data to the existing data table
-			for (auto& Row : TempDataTable->GetRowMap())
-			{
-				FName RowName = Row.Key;
-				FTableRowBase* RowValue = (FTableRowBase*)Row.Value;
-				DataTable->AddRow(RowName, *RowValue);
-			}
-			// Log success
-			UE_LOG(LogTemp, Display, TEXT("Added data to data table %s successfully"), *DataTablePath);
-		}
+		AddContentToTable(SourceFileContent, FileExtension);
 	}
 	else
 	{

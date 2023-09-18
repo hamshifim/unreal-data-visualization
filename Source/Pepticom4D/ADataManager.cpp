@@ -828,6 +828,26 @@ void ADataManager::Tick(float DeltaTime)
 
 void ADataManager::ForceRefresh()
 {
+	// TArray<FString*> CurrentDataTypes = ViewHandlerMap.FindRef(CurrentViewName)->GetDataTypes();
+	// //iterate over CurrentDataTypes
+	// for (const FString* DataType : CurrentDataTypes)
+	// {
+	// 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap.FindRef(*DataType);
+	// 	//get default data table handler
+	// 	UATableHandler* DefaultTableHandler = DataTypeHandler->GetDefaultTableHandler();
+	//
+	// 	TArray<FString> SpatialDataSourceFileContentChunks = DefaultTableHandler->GetChunkedContentFromCSVSourceFile(1000);
+	//
+	// 	for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex)
+	// 	{
+	// 		UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1,
+	// 			   SpatialDataSourceFileContentChunks.Num());
+	// 		UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(SpatialDataSourceFileContentChunks[ChunkIndex]));
+	// 		AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContentChunks[ChunkIndex],
+	// 									 SpatialDataSourceFileType);
+	// 	}
+	// }
+	
 	// Get the spatial data table
 	FString SpatialDataTablePath = FString(TEXT("/Game/SpatialDataTable.SpatialDataTable"));
 	UDataTable* SpatialDataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);

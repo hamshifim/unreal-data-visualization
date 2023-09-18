@@ -32,6 +32,7 @@ public:
 	FName GetSpecificKey(const TArray<FVarStruct>& Variables);
 	void VerbosePrint();
 	UDataTable* GetDataTable();
+	void AddContentToTable(FString Content, FString FileType);
 	void AddDataToDataTableFromSource();
 	TArray<FString> GetChunkedContentFromCSVSourceFile(int ChunkSize);
 	FString GetContentFromSourceFile(FString SourceFilePath);
