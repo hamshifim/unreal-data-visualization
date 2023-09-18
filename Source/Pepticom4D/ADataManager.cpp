@@ -155,10 +155,8 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 		return TableNames; // or handle the error
 	}
 
-	FString KeyRegex = "<Index>";
-
 	UATableHandler* MainTableHandler = NewObject<UATableHandler>(this);
-	MainTableHandler->Initialize(DataTypeName, DataTypeName, KeyRegex, DataSource);
+	MainTableHandler->InitializeSpatialTable(DataTypeName, DataTypeName);
 	MainTableHandler->VerbosePrint();
 	DataTypeHandler->SetDefaultTableHandler(MainTableHandler);
 	
@@ -177,8 +175,9 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 		FString TableName = TablePair.Key;
 		TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
 		// Create a map of file paths
-		
-		TableHandler->Initialize(DataTypeName, TableName, KeyRegex, DataSource);
+
+		FString KeyRegex = "<Index>";
+		TableHandler->InitializeTransientTable(DataTypeName, TableName, KeyRegex, DataSource);
 		TableHandler->VerbosePrint();
 		DataTypeHandler->AddTableHandler(TableName, TableHandler);
 
@@ -263,7 +262,7 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 		TableNames.Add(TableName);
 
 		UATableHandler* ManyToOneTableHandler = NewObject<UATableHandler>(this);
-		ManyToOneTableHandler->Initialize(DataTypeName, TableName, KeyRegex, ManyToOneSource);
+		ManyToOneTableHandler->InitializeTransientTable(DataTypeName, TableName, KeyRegex, ManyToOneSource);
 		ManyToOneTableHandler->VerbosePrint();
 
 		UE_LOG(LogTemp, Display, TEXT("Shlflaf: %s"), *FullTableName);

@@ -26,7 +26,8 @@ private:
 	void InitTable();
 
 public:
-	void Initialize(FString ADataType, FString ATableName, FString AKeyRegex, FString ASourcePath);
+	void InitializeSpatialTable(FString ADataType, FString ATableName);
+	void InitializeTransientTable(FString ADataType, FString ATableName, FString AKeyRegex, FString ASourcePath);
 	FString GetFullTableName();
 	FName GetSpecificKey(const TArray<FVarStruct>& Variables);
 	void VerbosePrint();

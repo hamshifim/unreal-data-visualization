@@ -1,16 +1,29 @@
 #include "UATableHandler.h"
 
 // An Initialization of the necessary variables
-void UATableHandler::Initialize(FString ADataType, FString ATableName, FString AKeyRegex, FString TableSourceFilePath)
+void UATableHandler::InitializeTransientTable(FString ADataType, FString ATableName, FString AKeyRegex, FString ASourcePath)
 {
 	this->DataType = ADataType;
 	this->TableName = ATableName;
 	this->KeyRegex = AKeyRegex;
-	this->SourcePath = TableSourceFilePath;
+	this->SourcePath = ASourcePath;
 	this->FullTableName = ADataType + TEXT("_") + ATableName;
 	this->StructName = StructNameFromFullTableName();
 	InitTable();
 }
+
+
+void UATableHandler::InitializeSpatialTable(FString ADataType, FString ATableName)
+{
+	this->DataType = ADataType;
+	this->TableName = ATableName;
+	this->KeyRegex = TEXT("<Index>");
+	this->SourcePath = TEXT("/Game/SpatialDataTable.SpatialDataTable");
+	this->FullTableName = ADataType + TEXT("_") + ATableName;
+	this->StructName = TEXT("SpatialDataStruct");
+	this->DataTable = LoadObject<UDataTable>(NULL, *SourcePath, NULL, LOAD_None, NULL);
+}
+
 
 FString UATableHandler::GetFullTableName()
 {
@@ -52,6 +65,7 @@ void UATableHandler::InitTable()
 	// Return the metadata table
 	this->DataTable = ADataTable;
 }
+
 
 FName UATableHandler::GetSpecificKey(const TArray<FVarStruct>& Variables)
 {
@@ -153,8 +167,7 @@ TArray<FString> UATableHandler::GetChunkedContentFromCSVSourceFile(int ChunkSize
 	FString FileExtension = FPaths::GetExtension(SourcePath).ToUpper();
 	if (!FileExtension.Equals("CSV"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Source file passed to get chunked content is not a CSV file: %s"),
-			   *SourcePath);
+		UE_LOG(LogTemp, Error, TEXT("Source file passed to get chunked content is not a CSV file: %s"), *SourcePath);
 		return TArray<FString>();
 	}
 	FString FileContent = GetContentFromSourceFile(SourcePath);
