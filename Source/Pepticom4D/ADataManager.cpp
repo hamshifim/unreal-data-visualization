@@ -176,11 +176,6 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 		TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
 		// Create a map of file paths
 
-		FString KeyRegex = "<Index>";
-		TableHandler->InitializeTransientTable(DataTypeName, TableName, KeyRegex, DataSource);
-		TableHandler->VerbosePrint();
-		DataTypeHandler->AddTableHandler(TableName, TableHandler);
-
 		FString MetadataSource;
 		if (TableObj->TryGetStringField("data_source", MetadataSource))
 		{
@@ -192,6 +187,11 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 			UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in at least one 'data_types' -> 'data_type' -> 'tables' -> 'table' object."));
 			continue;
 		}
+
+		FString KeyRegex = "<Index>";
+		TableHandler->InitializeTransientTable(DataTypeName, TableName, KeyRegex, MetadataSource);
+		TableHandler->VerbosePrint();
+		DataTypeHandler->AddTableHandler(TableName, TableHandler);
 
 		// Add the file paths to the map
 		FString FullTableName = GetFullTableName(DataTypeName, TableName);
@@ -861,76 +861,80 @@ void ADataManager::ForceRefresh()
 		}
 
 		UE_LOG(LogTemp, Display, TEXT("shnoop 4: %s"), *DataType);
-	}
-	
 
-	// Iterate over the array of current full dataset names and populate the spatial data table
-	for (int32 index = 0; index < CurrentFullTableNames.Num(); ++index)
-	{
-		FString FullDatasetName = CurrentFullTableNames[index];
-		// FString SpatialDataSourceFileType = GetFileTypeFromSourceFile(
-		// 	TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
-		// TArray<FString> SpatialDataSourceFileContentChunks;
-		// FString SpatialDataSourceFileContents;
-		// if (SpatialDataSourceFileType.Equals("CSV"))
-		// {
-		// 	UE_LOG(LogTemp, Display, TEXT("Kaloo Kalei: %s"), *FullDatasetName);
-		// 	SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(
-		// 		TableFilePathMap[FullDatasetName]["SpatialDataFilePath"], 1000);
-		// 	
-		// 	UE_LOG(LogTemp, Display, TEXT("Loading spatial data into data table (in chunks) for dataset %s"), *FullDatasetName);
-		// 	
-		// 	for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex)
-		// 	{
-		// 		UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1,
-		// 		       SpatialDataSourceFileContentChunks.Num());
-		// 		UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(SpatialDataSourceFileContentChunks[ChunkIndex]));
-		// 		AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContentChunks[ChunkIndex],
-		// 		                             SpatialDataSourceFileType);
-		// 	}
-		// }
-		// else
-		// {
-		// 	SpatialDataSourceFileContents = GetContentFromSourceFile(
-		// 		TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
-		// 	UE_LOG(LogTemp, Display, TEXT("Loading spatial data into data table for dataset %s"), *FullDatasetName);
-		// 	AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContents, SpatialDataSourceFileType);
-		// }
-		// UE_LOG(LogTemp, Display, TEXT("Finished loading spatial data into data table for dataset %s"),
-		//        *FullDatasetName);
+		TMap<FString, UATableHandler*> TableHandlerMap = DataTypeHandler->GetTableHandlerMap();
 
-		// Get the corresponding spatial metadata table
-		UDataTable* MetadataTable = GetMetadataTableFromFullDatasetName(FullDatasetName);
-		// Clear the metadata table
-		ClearDataTable(MetadataTable);
-		// Load the metadata into the metadata table
-		FString MetadataSourceFileType = GetFileTypeFromSourceFile(
-			TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
-		TArray<FString> MetadataSourceFileContentChunks;
-		FString MetadataSourceFileContents;
-		if (MetadataSourceFileType.Equals("CSV"))
+		//iterate over TableHandlerMap
+		for (const auto& TableHandlerPair : TableHandlerMap)
 		{
-			MetadataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(
-				TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"], 1000);
-			UE_LOG(LogTemp, Display, TEXT("Loading metadata into data table (in chunks) for dataset %s"),
-			       *FullDatasetName);
-			for (int32 ChunkIndex = 0; ChunkIndex < MetadataSourceFileContentChunks.Num(); ++ChunkIndex)
+			FString TableName = TableHandlerPair.Key;
+			UATableHandler* TableHandler = TableHandlerPair.Value;
+			TableHandler->ClearData();
+
+			// UDataTable* MetadataTable =  TableHandler->GetDataTable();
+			FString FullTableName = GetFullTableName(DataType, TableName);
+			UE_LOG(LogTemp, Display, TEXT("shnoop 4.1: FullTableName: %s"), *FullTableName);
+			UDataTable* MetadataTable = GetMetadataTableFromFullDatasetName(FullTableName);
+			MetadataTable->EmptyTable();
+			
+			UE_LOG(LogTemp, Display, TEXT("shnoop 5: FullTableName: %s"), *FullTableName);
+
+			// TableHandler->AddDataToDataTableFromSource(1000);
+			// UE_LOG(LogTemp, Display, TEXT("shnoop 6: %s"), *TableName);
+
+			TArray<FString> MetaContentChunks = TableHandler->GetChunkedContentFromCSVSourceFile(1000);
+
+			FString MetaFileType = TableHandler->GetFileType();
+			UE_LOG(LogTemp, Display, TEXT("shnoop 7: %s"), *MetaFileType);
+
+			for (int32 ChunkIndex = 0; ChunkIndex < MetaContentChunks.Num(); ++ChunkIndex)
 			{
-				UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1, MetadataSourceFileContentChunks.Num());
-				UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(MetadataSourceFileContentChunks[ChunkIndex]));
-				AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContentChunks[ChunkIndex],
-				                             MetadataSourceFileType);
+				UE_LOG(LogTemp, Display, TEXT("shnoop 8 Chunk %d of %d"), ChunkIndex + 1, MetaContentChunks.Num());
+				UE_LOG(LogTemp, Display, TEXT("shnoop 9 File contents: %s"), *(MetaContentChunks[ChunkIndex]));
+				AddDataToDataTableFromSource(MetadataTable, MetaContentChunks[ChunkIndex], MetaFileType);
+
+				UE_LOG(LogTemp, Display, TEXT("shnoop 10:\nFinished loading Meta data into data table for table %s"), *TableName);
 			}
 		}
-		else
-		{
-			MetadataSourceFileContents = GetContentFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
-			
-			UE_LOG(LogTemp, Display, TEXT("Loading metadata into data table for dataset %s"), *FullDatasetName);
-			AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContents, MetadataSourceFileType);
-		}
-		UE_LOG(LogTemp, Display, TEXT("Finished loading metadata into data table for dataset %s"), *FullDatasetName);
 	}
+
+	// // Iterate over the array of current full dataset names and populate the spatial data table
+	// for (int32 index = 0; index < CurrentFullTableNames.Num(); ++index)
+	// {
+	// 	FString FullDatasetName = CurrentFullTableNames[index];
+	//
+	// 	// Get the corresponding spatial metadata table
+	// 	UDataTable* MetadataTable = GetMetadataTableFromFullDatasetName(FullDatasetName);
+	// 	// Clear the metadata table
+	// 	ClearDataTable(MetadataTable);
+	// 	// Load the metadata into the metadata table
+	// 	FString MetadataSourceFileType = GetFileTypeFromSourceFile(
+	// 		TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
+	// 	TArray<FString> MetadataSourceFileContentChunks;
+	// 	FString MetadataSourceFileContents;
+	// 	if (MetadataSourceFileType.Equals("CSV"))
+	// 	{
+	// 		MetadataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(
+	// 			TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"], 1000);
+	// 		UE_LOG(LogTemp, Display, TEXT("Loading metadata into data table (in chunks) for dataset %s"),
+	// 		       *FullDatasetName);
+	// 		for (int32 ChunkIndex = 0; ChunkIndex < MetadataSourceFileContentChunks.Num(); ++ChunkIndex)
+	// 		{
+	// 			UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1, MetadataSourceFileContentChunks.Num());
+	// 			UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(MetadataSourceFileContentChunks[ChunkIndex]));
+	// 			AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContentChunks[ChunkIndex],
+	// 			                             MetadataSourceFileType);
+	// 		}
+	// 	}
+	// 	else
+	// 	{
+	// 		MetadataSourceFileContents = GetContentFromSourceFile(TableFilePathMap[FullDatasetName]["SpatialMetadataFilePath"]);
+	// 		
+	// 		UE_LOG(LogTemp, Display, TEXT("Loading metadata into data table for dataset %s"), *FullDatasetName);
+	// 		AddDataToDataTableFromSource(MetadataTable, MetadataSourceFileContents, MetadataSourceFileType);
+	// 	}
+	// 	UE_LOG(LogTemp, Display, TEXT("Finished loading metadata into data table for dataset %s"), *FullDatasetName);
+	// }
 	// Load the boundary points (POIs) for the current view
 	FString BoundaryPointsSourceFileContents = GetBoundaryPointsFromViewName(CurrentViewName);
 	FString BoundaryPointsSourceFileType = "JSON";

@@ -33,4 +33,5 @@ public:
 	void AddTableHandler(FString TableName, UATableHandler* TableHandler);
 	void SetDefaultTableHandler(UATableHandler* TableHandler);
 	UATableHandler* GetDefaultTableHandler() const;
+	TMap<FString, UATableHandler*> GetTableHandlerMap();
 };

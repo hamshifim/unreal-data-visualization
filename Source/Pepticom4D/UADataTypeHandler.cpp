@@ -47,3 +47,8 @@ UATableHandler* UADataTypeHandler::GetDefaultTableHandler() const
 {
 	return this->DefaultTableHandler;
 }
+
+TMap<FString, UATableHandler*> UADataTypeHandler::GetTableHandlerMap()
+{
+	return this->TableHandlerMap;
+}
