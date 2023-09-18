@@ -36,7 +36,7 @@ public:
 	void AddDataToDataTableFromSource();
 	void AddDataToDataTableFromSource(int ChunkSize);
 	TArray<FString> GetChunkedContentFromCSVSourceFile(int ChunkSize);
-	FString GetContentFromSourceFile(FString SourceFilePath);
+	FString GetContentFromSourceFile();
 	void ClearData();
 	FTableRowBase* GetTableRow(const TArray<FVarStruct>& Variables);
 };

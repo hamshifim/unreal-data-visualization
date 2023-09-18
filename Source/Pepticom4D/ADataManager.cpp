@@ -828,24 +828,27 @@ void ADataManager::Tick(float DeltaTime)
 
 void ADataManager::ForceRefresh()
 {
-	// TArray<FString> CurrentDataTypes = ViewHandlerMap.FindRef(CurrentViewName)->GetDataTypes();
-	// //iterate over CurrentDataTypes
-	// for (const FString DataType : CurrentDataTypes)
-	// {
-	// 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap.FindRef(*DataType);
-	// 	//get default data table handler
-	// 	UATableHandler* DefaultTableHandler = DataTypeHandler->GetDefaultTableHandler();
-	//
-	// 	UE_LOG(LogTemp, Display, TEXT("Stagadish 0: %s"), *DefaultTableHandler->GetFullTableName());
-	// 	DefaultTableHandler->AddDataToDataTableFromSource(1000);
-	// 	UE_LOG(LogTemp, Display, TEXT("Stagadish 1: %s"), *DefaultTableHandler->GetFullTableName());
-	// }
-	
 	// Get the spatial data table
 	FString SpatialDataTablePath = FString(TEXT("/Game/SpatialDataTable.SpatialDataTable"));
 	UDataTable* SpatialDataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
 	// Clear the spatial data table
 	ClearDataTable(SpatialDataTable);
+
+	
+	TArray<FString> CurrentDataTypes = ViewHandlerMap.FindRef(CurrentViewName)->GetDataTypes();
+	//iterate over CurrentDataTypes
+	for (const FString DataType : CurrentDataTypes)
+	{
+		UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap.FindRef(*DataType);
+		//get default data table handler
+		UATableHandler* DefaultTableHandler = DataTypeHandler->GetDefaultTableHandler();
+		UE_LOG(LogTemp, Display, TEXT("Stagadish 0: %s"), *DefaultTableHandler->GetFullTableName());
+		// DefaultTableHandler->AddDataToDataTableFromSource(1000);
+		// UE_LOG(LogTemp, Display, TEXT("Stagadish 1: %s"), *DefaultTableHandler->GetFullTableName());
+		
+	}
+	
+
 	// Iterate over the array of current full dataset names and populate the spatial data table
 	for (int32 index = 0; index < CurrentFullTableNames.Num(); ++index)
 	{

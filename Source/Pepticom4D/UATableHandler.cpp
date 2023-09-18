@@ -153,7 +153,7 @@ void UATableHandler::AddDataToDataTableFromSource()
 {
 	FString FileExtension = FPaths::GetExtension(SourcePath).ToUpper();
 
-	FString SourceFileContent = GetContentFromSourceFile(SourcePath);
+	FString SourceFileContent = GetContentFromSourceFile();
 	// Make sure that we found the data table
 	if (DataTable)
 	{
@@ -189,7 +189,7 @@ TArray<FString> UATableHandler::GetChunkedContentFromCSVSourceFile(int ChunkSize
 		UE_LOG(LogTemp, Error, TEXT("Source file passed to get chunked content is not a CSV file: %s"), *SourcePath);
 		return TArray<FString>();
 	}
-	FString FileContent = GetContentFromSourceFile(SourcePath);
+	FString FileContent = GetContentFromSourceFile();
 	TArray<FString> Chunks;
 	TArray<FString> Lines;
 	// Split the file content into lines
@@ -226,18 +226,18 @@ TArray<FString> UATableHandler::GetChunkedContentFromCSVSourceFile(int ChunkSize
 }
 
 
-FString UATableHandler::GetContentFromSourceFile(FString SourceFilePath)
+FString UATableHandler::GetContentFromSourceFile()
 {
 	FString FileContent = TEXT("");
 	// Make sure that the source file exists
-	if (FPaths::FileExists(SourceFilePath))
+	if (FPaths::FileExists(SourcePath))
 	{
 		// Read the file into a string
-		FFileHelper::LoadFileToString(FileContent, *SourceFilePath);
+		FFileHelper::LoadFileToString(FileContent, *SourcePath);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Source file does not exist: %s"), *SourceFilePath);
+		UE_LOG(LogTemp, Error, TEXT("Source file does not exist: %s"), *SourcePath);
 	}
 
 	return FileContent;
