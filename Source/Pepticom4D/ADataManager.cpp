@@ -156,7 +156,7 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 	}
 
 	UATableHandler* MainTableHandler = NewObject<UATableHandler>(this);
-	MainTableHandler->InitializeSpatialTable(DataTypeName, DataTypeName);
+	MainTableHandler->InitializeSpatialTable(DataTypeName, DataTypeName, DataSource);
 	MainTableHandler->VerbosePrint();
 	DataTypeHandler->SetDefaultTableHandler(MainTableHandler);
 	
@@ -828,12 +828,12 @@ void ADataManager::Tick(float DeltaTime)
 
 void ADataManager::ForceRefresh()
 {
+	// TODO use separate tables for actors
 	// Get the spatial data table
 	FString SpatialDataTablePath = FString(TEXT("/Game/SpatialDataTable.SpatialDataTable"));
 	UDataTable* SpatialDataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
 	// Clear the spatial data table
 	ClearDataTable(SpatialDataTable);
-
 	
 	TArray<FString> CurrentDataTypes = ViewHandlerMap.FindRef(CurrentViewName)->GetDataTypes();
 	//iterate over CurrentDataTypes
@@ -845,7 +845,22 @@ void ADataManager::ForceRefresh()
 		UE_LOG(LogTemp, Display, TEXT("Stagadish 0: %s"), *DefaultTableHandler->GetFullTableName());
 		// DefaultTableHandler->AddDataToDataTableFromSource(1000);
 		// UE_LOG(LogTemp, Display, TEXT("Stagadish 1: %s"), *DefaultTableHandler->GetFullTableName());
-		
+
+		TArray<FString> ContentChunks = DefaultTableHandler->GetChunkedContentFromCSVSourceFile(1000);
+
+		FString FileType = DefaultTableHandler->GetFileType();
+		UE_LOG(LogTemp, Display, TEXT("shnoop 0: %s"), *FileType);
+
+		for (int32 ChunkIndex = 0; ChunkIndex < ContentChunks.Num(); ++ChunkIndex)
+		{
+			UE_LOG(LogTemp, Display, TEXT("shnoop 1 Chunk %d of %d"), ChunkIndex + 1, ContentChunks.Num());
+			UE_LOG(LogTemp, Display, TEXT("shnoop 2 File contents: %s"), *(ContentChunks[ChunkIndex]));
+			AddDataToDataTableFromSource(SpatialDataTable, ContentChunks[ChunkIndex], FileType);
+
+			UE_LOG(LogTemp, Display, TEXT("shnoop 3:\nFinished loading spatial data into data table for dataset %s"), *DefaultTableHandler->GetFullTableName());
+		}
+
+		UE_LOG(LogTemp, Display, TEXT("shnoop 4: %s"), *DataType);
 	}
 	
 
@@ -853,35 +868,36 @@ void ADataManager::ForceRefresh()
 	for (int32 index = 0; index < CurrentFullTableNames.Num(); ++index)
 	{
 		FString FullDatasetName = CurrentFullTableNames[index];
-		FString SpatialDataSourceFileType = GetFileTypeFromSourceFile(
-			TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
-		TArray<FString> SpatialDataSourceFileContentChunks;
-		FString SpatialDataSourceFileContents;
-		if (SpatialDataSourceFileType.Equals("CSV"))
-		{
-			SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(
-				TableFilePathMap[FullDatasetName]["SpatialDataFilePath"], 1000);
-			
-			UE_LOG(LogTemp, Display, TEXT("Loading spatial data into data table (in chunks) for dataset %s"), *FullDatasetName);
-			
-			for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex)
-			{
-				UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1,
-				       SpatialDataSourceFileContentChunks.Num());
-				UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(SpatialDataSourceFileContentChunks[ChunkIndex]));
-				AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContentChunks[ChunkIndex],
-				                             SpatialDataSourceFileType);
-			}
-		}
-		else
-		{
-			SpatialDataSourceFileContents = GetContentFromSourceFile(
-				TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
-			UE_LOG(LogTemp, Display, TEXT("Loading spatial data into data table for dataset %s"), *FullDatasetName);
-			AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContents, SpatialDataSourceFileType);
-		}
-		UE_LOG(LogTemp, Display, TEXT("Finished loading spatial data into data table for dataset %s"),
-		       *FullDatasetName);
+		// FString SpatialDataSourceFileType = GetFileTypeFromSourceFile(
+		// 	TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
+		// TArray<FString> SpatialDataSourceFileContentChunks;
+		// FString SpatialDataSourceFileContents;
+		// if (SpatialDataSourceFileType.Equals("CSV"))
+		// {
+		// 	UE_LOG(LogTemp, Display, TEXT("Kaloo Kalei: %s"), *FullDatasetName);
+		// 	SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(
+		// 		TableFilePathMap[FullDatasetName]["SpatialDataFilePath"], 1000);
+		// 	
+		// 	UE_LOG(LogTemp, Display, TEXT("Loading spatial data into data table (in chunks) for dataset %s"), *FullDatasetName);
+		// 	
+		// 	for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex)
+		// 	{
+		// 		UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1,
+		// 		       SpatialDataSourceFileContentChunks.Num());
+		// 		UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(SpatialDataSourceFileContentChunks[ChunkIndex]));
+		// 		AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContentChunks[ChunkIndex],
+		// 		                             SpatialDataSourceFileType);
+		// 	}
+		// }
+		// else
+		// {
+		// 	SpatialDataSourceFileContents = GetContentFromSourceFile(
+		// 		TableFilePathMap[FullDatasetName]["SpatialDataFilePath"]);
+		// 	UE_LOG(LogTemp, Display, TEXT("Loading spatial data into data table for dataset %s"), *FullDatasetName);
+		// 	AddDataToDataTableFromSource(SpatialDataTable, SpatialDataSourceFileContents, SpatialDataSourceFileType);
+		// }
+		// UE_LOG(LogTemp, Display, TEXT("Finished loading spatial data into data table for dataset %s"),
+		//        *FullDatasetName);
 
 		// Get the corresponding spatial metadata table
 		UDataTable* MetadataTable = GetMetadataTableFromFullDatasetName(FullDatasetName);

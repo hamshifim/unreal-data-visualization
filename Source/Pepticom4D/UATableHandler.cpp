@@ -13,15 +13,17 @@ void UATableHandler::InitializeTransientTable(FString ADataType, FString ATableN
 }
 
 
-void UATableHandler::InitializeSpatialTable(FString ADataType, FString ATableName)
+void UATableHandler::InitializeSpatialTable(FString ADataType, FString ATableName, FString ADataSource)
 {
 	this->DataType = ADataType;
 	this->TableName = ATableName;
 	this->KeyRegex = TEXT("<Index>");
-	this->SourcePath = TEXT("/Game/SpatialDataTable.SpatialDataTable");
+	this->SourcePath = ADataSource;
 	this->FullTableName = ADataType + TEXT("_") + ATableName;
 	this->StructName = TEXT("SpatialDataStruct");
-	this->DataTable = LoadObject<UDataTable>(NULL, *SourcePath, NULL, LOAD_None, NULL);
+
+	FString SpatialDataTablePath = TEXT("/Game/SpatialDataTable.SpatialDataTable");
+	this->DataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
 }
 
 
@@ -271,4 +273,9 @@ FTableRowBase* UATableHandler::GetTableRow(const TArray<FVarStruct>& Variables)
 	}
 
 	return SpecificRow;
+}
+
+FString UATableHandler::GetFileType()
+{
+	return FPaths::GetExtension(SourcePath).ToUpper();
 }

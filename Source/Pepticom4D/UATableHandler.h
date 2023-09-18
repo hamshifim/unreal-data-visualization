@@ -26,7 +26,7 @@ private:
 	void InitTable();
 
 public:
-	void InitializeSpatialTable(FString ADataType, FString ATableName);
+	void InitializeSpatialTable(FString ADataType, FString ATableName, FString ADataSource);
 	void InitializeTransientTable(FString ADataType, FString ATableName, FString AKeyRegex, FString ASourcePath);
 	FString GetFullTableName();
 	FName GetSpecificKey(const TArray<FVarStruct>& Variables);
@@ -39,4 +39,5 @@ public:
 	FString GetContentFromSourceFile();
 	void ClearData();
 	FTableRowBase* GetTableRow(const TArray<FVarStruct>& Variables);
+	FString GetFileType();
 };
