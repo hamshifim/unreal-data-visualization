@@ -169,24 +169,9 @@ void AActorSpawner::SpawnActorsFromQueue()
 						DataPointActor->ChangeScale(Radius);
 					}
 
-					// Get the actor's type
-					FString ActorDataType = TEXT("");
-					FName TypePropertyName = FName(TEXT("type"));
-					FProperty* TypeProperty = SpatialDataStruct->FindPropertyByName(TypePropertyName);
-					if (TypeProperty)
-					{
-						FStrProperty* StrProp = CastField<FStrProperty>(TypeProperty);
-						ActorDataType = StrProp->GetPropertyValue_InContainer(SpatialData);
-					}
-					else
-					{
-						UE_LOG(LogTemp, Error, TEXT("Could not find type property for at least one actor"));
-						continue;
-					}
-
 					DataManager->DataPointActors.Add(DataPointActor);
 
-					DataPointActor->Initialize(ActorDataType, MetaDataTableName, SpatialData, Metadata);
+					DataPointActor->Initialize(DataType, MetaDataTableName, SpatialData, Metadata);
 				}
 				else
 				{
