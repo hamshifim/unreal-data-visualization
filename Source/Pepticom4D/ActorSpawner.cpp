@@ -27,8 +27,7 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable()
 	// Store a map of actor type name to the number of actors of that type that have been spawned
 	TMap<FString, int32> ActorTypeToNumSpawnedMap;
 
-	TArray<FString> CurrentDataTypes = DataManager->ViewHandlerMap.FindRef(DataManager->CurrentViewName)->
-	                                                GetDataTypes();
+	TArray<FString> CurrentDataTypes = DataManager->GetCurrentDataTypes();
 
 	for (const FString DataType : CurrentDataTypes)
 	{
@@ -169,7 +168,8 @@ void AActorSpawner::SpawnActorsFromQueue()
 						DataPointActor->ChangeScale(Radius);
 					}
 
-					DataManager->DataPointActors.Add(DataPointActor);
+					//add actor to data type handler
+					DataManager->DataTypeHandlerMap.FindRef(DataType)->AddDataPointActor(DataPointActor);
 
 					DataPointActor->Initialize(DataType, MetaDataTableName, SpatialData, Metadata);
 				}
@@ -191,15 +191,19 @@ void AActorSpawner::SpawnActorsFromQueue()
 void AActorSpawner::DestroySpawnedActors()
 {
 	/* Destroys all actors which have been spawned by this actor spawner */
-
-	// Iterate through all actors DataPointActors and destroy them
-	for (auto& Actor : DataManager->DataPointActors)
+	
+	for (const FString DataType : DataManager->GetCurrentDataTypes())
 	{
-		// Destroy the actor
-		Actor->Destroy();
-	}
+		// Iterate through all actors DataPointActors in of the data type and destroy them
+		TArray<ADataPointActor*> DataPointActors = DataManager->DataTypeHandlerMap.FindRef(*DataType)->GetDataPointActors();
+		for (auto& Actor : DataPointActors)
+		{
+			// Destroy the actor
+			Actor->Destroy();
+		}
 
-	DataManager->DataPointActors.Empty();
+		DataPointActors.Empty();
+	}
 }
 
 void AActorSpawner::ForceRefresh()

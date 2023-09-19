@@ -71,9 +71,7 @@ public:
 
 	FString GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata);
 
-	// Properties
-	// Map of actors that have been spawned; key is metadata, value is the actor
-	TArray<ADataPointActor*> DataPointActors = TArray<ADataPointActor*>();
+	TArray<FString> GetCurrentDataTypes();
 
 	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.
 	FString CurrentViewName = TEXT("");

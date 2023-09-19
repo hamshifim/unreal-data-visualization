@@ -52,3 +52,13 @@ TMap<FString, UATableHandler*> UADataTypeHandler::GetTableHandlerMap()
 {
 	return this->TableHandlerMap;
 }
+
+void UADataTypeHandler::AddDataPointActor(ADataPointActor* ADataPointActor)
+{
+	this->DataPointActors.Add(ADataPointActor);
+}
+
+TArray<ADataPointActor*> UADataTypeHandler::GetDataPointActors()
+{
+	return this->DataPointActors;
+}

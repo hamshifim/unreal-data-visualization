@@ -778,6 +778,11 @@ FString ADataManager::GetPropertyValueAsString(FProperty* Property, const FTable
 	return PropertyValue;
 }
 
+TArray<FString> ADataManager::GetCurrentDataTypes()
+{
+	return ViewHandlerMap.FindRef(CurrentViewName)->GetDataTypes();
+}
+
 FString ADataManager::GetPropertyValueStringFromMetadata(const FTableRowBase& Metadata, UStruct* MetadataStruct,
                                                          FString PropertyName)
 {
