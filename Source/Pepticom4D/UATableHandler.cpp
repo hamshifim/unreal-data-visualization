@@ -58,7 +58,7 @@ void UATableHandler::InitTable()
 	UScriptStruct* RowStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *StructName);
 
 	// Create a new Data Table asset
-	UDataTable* ADataTable = NewObject<UDataTable>(GetTransientPackage(), FName(*TableName), RF_Transient);
+	UDataTable* ADataTable = NewObject<UDataTable>(GetTransientPackage(), FName(*FullTableName), RF_Transient);
 	ADataTable->RowStruct = RowStruct;
 
 	// Register the Data Table
@@ -170,7 +170,7 @@ void UATableHandler::AddDataToDataTableFromSource()
 
 void UATableHandler::AddDataToDataTableFromSource(int ChunkSize)
 {
-	TArray<FString> SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(1000);
+	TArray<FString> SpatialDataSourceFileContentChunks = GetChunkedContentFromCSVSourceFile(ChunkSize);
 
 	for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex)
 	{

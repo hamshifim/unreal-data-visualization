@@ -30,6 +30,9 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 	// Make sure that we found the data table
 	if (SpatialDataTable) {
 
+		// Get all of the row names
+		TArray<FName> SpatialDataRowNames = SpatialDataTable->GetRowNames();
+
 		// TArray<FString> CurrentDataTypes = DataManager->ViewHandlerMap.FindRef(DataManager->CurrentViewName)->GetDataTypes();
 		//
 		// for (const FString DataType : CurrentDataTypes)
@@ -46,8 +49,7 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 		// }
 
 		
-		// Get all of the row names
-		TArray<FName> SpatialDataRowNames = SpatialDataTable->GetRowNames();
+
 		// Get the total number of rows
 		int32 NumSpatialDataRows = SpatialDataRowNames.Num();
 
@@ -92,8 +94,10 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 
 				// Make sure that there are the same number of rows in both tables
 				if (NumSpatialDataRows != NumSpatialMetadataRows) {
-					UE_LOG(LogTemp, Error, TEXT("The number of rows in the spatial data table (%d) does not match the number of rows in the spatial metadata table (%d)"), NumSpatialDataRows, NumSpatialMetadataRows);
-					return;
+					
+					UE_LOG(LogTemp, Error, TEXT("Shivkook The number of rows in the spatial data table (%d) does not match the number of rows in the spatial metadata table (%d). FullDatasetName: %s"), NumSpatialDataRows, NumSpatialMetadataRows, *FullDatasetName);
+					// return;
+					continue;
 				}
 
 				// Add the type name to the map if it doesn't already exist, or increment the count if it does

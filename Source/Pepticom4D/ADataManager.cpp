@@ -202,12 +202,15 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 		FString MetadataStructName = StructNameFromFullTableName(FullTableName);
 		FString SpatialMetadataTableName = MetadataStructName + "DataTable";
 		UScriptStruct* SpatialMetadataScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-		UDataTable* SpatialMetadataTable = CreateTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
+		// UDataTable* SpatialMetadataTable = CreateTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
 		// Add the spatial metadata table to the map
-		FullTableNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
+		// FullTableNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
+
+		FullTableNameToSpatialMetadataTableMap.Add(FullTableName, TableHandler->GetDataTable());
+		
 		// Store the metadata struct in the map of full dataset names to metadata structs
-		UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
-		FullTableNameToMetadataStructMap.Add(FullTableName, SpatialMetadataStruct);
+		// UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
+		FullTableNameToMetadataStructMap.Add(FullTableName, TableHandler->GetDataTable()->RowStruct);
 
 		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
 	}
@@ -846,8 +849,6 @@ void ADataManager::ForceRefresh()
 		DefaultTableHandler->AddDataToDataTableFromSource(1000);
 		UE_LOG(LogTemp, Display, TEXT("Stagadish 1: %s"), *DefaultTableHandler->GetFullTableName());
 
-		UE_LOG(LogTemp, Display, TEXT("shnoop 4: %s"), *DataType);
-
 		TMap<FString, UATableHandler*> TableHandlerMap = DataTypeHandler->GetTableHandlerMap();
 
 		//iterate over TableHandlerMap
@@ -857,30 +858,16 @@ void ADataManager::ForceRefresh()
 			UATableHandler* TableHandler = TableHandlerPair.Value;
 			TableHandler->ClearData();
 
-			// UDataTable* MetadataTable =  TableHandler->GetDataTable();
+			UDataTable* MetadataTable =  TableHandler->GetDataTable();
 			FString FullTableName = GetFullTableName(DataType, TableName);
-			UE_LOG(LogTemp, Display, TEXT("shnoop 4.1: FullTableName: %s"), *FullTableName);
-			UDataTable* MetadataTable = GetMetadataTableFromFullDatasetName(FullTableName);
+			UE_LOG(LogTemp, Display, TEXT("Froochtel 0: FullTableName: %s"), *FullTableName);
+			// UDataTable* MetadataTable = GetMetadataTableFromFullDatasetName(FullTableName);
 			MetadataTable->EmptyTable();
 			
-			UE_LOG(LogTemp, Display, TEXT("shnoop 5: FullTableName: %s"), *FullTableName);
+			UE_LOG(LogTemp, Display, TEXT("Froochtel 1: FullTableName: %s"), *FullTableName);
 
-			// TableHandler->AddDataToDataTableFromSource(1000);
-			// UE_LOG(LogTemp, Display, TEXT("shnoop 6: %s"), *TableName);
-
-			TArray<FString> MetaContentChunks = TableHandler->GetChunkedContentFromCSVSourceFile(1000);
-
-			FString MetaFileType = TableHandler->GetFileType();
-			UE_LOG(LogTemp, Display, TEXT("shnoop 7: %s"), *MetaFileType);
-
-			for (int32 ChunkIndex = 0; ChunkIndex < MetaContentChunks.Num(); ++ChunkIndex)
-			{
-				UE_LOG(LogTemp, Display, TEXT("shnoop 8 Chunk %d of %d"), ChunkIndex + 1, MetaContentChunks.Num());
-				UE_LOG(LogTemp, Display, TEXT("shnoop 9 File contents: %s"), *(MetaContentChunks[ChunkIndex]));
-				AddDataToDataTableFromSource(MetadataTable, MetaContentChunks[ChunkIndex], MetaFileType);
-
-				UE_LOG(LogTemp, Display, TEXT("shnoop 10:\nFinished loading Meta data into data table for table %s"), *TableName);
-			}
+			TableHandler->AddDataToDataTableFromSource(1000);
+			UE_LOG(LogTemp, Display, TEXT("Froochtel 2: %s"), *TableName);
 		}
 	}
 	
