@@ -204,8 +204,6 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 
 void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
 {
-	TArray<FString> TableNames;
-	
 	// Get the tables object and make sure that it is an object that we can iterate over
 	const TSharedPtr<FJsonObject>* TablesObjectPtr;
 	if (!DataTypeObj->TryGetObjectField("many_to_one_tables", TablesObjectPtr))
@@ -241,23 +239,15 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 			continue;
 		}
 
-		// Add the file paths to the map
-		FString FullTableName = GetFullTableName(DataTypeName, TableName);
-		// Add the table name to the array of table names
-		TableNames.Add(TableName);
-
 		UATableHandler* ManyToOneTableHandler = NewObject<UATableHandler>(this);
 		ManyToOneTableHandler->InitializeTransientTable(DataTypeName, TableName, KeyRegex, ManyToOneSource);
 		ManyToOneTableHandler->VerbosePrint();
 
-		UE_LOG(LogTemp, Display, TEXT("Shlflaf: %s"), *FullTableName);
+		UE_LOG(LogTemp, Display, TEXT("Shlflaf DataTypeName :%s TableName %s"), *DataTypeName, *TableName);
 
-		TMap<FString, UATableHandler*> TableNameToTableHandlerMap = TMap<FString, UATableHandler*>();
-		TableNameToTableHandlerMap.Add(TableName, ManyToOneTableHandler);
-
-		DataTypeHandler->SetManyToOneTableHandlerMap(TableNameToTableHandlerMap);
+		DataTypeHandler->AddToManyToOneTableHandlerMap(TableName, ManyToOneTableHandler);
 		
-		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Many To One Table: %s"), *FullTableName);
+		UE_LOG(LogTemp, Display, TEXT("Shlflaf Finished extracting and mapping Many To One Table: DataTypeName :%s TableName %s"), *DataTypeName, *TableName);
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping many to one tables for DataTypeName: %s"), *DataTypeName);

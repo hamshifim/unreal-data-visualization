@@ -64,6 +64,8 @@ void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());
 	}
+
+	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 3"));
 }
 
 void UAAnimationHandler::LoadData()

@@ -29,7 +29,7 @@ public:
 	void Initialize(FString Name, FString DefaultTableName);
 	void Sanity();
 	FString GetDefaultTableName();
-	void SetManyToOneTableHandlerMap(TMap<FString, UATableHandler*> Map);
+	void AddToManyToOneTableHandlerMap(FString TableName, UATableHandler* TableHandler);
 	UATableHandler* GetManyToOneTableHandler(FString TableName);
 	UATableHandler* GetTableHandler(FString TableName);
 	void AddTableHandler(FString TableName, UATableHandler* TableHandler);
