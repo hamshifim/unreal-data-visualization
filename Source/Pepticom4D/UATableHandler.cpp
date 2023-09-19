@@ -23,7 +23,12 @@ void UATableHandler::InitializeSpatialTable(FString ADataType, FString ATableNam
 	this->StructName = TEXT("SpatialDataStruct");
 
 	FString SpatialDataTablePath = TEXT("/Game/SpatialDataTable.SpatialDataTable");
-	this->DataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
+	UDataTable* Snoopy = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
+
+	// Create a new Data Table asset
+	UDataTable* ADataTable = NewObject<UDataTable>(GetTransientPackage(), FName(*FullTableName), RF_Transient);
+	ADataTable->RowStruct = Snoopy->RowStruct;
+	this->DataTable = ADataTable;
 }
 
 
