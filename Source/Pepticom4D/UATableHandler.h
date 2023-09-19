@@ -40,4 +40,5 @@ public:
 	void ClearData();
 	FTableRowBase* GetTableRow(const TArray<FVarStruct>& Variables);
 	FString GetFileType();
+	FString GetTableName();
 };

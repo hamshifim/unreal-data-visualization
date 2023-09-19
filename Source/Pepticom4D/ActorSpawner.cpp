@@ -49,6 +49,7 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable()
 			FString TableName = TableHandlerPair.Key;
 			UATableHandler* TableHandler = TableHandlerPair.Value;
 			FString FullTableName = TableHandler->GetFullTableName();
+			FString MetaDataTableName = TableHandler->GetTableName();
 
 			UDataTable* SpatialMetadataTable = TableHandler->GetDataTable();
 
@@ -107,8 +108,7 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable()
 				{
 					// Spawn the actor
 					FVector SpawnLocation = FVector(SpatialDataRow->x, SpatialDataRow->y, SpatialDataRow->z);
-					auto ActorDataTuple = TTuple<FTableRowBase*, FSpatialDataStruct*, FVector>(
-						SpatialMetadataRow, SpatialDataRow, SpawnLocation);
+					auto ActorDataTuple = TTuple<FTableRowBase*, FSpatialDataStruct*, FVector, FString, FString>(SpatialMetadataRow, SpatialDataRow, SpawnLocation, DataType, MetaDataTableName);
 					ActorDataTupleQueue.Enqueue(ActorDataTuple);
 				}
 				else
@@ -131,12 +131,16 @@ void AActorSpawner::SpawnActorsFromQueue()
 			// Make sure that there are actors to spawn
 			if (!ActorDataTupleQueue.IsEmpty())
 			{
-				TTuple<FTableRowBase*, FSpatialDataStruct*, FVector> ActorDataTuple;
+				TTuple<FTableRowBase*, FSpatialDataStruct*, FVector, FString, FString> ActorDataTuple;
 				// Get the next spawn location
 				ActorDataTupleQueue.Dequeue(ActorDataTuple);
 				FTableRowBase* Metadata = ActorDataTuple.Get<0>();
 				FSpatialDataStruct* SpatialData = ActorDataTuple.Get<1>();
 				FVector SpawnLocation = ActorDataTuple.Get<2>();
+
+				FString DataType = ActorDataTuple.Get<3>();
+				FString MetaDataTableName = ActorDataTuple.Get<4>();
+				
 				// Set actor rotation to be the same as the rotation of the spawner
 				FRotator SpawnRotation = GetActorRotation();
 				// Spawn the actor
@@ -183,10 +187,9 @@ void AActorSpawner::SpawnActorsFromQueue()
 					DataManager->DataPointActors.Add(DataPointActor);
 
 					// Map the actor to its data type
-					DataManager->ActorToDataTypeMap.
-					             Add(TPair<ADataPointActor*, FString>(DataPointActor, ActorDataType));
+					DataManager->ActorToDataTypeMap.Add(TPair<ADataPointActor*, FString>(DataPointActor, ActorDataType));
 
-					DataPointActor->Initialize(ActorDataType, SpatialData, Metadata);
+					DataPointActor->Initialize(ActorDataType, MetaDataTableName, SpatialData, Metadata);
 				}
 				else
 				{

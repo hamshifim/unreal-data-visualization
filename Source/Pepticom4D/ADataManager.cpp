@@ -195,9 +195,7 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 		
 		// Add the table name to the array of table names
 		TableNames.Add(TableName);
-
-		FullTableNameToMetadataStructMap.Add(FullTableName, TableHandler->GetDataTable()->RowStruct);
-
+		
 		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
 	}
 
@@ -348,14 +346,6 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 			FString DefaultTableName = DataTypeHandler->GetDefaultTableName();
 			
 			UE_LOG(LogTemp, Display, TEXT("Shliph 0"));
-
-			if(ViewName.Equals(CurrentViewName))
-			{
-				FString FullTableName = GetFullTableName(DataTypeName, DefaultTableName);
-				CurrentFullTableNames.Add(FullTableName);
-				
-				UE_LOG(LogTemp, Display, TEXT("Shliph 2"));
-			}
 		}
 
 		UE_LOG(LogTemp, Display, TEXT("Shliph 3"));
@@ -722,10 +712,13 @@ UStruct* ADataManager::GetMetadataStructFromActor(ADataPointActor* DataPointActo
 {
 	// Get the data type from the actor
 	FString DataType = DataPointActor->GetDataType();
+	FString MetadataTableName = DataPointActor->GetMetaDataTableName();
+	FString TableName = DataPointActor->GetTableName();
+	
 	// Get the full dataset name from the data type
 	FString FullDatasetName = GetFullDatasetNameFromDataType(DataType);
 	// Get the metadata struct from the full dataset name
-	UStruct* MetadataStruct = FullTableNameToMetadataStructMap.FindRef(FullDatasetName);
+	UStruct* MetadataStruct = DataTypeHandlerMap.FindRef(DataType)->GetTableHandlerMap().FindRef(MetadataTableName)->GetDataTable()->RowStruct;
 
 	return MetadataStruct;
 }

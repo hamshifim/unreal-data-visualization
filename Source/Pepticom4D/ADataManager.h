@@ -79,11 +79,7 @@ public:
 	TMap<ADataPointActor*, FString> ActorToDataTypeMap = TMap<ADataPointActor*, FString>();
 	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.
 	FString CurrentViewName = TEXT("");
-	// Combination of main and sub dataset names within the current view
-	TArray<FString> CurrentFullTableNames = TArray<FString>();
-	// Map of full dataset names to the UStruct type of their metadata
-	TMap<FString, UStruct*> FullTableNameToMetadataStructMap = TMap<FString, UStruct*>();
-	
+
 	// map view names to UAViewHandler pointers
 	TMap<FString, UAViewHandler*> ViewHandlerMap;
 

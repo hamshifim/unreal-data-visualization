@@ -285,3 +285,8 @@ FString UATableHandler::GetFileType()
 {
 	return FPaths::GetExtension(SourcePath).ToUpper();
 }
+
+FString UATableHandler::GetTableName()
+{
+	return this->TableName;
+}

@@ -17,7 +17,7 @@ public:
 	// Sets default values for this actor's properties
 	ADataPointActor();
 	void Create();
-	void Initialize(FString ADataType, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataStruct);
+	void Initialize(FString ADataType, FString AMetaDataTableName, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataStruct);
 	void ChangeColor(FString ColorHex);
 	void ChangeColor(FColor NewColor);
 	void ChangeScale(const float NewScale) const;
@@ -25,6 +25,8 @@ public:
 	FString GetDataType() const;
 	FSpatialDataStruct* GetSpatialDataStruct() const;
 	FTableRowBase& GetMetadataStruct() const;
+	FString GetTableName();
+	FString GetMetaDataTableName() const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -50,6 +52,8 @@ private:
 	UFUNCTION()
 	void OnMeshClicked(UPrimitiveComponent* ClickedComp, FKey ButtonPressed);
 	FString DataType;
+	FString TableName;
+	FString MetaDataTableName;
 	FSpatialDataStruct* SpatialDataStruct;
 	FTableRowBase* MetadataStruct;
 };
