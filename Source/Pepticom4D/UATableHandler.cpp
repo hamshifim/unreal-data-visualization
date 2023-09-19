@@ -174,10 +174,10 @@ void UATableHandler::AddDataToDataTableFromSource(int ChunkSize)
 
 	for (int32 ChunkIndex = 0; ChunkIndex < SpatialDataSourceFileContentChunks.Num(); ++ChunkIndex)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1,
-			   SpatialDataSourceFileContentChunks.Num());
+		UE_LOG(LogTemp, Display, TEXT("Chunk %d of %d"), ChunkIndex + 1, SpatialDataSourceFileContentChunks.Num());
 		UE_LOG(LogTemp, Display, TEXT("File contents: %s"), *(SpatialDataSourceFileContentChunks[ChunkIndex]));
-		AddContentToTable(SpatialDataSourceFileContentChunks[ChunkIndex], DataType);
+		
+		AddContentToTable(SpatialDataSourceFileContentChunks[ChunkIndex], GetFileType());
 	}
 }
 
@@ -275,6 +275,7 @@ FTableRowBase* UATableHandler::GetTableRow(const TArray<FVarStruct>& Variables)
 	return SpecificRow;
 }
 
+//TODO get rid of this by encapsulation
 FString UATableHandler::GetFileType()
 {
 	return FPaths::GetExtension(SourcePath).ToUpper();

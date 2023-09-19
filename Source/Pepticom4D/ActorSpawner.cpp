@@ -29,6 +29,23 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable() {
 	UDataTable* SpatialDataTable = LoadObject<UDataTable>(NULL, *SpatialDataTablePath, NULL, LOAD_None, NULL);
 	// Make sure that we found the data table
 	if (SpatialDataTable) {
+
+		// TArray<FString> CurrentDataTypes = DataManager->ViewHandlerMap.FindRef(DataManager->CurrentViewName)->GetDataTypes();
+		//
+		// for (const FString DataType : CurrentDataTypes)
+		// {
+		// 	UADataTypeHandler* DataTypeHandler = DataManager->DataTypeHandlerMap.FindRef(*DataType);
+		// 	TMap<FString, UATableHandler*> TableHandlerMap = DataTypeHandler->GetTableHandlerMap();
+		//
+		// 	//iterate over TableHandlerMap
+		// 	for (const auto& TableHandlerPair : TableHandlerMap)
+		// 	{
+		// 		FString TableName = TableHandlerPair.Key;
+		// 		UATableHandler* TableHandler = TableHandlerPair.Value;
+		// 	}
+		// }
+
+		
 		// Get all of the row names
 		TArray<FName> SpatialDataRowNames = SpatialDataTable->GetRowNames();
 		// Get the total number of rows
