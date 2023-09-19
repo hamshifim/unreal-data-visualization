@@ -195,21 +195,13 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 
 		// Add the file paths to the map
 		FString FullTableName = GetFullTableName(DataTypeName, TableName);
-		TableFilePathMap.Add(FullTableName, FilePathsMap);
+		
 		// Add the table name to the array of table names
 		TableNames.Add(TableName);
 		// Create a spatial metadata table for each data type, assuming a default metadata struct from the current table
 		FString MetadataStructName = StructNameFromFullTableName(FullTableName);
 		FString SpatialMetadataTableName = MetadataStructName + "DataTable";
-		UScriptStruct* SpatialMetadataScriptStruct = FindObject<UScriptStruct>(ANY_PACKAGE, *MetadataStructName);
-		// UDataTable* SpatialMetadataTable = CreateTableFromStruct(SpatialMetadataTableName, SpatialMetadataScriptStruct);
-		// Add the spatial metadata table to the map
-		// FullTableNameToSpatialMetadataTableMap.Add(FullTableName, SpatialMetadataTable);
 
-		FullTableNameToSpatialMetadataTableMap.Add(FullTableName, TableHandler->GetDataTable());
-		
-		// Store the metadata struct in the map of full dataset names to metadata structs
-		// UStruct* SpatialMetadataStruct = Cast<UStruct>(SpatialMetadataScriptStruct);
 		FullTableNameToMetadataStructMap.Add(FullTableName, TableHandler->GetDataTable()->RowStruct);
 
 		UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping Table: %s"), *FullTableName);
@@ -717,12 +709,6 @@ void ADataManager::ClearDataTable(UDataTable* DataTable)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Data table passed to clear data function does not exist"));
 	}
-}
-
-
-UDataTable* ADataManager::GetMetadataTableFromFullDatasetName(FString FullDatasetName)
-{
-	return FullTableNameToSpatialMetadataTableMap.FindRef(FullDatasetName);
 }
 
 FString ADataManager::GetBoundaryPointsFromViewName(FString ViewName)

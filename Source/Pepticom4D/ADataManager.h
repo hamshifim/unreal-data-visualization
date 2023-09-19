@@ -52,9 +52,6 @@ public:
 	void ClearDataTable(UDataTable* DataTable);
 
 	UFUNCTION()
-	UDataTable* GetMetadataTableFromFullDatasetName(FString FullDatasetName);
-
-	UFUNCTION()
 	FString GetBoundaryPointsFromViewName(FString ViewName);
 
 	UFUNCTION()
@@ -86,14 +83,8 @@ public:
 	TArray<FString> CurrentFullTableNames = TArray<FString>();
 	// Map of data type (main dataset name) to the current sub dataset name for that data type
 	TMap<FString, FString> CurrentDataTypeNameToTableNameMap = TMap<FString, FString>();
-	// Current valid keys for each TPair: "SpatialDataFilePath", "SpatialMetadataFilePath". All entries in the map should have pairs with these keys.
-	TMap<FString, TMap<FString, FString>> TableFilePathMap = TMap<FString, TMap<FString, FString>>();
-
 	// Map of full dataset names to the UStruct type of their metadata
 	TMap<FString, UStruct*> FullTableNameToMetadataStructMap = TMap<FString, UStruct*>();
-	
-	// Map of data full dataset names to spatial metadata tables
-	TMap<FString, UDataTable*> FullTableNameToSpatialMetadataTableMap = TMap<FString, UDataTable*>();
 	
 	// map view names to UAViewHandler pointers
 	TMap<FString, UAViewHandler*> ViewHandlerMap;
