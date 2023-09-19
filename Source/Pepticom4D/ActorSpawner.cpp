@@ -186,9 +186,6 @@ void AActorSpawner::SpawnActorsFromQueue()
 
 					DataManager->DataPointActors.Add(DataPointActor);
 
-					// Map the actor to its data type
-					DataManager->ActorToDataTypeMap.Add(TPair<ADataPointActor*, FString>(DataPointActor, ActorDataType));
-
 					DataPointActor->Initialize(ActorDataType, MetaDataTableName, SpatialData, Metadata);
 				}
 				else
@@ -217,7 +214,7 @@ void AActorSpawner::DestroySpawnedActors()
 		Actor->Destroy();
 	}
 
-	DataManager->ActorToDataTypeMap.Empty();
+	DataManager->DataPointActors.Empty();
 }
 
 void AActorSpawner::ForceRefresh()

@@ -109,8 +109,6 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 
 		//TODO create Table handlers for each table within the data type deprecating DataTypeToTableNamesMap
 		TArray<FString> TableNames = ExtractTables(DataTypeHandler, DataTypeName, DataTypeObj);
-		// Store the table names in the map
-		DataTypeToTableNamesMap.Add(DataTypeName, TableNames);
 
 		ExtractManyToOneTables(DataTypeHandler, DataTypeName, DataTypeObj);
 		// Store the table names in the map

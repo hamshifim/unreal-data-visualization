@@ -75,16 +75,11 @@ public:
 	// Map of actors that have been spawned; key is metadata, value is the actor
 	TArray<ADataPointActor*> DataPointActors = TArray<ADataPointActor*>();
 
-	// Map of actors to their data type
-	TMap<ADataPointActor*, FString> ActorToDataTypeMap = TMap<ADataPointActor*, FString>();
 	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.
 	FString CurrentViewName = TEXT("");
 
 	// map view names to UAViewHandler pointers
 	TMap<FString, UAViewHandler*> ViewHandlerMap;
-
-	// Map of data types to table names
-	TMap<FString, TArray<FString>> DataTypeToTableNamesMap = TMap<FString, TArray<FString>>();
 	
 	//Map of animation names to animation objects
 	TMap<FString, UAAnimationHandler*> AnimationHandlerMap;

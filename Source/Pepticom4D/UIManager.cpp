@@ -303,10 +303,16 @@ void AUIManager::ConfigureDataSelectorWidget() {
             // Set the font size of the combo box
             ComboBox->Font.Size = 12;
             // Add the sub-dataset names to the combo box
-            for (const FString& SubDatasetName : DataManager->DataTypeToTableNamesMap.FindRef(DataType)) {
-                // Add the sub-dataset name to the combo box
-                ComboBox->AddOption(SubDatasetName);
+
+            TMap<FString, UATableHandler*> TableHandlerMap = DataManager->DataTypeHandlerMap.FindRef(DataType)->GetTableHandlerMap();
+
+            //iterate through TableHandlerMap
+            for (const auto& TableHandlerPair : TableHandlerMap)
+            {
+                FString TableName = TableHandlerPair.Key;
+                ComboBox->AddOption(TableName);
             }
+
             // Bind to the combo box's OnSelectionChanged event
             ComboBox->OnSelectionChanged.AddDynamic(this, &AUIManager::OnDataSelectorWidgetDropdownChanged);
             // Set the default selected item
