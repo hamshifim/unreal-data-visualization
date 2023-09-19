@@ -61,7 +61,7 @@ public:
 	UStruct* GetMetadataStructFromActor(ADataPointActor* DataPointActor);
 
 	UFUNCTION()
-	bool ActorHasMetadataProperty(ADataPointActor* Actor, FString PropertyName);
+	bool ActorHasMetadataProperty(ADataPointActor* DataPointActor, FString PropertyName);
 
 	UFUNCTION()
 	FString GetPropertyValueStringFromMetadata(const FTableRowBase& Metadata, UStruct* MetadataStruct, FString PropertyName);

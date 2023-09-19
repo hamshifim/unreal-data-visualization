@@ -198,9 +198,6 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 		
 		// Add the table name to the array of table names
 		TableNames.Add(TableName);
-		// Create a spatial metadata table for each data type, assuming a default metadata struct from the current table
-		FString MetadataStructName = StructNameFromFullTableName(FullTableName);
-		FString SpatialMetadataTableName = MetadataStructName + "DataTable";
 
 		FullTableNameToMetadataStructMap.Add(FullTableName, TableHandler->GetDataTable()->RowStruct);
 
@@ -736,10 +733,10 @@ UStruct* ADataManager::GetMetadataStructFromActor(ADataPointActor* DataPointActo
 	return MetadataStruct;
 }
 
-bool ADataManager::ActorHasMetadataProperty(ADataPointActor* Actor, FString PropertyName)
+bool ADataManager::ActorHasMetadataProperty(ADataPointActor* DataPointActor, FString PropertyName)
 {
 	// Get the metadata type from the actor
-	UStruct* MetadataType = GetMetadataStructFromActor(Actor);
+	UStruct* MetadataType = GetMetadataStructFromActor(DataPointActor);
 	// Check if the metadata type has the property
 	bool HasProperty = MetadataType->FindPropertyByName(*PropertyName) != nullptr;
 	// Return the result
