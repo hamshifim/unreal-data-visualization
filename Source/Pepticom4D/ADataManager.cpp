@@ -123,9 +123,6 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 			DataTypeHandler->Initialize(DataTypeName, DefaultTableName);
 			DataTypeHandler->Sanity();
 			DataTypeHandlerMap.Add(DataTypeName, DataTypeHandler);
-			
-			// Map the current main data type name to its current table name
-			CurrentDataTypeNameToTableNameMap.Add(DataTypeName, DefaultTableName);
 		}
 		else
 		{
@@ -716,8 +713,8 @@ FString ADataManager::GetBoundaryPointsFromViewName(FString ViewName)
 
 FString ADataManager::GetFullDatasetNameFromDataType(FString DataType)
 {
-	FString TableName = CurrentDataTypeNameToTableNameMap.FindRef(DataType);
-	FString FullDatasetName = GetFullTableName(DataType, TableName);
+	FString DefaultTableName = DataTypeHandlerMap.FindRef(DataType)->GetDefaultTableName();
+	FString FullDatasetName = GetFullTableName(DataType, DefaultTableName);
 	return FullDatasetName;
 }
 

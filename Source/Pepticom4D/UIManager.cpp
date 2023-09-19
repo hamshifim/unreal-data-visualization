@@ -310,7 +310,7 @@ void AUIManager::ConfigureDataSelectorWidget() {
             // Bind to the combo box's OnSelectionChanged event
             ComboBox->OnSelectionChanged.AddDynamic(this, &AUIManager::OnDataSelectorWidgetDropdownChanged);
             // Set the default selected item
-            FString DefaultSelectedItem = DataManager->CurrentDataTypeNameToTableNameMap.FindRef(DataType);
+            FString DefaultSelectedItem = DataManager->GetFullDatasetNameFromDataType(DataType);
             ComboBox->SetSelectedOption(DefaultSelectedItem);
         }
     }

@@ -81,8 +81,6 @@ public:
 	FString CurrentViewName = TEXT("");
 	// Combination of main and sub dataset names within the current view
 	TArray<FString> CurrentFullTableNames = TArray<FString>();
-	// Map of data type (main dataset name) to the current sub dataset name for that data type
-	TMap<FString, FString> CurrentDataTypeNameToTableNameMap = TMap<FString, FString>();
 	// Map of full dataset names to the UStruct type of their metadata
 	TMap<FString, UStruct*> FullTableNameToMetadataStructMap = TMap<FString, UStruct*>();
 	
