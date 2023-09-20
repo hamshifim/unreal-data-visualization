@@ -53,12 +53,14 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 	ExtractDataTypes(JsonObject);
 
 	UE_LOG(LogTemp, Display, TEXT("Splich 0"));
+
+	ExtractAnimations(JsonObject);
+
+	UE_LOG(LogTemp, Display, TEXT("Splich 1"));
 	
 	ExtractViews(JsonObject);
 
-	
-	
-	UE_LOG(LogTemp, Display, TEXT("Splich 1"));
+	UE_LOG(LogTemp, Display, TEXT("Splich 2"));
 
 	//iterate over AnimationHandlerMap
 	for (const auto& AnimationHandlerPair : AnimationHandlerMap)
@@ -72,7 +74,8 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		// AnimationHandler
 	}
 
-
+	UE_LOG(LogTemp, Display, TEXT("Splich 3"));
+	
 	//init an array of FVarStruct
 	TArray<FVarStruct> Variables;
 	Variables.Add(FVarStruct("Index", "69973607186440"));
@@ -366,17 +369,47 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 			// or handle the error
 		}
 
-		ExtractAnimations(ViewName, ViewObj);
+		//try to get the animations array of strings from the view object
+		const TArray<TSharedPtr<FJsonValue>>* AnimationsArray;
+		if (ViewObj->TryGetArrayField("animations", AnimationsArray))
+		{
+			//iterate over the array of strings
+			for (const auto& AnimationValue : *AnimationsArray)
+			{
+				FString AnimationName = AnimationValue->AsString();
+				// Add the data type name to the array
+				ViewHandler->AddAnimation(AnimationName);
+
+				if(ViewName.Equals(CurrentViewName))
+				{
+					//check if animation name is in AnimationHandlerMap
+					UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(AnimationName);
+					if(AAnimationHandler)
+					{
+						AAnimationHandler->LoadData();
+						UE_LOG(LogTemp, Display, TEXT("Shooblong Animation %s found in AnimationHandlerMap."), *AnimationName);
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Shooblong Animation %s is Not in AnimationHandlerMap."), *AnimationName);
+					}
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Display, TEXT("Config file JSON does not contain 'animations' field in the 'views' -> 'view' object."));
+		}
 	}
 }
 
-void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> ViewObject)
+void ADataManager::ExtractAnimations(TSharedPtr<FJsonObject> ViewObject)
 {
 	// Get the default view name
 	const TSharedPtr<FJsonObject>* AnimationsObjectPtr;
 	if (ViewObject->TryGetObjectField("animations", AnimationsObjectPtr))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Animation Config found in ViewName: %s."), *ViewName);
+		UE_LOG(LogTemp, Display, TEXT("Animation Config found:"));
 
 		// Iterate over all animations
 		for (const auto& AnimationPair : (*AnimationsObjectPtr)->Values)
@@ -443,17 +476,12 @@ void ADataManager::ExtractAnimations(FString ViewName, TSharedPtr<FJsonObject> V
 				AAnimationHandler->GetPossibleAnimationValues();
 
 				AnimationHandlerMap.Add(AnimationName, AAnimationHandler);
-
-				if(ViewName.Equals(CurrentViewName))
-				{
-					AAnimationHandler->LoadData();
-				}
 			}
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Display, TEXT("Animation Config not found in ViewName: %s."), *ViewName);
+		UE_LOG(LogTemp, Display, TEXT("Animation Config not found"));
 	}
 }
 

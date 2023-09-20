@@ -17,6 +17,7 @@ class UAViewHandler : public UObject
 private:
 	FString Name;
 	TArray<FString> DataTypeNames;
+	TArray<FString> Animations;
 	FString BoundaryPointsString;
 	// Map of colors which can be applied to properties - K: view name, V: K: property name, V: K: property value, V: color
 	TMap<FString, TMap<FString, FColor>> ColorMap;
@@ -29,7 +30,9 @@ public:
 	void SetAnimationHandlers(TArray<UAAnimationHandler*> AAnimationHandlers);
 	void SetBoundaryPointsString(FString ABoundaryPointsString);
 	void SetColorMap(TMap<FString, TMap<FString, FColor>> AColorMap);
+	void AddAnimation(FString Animation);
 	TMap<FString, TMap<FString, FColor>>* GetColorMap();
 	FString GetBoundaryPointsString();
 	TArray<FString> GetDataTypes();
+	TArray<FString> GetAnimations();
 };

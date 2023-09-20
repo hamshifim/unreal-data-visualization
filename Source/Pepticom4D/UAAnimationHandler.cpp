@@ -55,11 +55,10 @@ void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 1"));
 
 	//TODO use the data to animate the actors
-	UDataTable* ManyToOneTable = ManyToOneTableHandler->GetDataTable();
+	const UDataTable* ManyToOneTable = ManyToOneTableHandler->GetDataTable();
 	
 	TArray<FName> SpatialMetadataRowNames = ManyToOneTable->GetRowNames();
-
-	//iterate over SpatialMetadataRowNames printing their names
+	
 	for (const auto& SpatialMetadataRowName : SpatialMetadataRowNames)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());

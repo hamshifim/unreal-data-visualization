@@ -25,7 +25,7 @@ private:
 	TArray<ADataPointActor*> DataPointActors;
 
 public:
-	//itnializes the data type handler
+
 	void Initialize(FString Name, FString DefaultTableName);
 	void Sanity();
 	FString GetDefaultTableName();

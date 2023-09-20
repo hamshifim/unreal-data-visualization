@@ -21,6 +21,11 @@ void UAViewHandler::SetColorMap(TMap<FString, TMap<FString, FColor>> AColorMap)
 	this->ColorMap = AColorMap;
 }
 
+void UAViewHandler::AddAnimation(FString Animation)
+{
+	this -> Animations.Add(Animation);
+}
+
 TMap<FString, TMap<FString, FColor>>* UAViewHandler::GetColorMap()
 {
 	return &this->ColorMap;
@@ -34,4 +39,9 @@ FString UAViewHandler::GetBoundaryPointsString()
 TArray<FString> UAViewHandler::GetDataTypes()
 {
 	return this->DataTypeNames;
+}
+
+TArray<FString> UAViewHandler::GetAnimations()
+{
+	return this->Animations;
 }
