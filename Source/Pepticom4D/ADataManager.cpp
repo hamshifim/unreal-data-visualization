@@ -32,10 +32,10 @@ void ADataManager::BeginPlay()
 void ADataManager::ProcessConfig(FString ConfigVarName)
 {
 	// Get the config file path
-	FString ConfigFilePath;
+	FString ConfigFilePath = "";
 	GConfig->GetString(TEXT("Data"), *ConfigVarName, ConfigFilePath, GGameIni);
 	// Read the config file, which is a JSON file. 
-	FString JsonRaw;
+	FString JsonRaw = "";
 	if (!FFileHelper::LoadFileToString(JsonRaw, *ConfigFilePath))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load config file: %s"), *ConfigFilePath);
@@ -117,7 +117,7 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		// Store the table names in the map
 
 		// Set the default table to be the first one - set in the default_table property
-		FString DefaultTableName;
+		FString DefaultTableName = "";
 		if (DataTypeObj->TryGetStringField("default_table", DefaultTableName))
 		{
 			
@@ -141,7 +141,7 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 
 	TMap<FString, FString> FilePathsMap = TMap<FString, FString>();
 	// Get the file paths and populate the array
-	FString DataSource;
+	FString DataSource = "";
 	if (DataTypeObj->TryGetStringField("data_source", DataSource))
 	{
 		TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialDataFilePath"), DataSource);
@@ -174,7 +174,7 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 		TSharedPtr<FJsonObject> TableObj = TablePair.Value->AsObject();
 		// Create a map of file paths
 
-		FString MetadataSource;
+		FString MetadataSource = "";
 		if (TableObj->TryGetStringField("data_source", MetadataSource))
 		{
 			TPair<FString, FString> Pair = TPair<FString, FString>(TEXT("SpatialMetadataFilePath"), MetadataSource);
@@ -231,7 +231,7 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 			UE_LOG(LogTemp, Error, TEXT("Shawarma didn't find key_regex using default %s"), *KeyRegex);
 		}		
 
-		FString ManyToOneSource;
+		FString ManyToOneSource = "";
 		if (TableObj->TryGetStringField("data_source", ManyToOneSource))
 		{
 		
@@ -259,7 +259,7 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 {
 	// Get the default view name
-	FString DefaultViewName;
+	FString DefaultViewName = "";
 	if (!JsonObject->TryGetStringField("default_view", DefaultViewName))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
@@ -357,7 +357,7 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 			TArray<TSharedPtr<FJsonValue>> BoundaryPointsArray;
 			BoundaryPointsArray.Add(MakeShareable(new FJsonValueObject(*BoundaryPointsObjectPtr)));
 			// Store the boundary points object as a string
-			FString BoundaryPointsString;
+			FString BoundaryPointsString = "";
 			TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&BoundaryPointsString);
 			FJsonSerializer::Serialize(BoundaryPointsArray, Writer);
 
@@ -532,7 +532,7 @@ FString ADataManager::GetFullTableName(FString DataTypeName, FString TableName)
 FString ADataManager::StructNameFromFullTableName(FString FullTableName)
 {
 	// Assumes an input of the form "dat_type_name_table_name, converts to DataTypeNameTableNameTempStruct"
-	FString PascalCaseString;
+	FString PascalCaseString = "";
 	bool bNextIsUpper = true;
 	for (const TCHAR Char : FullTableName)
 	{
@@ -595,7 +595,7 @@ TArray<FString> ADataManager::GetChunkedContentFromCSVSourceFile(FString SourceF
 	TArray<FString> Lines;
 	// Split the file content into lines
 	FileContent.ParseIntoArrayLines(Lines);
-	FString CurrentChunk;
+	FString CurrentChunk = "";
 	// Loop over the lines
 	for (int32 i = 0; i < Lines.Num(); i++)
 	{
@@ -752,7 +752,7 @@ bool ADataManager::ActorHasMetadataProperty(ADataPointActor* DataPointActor, FSt
 FString ADataManager::GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata)
 {
 	FString PropertyName = Property->GetName();
-	FString PropertyValue;
+	FString PropertyValue = "";
 
 	// Check the property type and convert it to a string accordingly
 	FString PropertyTypeName = Property->GetClass()->GetName();
@@ -809,7 +809,7 @@ FString ADataManager::GetPropertyValueStringFromMetadata(const FTableRowBase& Me
 	if (Property == nullptr)
 	{
 		// The property was not found
-		return FString();
+		return "";
 	}
 	// Get the property value as a string
 	FString PropertyValue = GetPropertyValueAsString(Property, const_cast<FTableRowBase&>(Metadata));
