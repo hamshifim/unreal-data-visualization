@@ -48,8 +48,10 @@ private:
 	int32 SpawnActorsPerTick = 10; // adjust this value as needed to prevent lag
 
 	// Store a handler to the UI manager
+	UPROPERTY()
 	AUIManager* UIManager = nullptr;
 	// Store a handler to the data manager
+	UPROPERTY()
 	ADataManager* DataManager = nullptr;
 };
 

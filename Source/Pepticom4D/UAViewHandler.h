@@ -21,6 +21,7 @@ private:
 	FString BoundaryPointsString;
 	// Map of colors which can be applied to properties - K: view name, V: K: property name, V: K: property value, V: color
 	TMap<FString, TMap<FString, FColor>> ColorMap;
+	UPROPERTY()
 	TArray<UAAnimationHandler*> AnimationHandlers;
 	//TODO: make a struct of boundaries of the view
 	//TODO: keep a Map of color maps of the view

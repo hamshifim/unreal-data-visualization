@@ -19,9 +19,13 @@ private:
 
 	FString Name;
 	FString DefaultTableName;
+	UPROPERTY()
 	UATableHandler* DefaultTableHandler;
+	UPROPERTY()
 	TMap<FString, UATableHandler*> TableHandlerMap;
+	UPROPERTY()
 	TMap<FString, UATableHandler*> ManyToOneTableHandlerMap;
+	UPROPERTY()
 	TArray<ADataPointActor*> DataPointActors;
 
 public:
@@ -34,8 +38,10 @@ public:
 	UATableHandler* GetTableHandler(FString TableName);
 	void AddTableHandler(FString TableName, UATableHandler* TableHandler);
 	void SetDefaultTableHandler(UATableHandler* TableHandler);
-	UATableHandler* GetDefaultTableHandler() const;
+	UATableHandler* GetDefaultTableHandler();
 	TMap<FString, UATableHandler*> GetTableHandlerMap();
-	void AddDataPointActor(ADataPointActor* DataPointActor);
 	TArray<ADataPointActor*> GetDataPointActors();
+
+	UFUNCTION()
+	void AddDataPointActor(ADataPointActor* DataPointActor);
 };

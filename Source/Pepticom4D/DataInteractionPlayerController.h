@@ -43,6 +43,7 @@ protected:
     virtual void BeginPlay() override;
 
 private:
+    UPROPERTY()
     AActor* SelectedActor = nullptr;
     double MouseSensitivity = 1.0;
     FVector2D PreviousMousePosition = FVector2D(0.0, 0.0);

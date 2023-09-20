@@ -43,7 +43,7 @@ void UADataTypeHandler::SetDefaultTableHandler(UATableHandler* TableHandler)
 	this->DefaultTableHandler = TableHandler;
 }
 
-UATableHandler* UADataTypeHandler::GetDefaultTableHandler() const
+UATableHandler* UADataTypeHandler::GetDefaultTableHandler()
 {
 	return this->DefaultTableHandler;
 }

@@ -80,25 +80,37 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	UPROPERTY()
 	UUserWidget* ViewNameWidget;
-
+	UPROPERTY()
 	UUserWidget* ActorDataWidgetGeneric;
+	UPROPERTY()
 	UActorDataWidget* ActorDataWidget;
+	UPROPERTY()
 	UBorder* ActorDataWidgetBorder;
-
+	UPROPERTY()
 	UUserWidget* DataSelectorWidgetGeneric;
+	UPROPERTY()
 	UDataSelectorWidget* DataSelectorWidget;
+	UPROPERTY()
 	TMap<FString, UTextBlock*> DataSelectorWidgetDataTypeNamesMap;
+	UPROPERTY()
 	TMap<FString, UComboBoxString*> DataSelectorWidgetTableNameComboBoxesMap;
-	
+	UPROPERTY()
 	UUserWidget* DataFilteringWidgetGeneric;
+	UPROPERTY()
 	UDataFilteringWidget* DataFilteringWidget;
+	UPROPERTY()
 	UTextBlock* DataFilteringWidgetTextBlock;
+	UPROPERTY()
 	UComboBoxString* DataFilteringWidgetComboBox;
 
 	bool InitializedWidgets = false;
+	UPROPERTY()
 	ADataInteractionPlayerController* DataInteractionPlayerController;
+	UPROPERTY()
 	ADataManager* DataManager;
+	UPROPERTY()
 	ADataInteractionHUD* DataInteractionHUD;
 
 	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject);

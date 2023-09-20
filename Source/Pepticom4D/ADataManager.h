@@ -78,12 +78,15 @@ public:
 	FString CurrentViewName = TEXT("");
 
 	// map view names to UAViewHandler pointers
+	UPROPERTY()
 	TMap<FString, UAViewHandler*> ViewHandlerMap;
 	
 	//Map of animation names to animation objects
+	UPROPERTY()
 	TMap<FString, UAAnimationHandler*> AnimationHandlerMap;
 
 	//Map of DataTypeNames to UADatatypeHandlers
+	UPROPERTY()
 	TMap<FString, UADataTypeHandler*> DataTypeHandlerMap;
 
 

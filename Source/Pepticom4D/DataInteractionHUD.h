@@ -20,7 +20,9 @@ public:
 
 	virtual void DrawHUD() override;
 
+	UPROPERTY()
 	ADataInteractionPlayerController* DataInteractionPlayerController = nullptr;
+	UPROPERTY()
 	AActor* ActorToDrawLineTo = nullptr;
 	FVector2D LineStart;
 

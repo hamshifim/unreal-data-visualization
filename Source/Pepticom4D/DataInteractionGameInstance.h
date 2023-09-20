@@ -21,7 +21,10 @@ public:
 	virtual void Init() override;
 
 private:
+	UPROPERTY()
 	ADataManager* DataManager;
+	UPROPERTY()
 	AUIManager* UIManager;
+	UPROPERTY()
 	AActorSpawner* ActorSpawner;
 };

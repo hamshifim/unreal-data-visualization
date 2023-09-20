@@ -105,9 +105,11 @@ private:
 	TMap<int, FViewPositionStruct*> ViewNumberToRowMap;
 
 	// Store a target towards which the camera should move
+	UPROPERTY()
 	ADataPointActor* TargetActor = nullptr;
 
 	// Store the UI Manager
+	UPROPERTY()
 	class AUIManager* UIManager;
 
 };
