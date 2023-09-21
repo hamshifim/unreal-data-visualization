@@ -21,6 +21,11 @@ ADataManager::ADataManager()
 	SpawnVolume->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
+UAViewHandler* ADataManager::GetCurrentViewHandler()
+{
+	return ViewHandlerMap.FindRef(CurrentViewName);
+}
+
 // Called when the game starts or when spawned
 void ADataManager::BeginPlay()
 {
@@ -607,7 +612,7 @@ TArray<FString> ADataManager::GetChunkedContentFromCSVSourceFile(FString SourceF
 				Chunks.Add(CurrentChunk);
 			}
 			// Start a new chunk with the column row
-			CurrentChunk = Lines[0] + TEXT("\n");
+			CurrentChunk = Lines[0].Append(TEXT("\n"));
 		}
 		if (i == 0)
 		{

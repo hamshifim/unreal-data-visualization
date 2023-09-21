@@ -25,6 +25,9 @@ public:
 	ADataManager();
 
 	UFUNCTION()
+	UAViewHandler* GetCurrentViewHandler();
+
+	UFUNCTION()
 	FString GetFullTableName(FString DataTypeName, FString TableName);
 
 	UFUNCTION()

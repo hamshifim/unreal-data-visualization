@@ -401,7 +401,7 @@ void AUIManager::ConfigureDataFilteringWidget()
 		// Add options to the combo box, if they exist
 
 		// get a ViewHandler from DataManager using its current view Name
-		UAViewHandler* ViewHandler = DataManager->ViewHandlerMap.FindRef(DataManager->CurrentViewName);
+		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
 
 		if (ViewHandler)
 		{
