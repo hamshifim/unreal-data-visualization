@@ -238,6 +238,7 @@ void AActorSpawner::BeginPlay()
 	DataManager->ProcessConfig(FString(TEXT("DataConfigFilePath")));
 	UIManager->ConfigureDataSelectorWidget();
 	UIManager->ConfigureDataFilteringWidget();
+	UIManager->ConfigureAnimationControlWidget();
 
 	ForceRefresh();
 }

@@ -3,6 +3,8 @@
 
 #include "UIManager.h"
 
+#include "AnimationControlWidget.h"
+
 // Sets default values
 AUIManager::AUIManager(): AActor()
 {
@@ -31,7 +33,27 @@ void AUIManager::BeginPlay()
 	CreateAndRenderWidget("/Game/ActorDataWidget.ActorDataWidget_C", ActorDataWidgetGeneric);
 	CreateAndRenderWidget("/Game/DataSelectorWidget.DataSelectorWidget_C", DataSelectorWidgetGeneric);
 	CreateAndRenderWidget("/Game/DataFilteringWidget.DataFilteringWidget_C", DataFilteringWidgetGeneric);
+	CreateAndRenderWidget("/Game/Materials/AnimationControlWidget.AnimationControlWidget_C", AnimationControlWidget);
+	
 	InitializedWidgets = true;
+
+	if(AnimationControlWidget)
+	{
+		AnimationControlWidget = Cast<UAnimationControlWidget>(AnimationControlWidget);
+
+		if(AnimationControlWidget)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Shanaf: AnimationControlWidget is of type UAnimationControlWidget"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Shanaf: AnimationControlWidget is not of type UAnimationControlWidget"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AnimationControlWidget is null"));
+	}
 
 	// By default, the actor data widget is hidden
 	if (ActorDataWidgetGeneric)
@@ -100,7 +122,7 @@ void AUIManager::CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetO
 			// Check if we have added it to viewport
 			if (WidgetObject->IsInViewport())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Widget %s added to viewport"), *WidgetName);
+				UE_LOG(LogTemp, Display, TEXT("Widget %s added to viewport"), *WidgetName);
 			}
 			else
 			{
@@ -291,11 +313,10 @@ void AUIManager::ConfigureDataSelectorWidget()
 	{
 		// Generate horizontal boxes containing the data type and a combo box for the sub-dataset name
 		// Get the vertical box which will contain all of these horizontal boxes
-		UVerticalBox* VerticalBox = Cast<
-			UVerticalBox>(DataSelectorWidget->GetWidgetFromName("DataSelectorVerticalBox"));
+		UVerticalBox* VerticalBox = Cast<UVerticalBox>(DataSelectorWidget->GetWidgetFromName("DataSelectorVerticalBox"));
 
 		// get a ViewHandler from DataManager using its current view Name
-		UAViewHandler* ViewHandler = DataManager->ViewHandlerMap.FindRef(DataManager->CurrentViewName);
+		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
 
 		// Iterate through all data types
 		for (const FString& DataType : ViewHandler->GetDataTypes())
@@ -418,6 +439,54 @@ void AUIManager::ConfigureDataFilteringWidget()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Data filtering widget not found in the UI Manager"));
+	}
+}
+
+void AUIManager::OnAnimationButtonClick()
+{
+	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!"));
+}
+
+void AUIManager::ConfigureAnimationControlWidget()
+{
+	if (AnimationControlWidget)
+	{
+		//place animation control widget in the center of the screen
+		AnimationControlWidget->SetAnchorsInViewport(FAnchors(0.5f, 0.5f, 0.5f, 0.5f));
+		AnimationControlWidget->SetAlignmentInViewport(FVector2D(0.5f, 0.5f));
+		AnimationControlWidget->SetPositionInViewport(FVector2D(0.0f, 0.0f));
+
+		UE_LOG(LogTemp, Display, TEXT("pigoom 0"));
+		
+		UButton* AnimationButton = Cast<UButton>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationButton"))); // Name of the button in UMG editor
+		if (AnimationButton)
+		{
+			AnimationButton->OnClicked.AddDynamic(this, &AUIManager::OnAnimationButtonClick);
+			UE_LOG(LogTemp, Display, TEXT("pigoom 1: Set up button click event!"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("pigoom 1: Failed to set up button click event!"));
+		}
+
+		// get a ViewHandler from DataManager using its current view Name
+		// UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
+		//
+		// if (ViewHandler)
+		// {
+		// 	for (const auto& PropertyNameMap : *ViewHandler->GetColorMap())
+		// 	{
+		// 		FString PropertyName = PropertyNameMap.Key;
+		// 		DataFilteringWidgetComboBox->AddOption(PropertyName);
+		// 	}
+		// }
+		// // Bind the combo box to the OnSelectionChanged event
+		// DataFilteringWidgetComboBox->OnSelectionChanged.AddDynamic(
+		// 	this, &AUIManager::OnDataFilteringWidgetDropdownChanged);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("pigoom 1: Failed to set up button click event!"));
 	}
 }
 

@@ -11,6 +11,7 @@
 #include "DataInteractionPlayerController.h"
 #include "Engine/DataTable.h"
 #include "ADataManager.h"
+#include "AnimationControlWidget.h"
 #include "DataPointActor.h"
 #include "Types/SlateEnums.h"
 #include "DataInteractionHUD.h"
@@ -63,6 +64,12 @@ public:
 	void ConfigureDataFilteringWidget();
 
 	UFUNCTION()
+	void OnAnimationButtonClick();
+
+	UFUNCTION()
+	void ConfigureAnimationControlWidget();
+
+	UFUNCTION()
 	void RefreshDataFilteringWidget();
 
 	UFUNCTION()
@@ -112,6 +119,9 @@ private:
 	ADataManager* DataManager;
 	UPROPERTY()
 	ADataInteractionHUD* DataInteractionHUD;
+
+	UPROPERTY()
+	UUserWidget* AnimationControlWidget;
 
 	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject);
 	FString GetFriendlyPropertyName(FString PropertyName);
