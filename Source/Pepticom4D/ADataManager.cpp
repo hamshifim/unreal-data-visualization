@@ -80,21 +80,6 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Splich 3"));
-	
-	//init an array of FVarStruct
-	TArray<FVarStruct> Variables;
-	Variables.Add(FVarStruct("Index", "69973607186440"));
-	Variables.Add(FVarStruct("Cycle", "22"));
-	Variables.Add(FVarStruct("BackboneSize", "5"));
-		
-	UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(TEXT("cycle"));
-
-	if(AAnimationHandler)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Powerfull"));
-		AAnimationHandler->AnimateActor(Variables);
-		UE_LOG(LogTemp, Display, TEXT("Bombardful"));
-	}
 }
 
 void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
@@ -742,6 +727,30 @@ UStruct* ADataManager::GetMetadataStructFromActor(ADataPointActor* DataPointActo
 	UStruct* MetadataStruct = DataTypeHandlerMap.FindRef(DataType)->GetTableHandlerMap().FindRef(MetadataTableName)->GetDataTable()->RowStruct;
 
 	return MetadataStruct;
+}
+
+void ADataManager::AnimateDataType()
+{
+	UE_LOG(LogTemp, Display, TEXT("Looft Gesheften: 0"));
+	
+	//init an array of FVarStruct
+	TArray<FVarStruct> Variables;
+	Variables.Add(FVarStruct("Index", "69973607186440"));
+	Variables.Add(FVarStruct("Cycle", "22"));
+	Variables.Add(FVarStruct("BackboneSize", "5"));
+		
+	UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(TEXT("cycle"));
+
+	if(AAnimationHandler)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Powerfull"));
+		AAnimationHandler->AnimateActor(Variables);
+		UE_LOG(LogTemp, Display, TEXT("Bombardful"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("could not find animation handler"));
+	}
 }
 
 bool ADataManager::ActorHasMetadataProperty(ADataPointActor* DataPointActor, FString PropertyName)

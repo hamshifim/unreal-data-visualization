@@ -470,7 +470,11 @@ void AUIManager::OnAnimationButtonClick()
 	Variables.Add(FVarStruct("Cycle", "22"));
 	Variables.Add(FVarStruct("BackboneSize", "5"));
 	
-	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!\nBambini ferus"));
+	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!"));
+
+	DataManager->AnimateDataType();
+
+	UE_LOG(LogTemp, Display, TEXT("Bambini ferus"));
 }
 
 void AUIManager::OnControlSwitchButtonClick()
