@@ -14,5 +14,5 @@ UAnimationControlWidget::UAnimationControlWidget(const FObjectInitializer& Objec
 
 void UAnimationControlWidget::OnAnimationButtonClick()
 {
-	UE_LOG(LogTemp, Log, TEXT("Hello World!"));
+	UE_LOG(LogTemp, Log, TEXT("Animation Falafel"));
 }

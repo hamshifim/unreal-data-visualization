@@ -4,6 +4,7 @@
 #include "UIManager.h"
 
 #include "AnimationControlWidget.h"
+#include "UserControlWidget.h"
 
 // Sets default values
 AUIManager::AUIManager(): AActor()
@@ -33,27 +34,41 @@ void AUIManager::BeginPlay()
 	CreateAndRenderWidget("/Game/ActorDataWidget.ActorDataWidget_C", ActorDataWidgetGeneric);
 	CreateAndRenderWidget("/Game/DataSelectorWidget.DataSelectorWidget_C", DataSelectorWidgetGeneric);
 	CreateAndRenderWidget("/Game/DataFilteringWidget.DataFilteringWidget_C", DataFilteringWidgetGeneric);
-	CreateAndRenderWidget("/Game/Materials/AnimationControlWidget.AnimationControlWidget_C", AnimationControlWidget);
+	
+	CreateAndRenderWidget("/Game/Materials/UserControlWidget.UserControlWidget_C", UserControlWidget);
+	CreateAndRenderWidget("/Game/Materials/AnimationControlWidget.AnimationControlWidget_C", AnimationControlWidget, false);
 	
 	InitializedWidgets = true;
 
-	if(AnimationControlWidget)
+	if(UserControlWidget)
 	{
-		AnimationControlWidget = Cast<UAnimationControlWidget>(AnimationControlWidget);
+		UserControlWidget = Cast<UUserControlWidget>(UserControlWidget);
+		UE_LOG(LogTemp, Display, TEXT("Boof: UserControlWidget is of type UserControlWidget"));
 
 		if(AnimationControlWidget)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Shanaf: AnimationControlWidget is of type UAnimationControlWidget"));
+			AnimationControlWidget = Cast<UAnimationControlWidget>(AnimationControlWidget);
+	
+			if(AnimationControlWidget)
+			{
+				UE_LOG(LogTemp, Display, TEXT("Shanaf: AnimationControlWidget is of type UAnimationControlWidget"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Shanaf: AnimationControlWidget is not of type UAnimationControlWidget"));
+			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Shanaf: AnimationControlWidget is not of type UAnimationControlWidget"));
+			UE_LOG(LogTemp, Error, TEXT("AnimationControlWidget is null"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("AnimationControlWidget is null"));
+		UE_LOG(LogTemp, Error, TEXT("Boof: UserControlWidget is null"));
 	}
+
+
 
 	// By default, the actor data widget is hidden
 	if (ActorDataWidgetGeneric)
@@ -101,7 +116,7 @@ void AUIManager::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AUIManager::CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject)
+void AUIManager::CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject, bool AddToViewport)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Creating widget %s"), *WidgetName);
 	FStringClassReference WidgetClassRef(*WidgetName);
@@ -117,19 +132,23 @@ void AUIManager::CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetO
 			WidgetObject->SetAnchorsInViewport(FAnchors(0.0f, 0.0f, 0.0f, 0.0f));
 			WidgetObject->SetAlignmentInViewport(FVector2D(0.0f, 0.0f));
 			WidgetObject->SetPositionInViewport(FVector2D(0.0f, 0.0f));
-			// Add the widget to the viewport with z-order 999
-			WidgetObject->AddToViewport(999);
-			// Check if we have added it to viewport
-			if (WidgetObject->IsInViewport())
+
+			if(AddToViewport)
 			{
-				UE_LOG(LogTemp, Display, TEXT("Widget %s added to viewport"), *WidgetName);
+				// Add the widget to the viewport with z-order 999
+				WidgetObject->AddToViewport(999);
+				// Check if we have added it to viewport
+				if (WidgetObject->IsInViewport())
+				{
+					UE_LOG(LogTemp, Display, TEXT("Widget %s added to viewport"), *WidgetName);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Widget %s not added to viewport"), *WidgetName)
+				}
+				// Make sure that the widget is visible
+				WidgetObject->SetVisibility(ESlateVisibility::Visible);
 			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Widget %s not added to viewport"), *WidgetName)
-			}
-			// Make sure that the widget is visible
-			WidgetObject->SetVisibility(ESlateVisibility::Visible);
 		}
 		else
 		{
@@ -454,63 +473,58 @@ void AUIManager::OnAnimationButtonClick()
 	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!\nBambini ferus"));
 }
 
+void AUIManager::OnControlSwitchButtonClick()
+{
+	UE_LOG(LogTemp, Display, TEXT("Andele! Andele! Arriba! Arriba!"));
+	UE_LOG(LogTemp, Display, TEXT("Move all the user GUI here!"));
+}
+
 void AUIManager::ConfigureAnimationControlWidget()
 {
 	if (AnimationControlWidget)
 	{
-		//place animation control widget in the center of the screen
-		AnimationControlWidget->SetAnchorsInViewport(FAnchors(0.5f, 0.5f, 0.5f, 0.5f));
-		AnimationControlWidget->SetAlignmentInViewport(FVector2D(0.5f, 0.5f));
-		AnimationControlWidget->SetPositionInViewport(FVector2D(0.0f, 0.0f));
+		//make visible
+		AnimationControlWidget->SetVisibility(ESlateVisibility::Visible);
 
-		UE_LOG(LogTemp, Display, TEXT("pigoom 0"));
-		// get a ViewHandler from DataManager using its current view Name
-		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
-		
-		if (ViewHandler)
-		{
-			UE_LOG(LogTemp, Display, TEXT("pigoom 1: Found ViewHandler"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("pigoom 1: Failed to set up AnimationTextBlock"));
-		}
+		UE_LOG(LogTemp, Display, TEXT("shoval 0"));
 		
 		UButton* AnimationButton = Cast<UButton>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationButton"))); // Name of the button in UMG editor
 		if (AnimationButton)
 		{
 			AnimationButton->OnClicked.AddDynamic(this, &AUIManager::OnAnimationButtonClick);
-			UE_LOG(LogTemp, Display, TEXT("pigoom 2: Set up button click event!"));
+			UE_LOG(LogTemp, Display, TEXT("shoval 2: Set up button click event!"));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("pigoom 2: Failed to set up button click event!"));
+			UE_LOG(LogTemp, Error, TEXT("shoval 2: Failed to set up button click event!"));
 		}
 
 		USlider* AnimationSlider = Cast<USlider>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationSlider"))); 
 		if (AnimationSlider)
 		{
-			// AnimationButton->OnClicked.AddDynamic(this, &AUIManager::OnAnimationButtonClick);
-			UE_LOG(LogTemp, Display, TEXT("pigoom 3: Set up AnimationSlider"));
+			UE_LOG(LogTemp, Display, TEXT("shoval 3: Set up AnimationSlider"));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("pigoom 3: Failed to set up AnimationSlider"));
+			UE_LOG(LogTemp, Error, TEXT("shoval 3: Failed to set up AnimationSlider"));
 		}
 
 		UTextBlock *AnimationTextBlock = Cast<UTextBlock>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationText")));
 		if (AnimationTextBlock)
 		{
-			UE_LOG(LogTemp, Display, TEXT("pigoom 4: Set up AnimationTextBlock"));
+			UE_LOG(LogTemp, Display, TEXT("shoval 4: Set up AnimationTextBlock"));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("pigoom 4: Failed to set up AnimationTextBlock"));
+			UE_LOG(LogTemp, Error, TEXT("shoval 4: Failed to set up AnimationTextBlock"));
 		}
+
+		//bring the widget to the front
+		
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("pigoom 1: Failed to set up button click event!"));
+		UE_LOG(LogTemp, Error, TEXT("shoval 5: Failed to set up button click event!"));
 	}
 }
 
@@ -601,5 +615,60 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
 				}
 			}
 		}
+	}
+}
+
+void AUIManager::ConfigureUserControlWidget()
+{
+	UE_LOG(LogTemp, Display, TEXT("shovav: -1"));
+	if (UserControlWidget)
+	{
+		//place animation control widget in the center of the screen
+		UserControlWidget->SetAnchorsInViewport(FAnchors(0.5f, 0.5f, 0.5f, 0.5f));
+		UserControlWidget->SetAlignmentInViewport(FVector2D(0.5f, 0.5f));
+		UserControlWidget->SetPositionInViewport(FVector2D(0.0f, 0.0f));
+
+		UE_LOG(LogTemp, Display, TEXT("shovav 0"));
+		// get a ViewHandler from DataManager using its current view Name
+		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
+		
+		if (ViewHandler)
+		{
+			UE_LOG(LogTemp, Display, TEXT("shovav 1: Found ViewHandler"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("shovav 1: Failed to set up AnimationTextBlock"));
+		}
+		
+		UButton* SwitchButton = Cast<UButton>(UserControlWidget->GetWidgetFromName(TEXT("SwitchButton"))); // Name of the button in UMG editor
+		if (SwitchButton)
+		{
+			SwitchButton->OnClicked.AddDynamic(this, &AUIManager::OnControlSwitchButtonClick);
+			UE_LOG(LogTemp, Display, TEXT("shovav 2: Set up button click event!"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("shovav 2: Failed to set up button click event!"));
+		}
+
+		//find a widget switcher called "ControlSwitcher" and cast it to UWidgetSwitcher
+		UWidgetSwitcher* ControlSwitcher = Cast<UWidgetSwitcher>(UserControlWidget->GetWidgetFromName(TEXT("ControlSwitcher")));
+		if (ControlSwitcher)
+		{
+			UE_LOG(LogTemp, Display, TEXT("shovav 3: Found ControlSwitcher"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("shovav 3: Failed to find ControlSwitcher"));
+		}
+
+		//add animation control widget to the switcher
+		ControlSwitcher->AddChild(AnimationControlWidget);
+		ConfigureAnimationControlWidget();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("shovav 5: Failed to set up ooserControlWidget"));
 	}
 }

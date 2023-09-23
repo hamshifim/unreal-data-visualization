@@ -67,6 +67,9 @@ public:
 	void OnAnimationButtonClick();
 
 	UFUNCTION()
+	void OnControlSwitchButtonClick();
+
+	UFUNCTION()
 	void ConfigureAnimationControlWidget();
 
 	UFUNCTION()
@@ -74,6 +77,7 @@ public:
 
 	UFUNCTION()
 	void OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	void ConfigureUserControlWidget();
 
 protected:
 	// Called when the game starts or when spawned
@@ -95,6 +99,8 @@ private:
 	UActorDataWidget* ActorDataWidget;
 	UPROPERTY()
 	UBorder* ActorDataWidgetBorder;
+	UPROPERTY()
+	UUserWidget* UserControlWidget;
 	UPROPERTY()
 	UUserWidget* DataSelectorWidgetGeneric;
 	UPROPERTY()
@@ -123,7 +129,7 @@ private:
 	UPROPERTY()
 	UUserWidget* AnimationControlWidget;
 
-	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject);
+	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject, bool AddToViewport = true);
 	FString GetFriendlyPropertyName(FString PropertyName);
 
 };

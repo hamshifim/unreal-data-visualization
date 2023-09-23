@@ -238,7 +238,9 @@ void AActorSpawner::BeginPlay()
 	DataManager->ProcessConfig(FString(TEXT("DataConfigFilePath")));
 	UIManager->ConfigureDataSelectorWidget();
 	UIManager->ConfigureDataFilteringWidget();
-	UIManager->ConfigureAnimationControlWidget();
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 0"));
+	UIManager->ConfigureUserControlWidget();
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 1"));
 
 	ForceRefresh();
 }
