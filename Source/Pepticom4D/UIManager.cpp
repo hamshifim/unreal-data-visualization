@@ -444,7 +444,14 @@ void AUIManager::ConfigureDataFilteringWidget()
 
 void AUIManager::OnAnimationButtonClick()
 {
-	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!"));
+	//TODO gather data from the UI and send it to the DataManager
+	//init an array of FVarStruct
+	TArray<FVarStruct> Variables;
+	Variables.Add(FVarStruct("Index", "69973607186440"));
+	Variables.Add(FVarStruct("Cycle", "22"));
+	Variables.Add(FVarStruct("BackboneSize", "5"));
+	
+	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!\nBambini ferus"));
 }
 
 void AUIManager::ConfigureAnimationControlWidget()
@@ -457,32 +464,49 @@ void AUIManager::ConfigureAnimationControlWidget()
 		AnimationControlWidget->SetPositionInViewport(FVector2D(0.0f, 0.0f));
 
 		UE_LOG(LogTemp, Display, TEXT("pigoom 0"));
+		// get a ViewHandler from DataManager using its current view Name
+		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
+		
+		if (ViewHandler)
+		{
+			UE_LOG(LogTemp, Display, TEXT("pigoom 1: Found ViewHandler"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("pigoom 1: Failed to set up AnimationTextBlock"));
+		}
 		
 		UButton* AnimationButton = Cast<UButton>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationButton"))); // Name of the button in UMG editor
 		if (AnimationButton)
 		{
 			AnimationButton->OnClicked.AddDynamic(this, &AUIManager::OnAnimationButtonClick);
-			UE_LOG(LogTemp, Display, TEXT("pigoom 1: Set up button click event!"));
+			UE_LOG(LogTemp, Display, TEXT("pigoom 2: Set up button click event!"));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("pigoom 1: Failed to set up button click event!"));
+			UE_LOG(LogTemp, Error, TEXT("pigoom 2: Failed to set up button click event!"));
 		}
 
-		// get a ViewHandler from DataManager using its current view Name
-		// UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
-		//
-		// if (ViewHandler)
-		// {
-		// 	for (const auto& PropertyNameMap : *ViewHandler->GetColorMap())
-		// 	{
-		// 		FString PropertyName = PropertyNameMap.Key;
-		// 		DataFilteringWidgetComboBox->AddOption(PropertyName);
-		// 	}
-		// }
-		// // Bind the combo box to the OnSelectionChanged event
-		// DataFilteringWidgetComboBox->OnSelectionChanged.AddDynamic(
-		// 	this, &AUIManager::OnDataFilteringWidgetDropdownChanged);
+		USlider* AnimationSlider = Cast<USlider>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationSlider"))); 
+		if (AnimationSlider)
+		{
+			// AnimationButton->OnClicked.AddDynamic(this, &AUIManager::OnAnimationButtonClick);
+			UE_LOG(LogTemp, Display, TEXT("pigoom 3: Set up AnimationSlider"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("pigoom 3: Failed to set up AnimationSlider"));
+		}
+
+		UTextBlock *AnimationTextBlock = Cast<UTextBlock>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationText")));
+		if (AnimationTextBlock)
+		{
+			UE_LOG(LogTemp, Display, TEXT("pigoom 4: Set up AnimationTextBlock"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("pigoom 4: Failed to set up AnimationTextBlock"));
+		}
 	}
 	else
 	{
