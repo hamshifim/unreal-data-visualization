@@ -41,4 +41,11 @@ public:
 
 	void AnimateActor(TArray<FVarStruct> Variables);
 	void LoadData();
+
+	UFUNCTION()
+	float GetMinValue();
+	UFUNCTION()
+	float GetMaxValue();
+	UFUNCTION()
+	float GetInterval();
 };

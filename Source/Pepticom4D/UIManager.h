@@ -77,6 +77,7 @@ public:
 
 	UFUNCTION()
 	void OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+
 	void ConfigureUserControlWidget();
 
 protected:
@@ -124,10 +125,14 @@ private:
 	UPROPERTY()
 	ADataManager* DataManager;
 	UPROPERTY()
+	UAAnimationHandler* AnimationHandler;
+	UPROPERTY()
 	ADataInteractionHUD* DataInteractionHUD;
 
 	UPROPERTY()
 	UUserWidget* AnimationControlWidget;
+	UPROPERTY()
+	USlider* AnimationSlider;
 
 	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject, bool AddToViewport = true);
 	FString GetFriendlyPropertyName(FString PropertyName);

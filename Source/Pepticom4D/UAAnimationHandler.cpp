@@ -73,3 +73,18 @@ void UAAnimationHandler::LoadData()
 	UATableHandler* TableHandler = DataTypeHandler->GetManyToOneTableHandler(this->TableName);
 	TableHandler->AddDataToDataTableFromSource();
 }
+
+float UAAnimationHandler::GetMinValue()
+{
+	return Min * 1.0f;
+}
+
+float UAAnimationHandler::GetMaxValue()
+{
+	return Max * 1.0f;
+}
+
+float UAAnimationHandler::GetInterval()
+{
+	return Interval * 1.0f;
+}

@@ -472,7 +472,10 @@ void AUIManager::OnAnimationButtonClick()
 	
 	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!"));
 
-	DataManager->AnimateDataType();
+	float AnimationValue = AnimationSlider->GetValue();
+
+	//TODO get data type in initialization
+	DataManager->AnimateDataType(AnimationValue, "cycle");
 
 	UE_LOG(LogTemp, Display, TEXT("Bambini ferus"));
 }
@@ -483,7 +486,7 @@ void AUIManager::OnControlSwitchButtonClick()
 	UE_LOG(LogTemp, Display, TEXT("Move all the user GUI here!"));
 }
 
-void AUIManager::ConfigureAnimationControlWidget()
+void AUIManager:: ConfigureAnimationControlWidget()
 {
 	if (AnimationControlWidget)
 	{
@@ -503,7 +506,7 @@ void AUIManager::ConfigureAnimationControlWidget()
 			UE_LOG(LogTemp, Error, TEXT("shoval 2: Failed to set up button click event!"));
 		}
 
-		USlider* AnimationSlider = Cast<USlider>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationSlider"))); 
+		AnimationSlider = Cast<USlider>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationSlider"))); 
 		if (AnimationSlider)
 		{
 			UE_LOG(LogTemp, Display, TEXT("shoval 3: Set up AnimationSlider"));
@@ -523,8 +526,27 @@ void AUIManager::ConfigureAnimationControlWidget()
 			UE_LOG(LogTemp, Error, TEXT("shoval 4: Failed to set up AnimationTextBlock"));
 		}
 
-		//bring the widget to the front
-		
+		TArray<FString> AnimationNames;
+		//iterate Animation Handlers in DataManager->AnimationHandlerMap;
+		for (const auto& AnimationHandlerPair : DataManager->AnimationHandlerMap)
+		{
+			//TODO initialize multiple animations
+
+			FString AnimationName = AnimationHandlerPair.Key;
+			AnimationNames.Add(AnimationName);
+			UE_LOG(LogTemp, Display, TEXT("shoval 4: Animation: %s"), *AnimationName);
+			// AnimationControlWidget->AddAnimationButton(AnimationName);
+		}
+
+		//Get the first animation in the map
+		FString AnimationName = AnimationNames[0];
+		AnimationHandler = DataManager->AnimationHandlerMap.FindRef(AnimationName);
+
+		AnimationSlider->SetMinValue(AnimationHandler->GetMinValue());
+		AnimationSlider->SetMaxValue(AnimationHandler->GetMaxValue());
+		AnimationSlider->SetValue(AnimationHandler->GetMaxValue());
+		//set the increment of the slider to be the interval of the animation
+		AnimationSlider->SetStepSize(AnimationHandler->GetInterval());
 	}
 	else
 	{
