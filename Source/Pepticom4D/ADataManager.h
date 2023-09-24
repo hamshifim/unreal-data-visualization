@@ -62,10 +62,7 @@ public:
 
 	UFUNCTION()
 	UStruct* GetMetadataStructFromActor(ADataPointActor* DataPointActor);
-
-	UFUNCTION()
-	void AnimateDataType(float AnimationValue, FString DataTypeName);
-
+	
 	UFUNCTION()
 	bool ActorHasMetadataProperty(ADataPointActor* DataPointActor, FString PropertyName);
 

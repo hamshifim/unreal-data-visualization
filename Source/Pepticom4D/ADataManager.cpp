@@ -729,32 +729,6 @@ UStruct* ADataManager::GetMetadataStructFromActor(ADataPointActor* DataPointActo
 	return MetadataStruct;
 }
 
-void ADataManager::AnimateDataType(float AnimationValue, FString DataTypeName)
-{
-	UE_LOG(LogTemp, Display, TEXT("Looft Gesheften: 0"));
-
-	// get a string representation of the animation value
-	FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
-	
-	//init an array of FVarStruct
-	TArray<FVarStruct> Variables;
-	Variables.Add(FVarStruct("Index", "69973607186440"));
-	Variables.Add(FVarStruct("Cycle", AnimationValueString));
-	Variables.Add(FVarStruct("BackboneSize", "5"));
-		
-	UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(TEXT("cycle"));
-
-	if(AAnimationHandler)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Powerfull"));
-		AAnimationHandler->AnimateActor(Variables);
-		UE_LOG(LogTemp, Display, TEXT("Bombardful"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("could not find animation handler"));
-	}
-}
 
 bool ADataManager::ActorHasMetadataProperty(ADataPointActor* DataPointActor, FString PropertyName)
 {

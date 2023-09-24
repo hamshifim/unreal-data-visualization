@@ -42,6 +42,7 @@ FString UAAnimationHandler::GetTableName()
 	return TableName;;
 }
 
+
 void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 {
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
@@ -65,6 +66,19 @@ void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 3"));
+}
+
+void UAAnimationHandler::OnAnimationValueChanged(FString AnimationValue)
+{
+	//init an array of FVarStruct
+	TArray<FVarStruct> Variables;
+	Variables.Add(FVarStruct("Index", "69973607186440"));
+	Variables.Add(FVarStruct("Cycle", AnimationValue));
+	Variables.Add(FVarStruct("BackboneSize", "5"));
+
+	UE_LOG(LogTemp, Display, TEXT("Powerfull"));
+	AnimateActor(Variables);
+	UE_LOG(LogTemp, Display, TEXT("Bombardful"));
 }
 
 void UAAnimationHandler::LoadData()

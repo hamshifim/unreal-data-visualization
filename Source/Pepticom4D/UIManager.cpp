@@ -463,19 +463,13 @@ void AUIManager::ConfigureDataFilteringWidget()
 
 void AUIManager::OnAnimationButtonClick()
 {
-	//TODO gather data from the UI and send it to the DataManager
-	//init an array of FVarStruct
-	TArray<FVarStruct> Variables;
-	Variables.Add(FVarStruct("Index", "69973607186440"));
-	Variables.Add(FVarStruct("Cycle", "22"));
-	Variables.Add(FVarStruct("BackboneSize", "5"));
-	
 	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!"));
 
-	float AnimationValue = AnimationSlider->GetValue();
+	float AnimationValue =  AnimationSlider->GetValue();
+	// get a string representation of the float animation value
+	FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
 
-	//TODO get data type in initialization
-	DataManager->AnimateDataType(AnimationValue, "cycle");
+	AnimationHandler->OnAnimationValueChanged(AnimationValueString);
 
 	UE_LOG(LogTemp, Display, TEXT("Bambini ferus"));
 }

@@ -40,6 +40,9 @@ public:
 	FString GetTableName();
 
 	void AnimateActor(TArray<FVarStruct> Variables);
+
+	UFUNCTION()
+	void OnAnimationValueChanged(FString AnimationValue);
 	void LoadData();
 
 	UFUNCTION()
