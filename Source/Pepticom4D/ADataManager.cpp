@@ -442,26 +442,20 @@ void ADataManager::ExtractAnimations(TSharedPtr<FJsonObject> ViewObject)
 				const TSharedPtr<FJsonObject> ManyToOneTableObject = ManyToOneTablePtr.Value->AsObject();
 
 				FString KeyRegex = ExtractStringField(ManyToOneTableObject, "key_regex");
-				const TArray<TSharedPtr<FJsonValue>> RegexVars = ExtractStringArrayField(ManyToOneTableObject, "regex_variables");
+				const TArray<TSharedPtr<FJsonValue>> RegexVarObjects = ExtractStringArrayField(ManyToOneTableObject, "regex_variables");
 
-				TArray<FVarStruct> RegexVariableRetrievalInstructions;
+				TArray<FString> RegexVariableNames;
 				//iterate over regex variables which are objects
-				for (const auto& RegexVar : RegexVars)
+				for (const auto& RegexVarObject : RegexVarObjects)
 				{
-					const TSharedPtr<FJsonObject> RegexVarObject = RegexVar->AsObject();
-
-					FString VarName = ExtractStringField(RegexVarObject, "var");
-					FString VarSrc = ExtractStringField(RegexVarObject, "src_type");
-
-					UE_LOG(LogTemp, Display, TEXT("Regex variable name: %s."), *VarName);
-					UE_LOG(LogTemp, Display, TEXT("Regex variable source: %s."), *VarSrc);
-
-					RegexVariableRetrievalInstructions.Emplace(FVarStruct(VarName, VarSrc));
+					const FString RegexVarName = RegexVarObject->AsString();
+					UE_LOG(LogTemp, Display, TEXT("Pargal RegexVarName: %s."), *RegexVarName);
+					RegexVariableNames.Emplace(RegexVarName);
 				}
 
 				// Create an animation handler object using the extracted data
 				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
-				AAnimationHandler->Initialize(AnimationName, AnimationDimension, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames, &DataTypeHandlerMap);
+				AAnimationHandler->Initialize(AnimationName, AnimationDimension, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableNames, UpdateColumnsNames, &DataTypeHandlerMap);
 				// AAnimationHandler->Sanity();
 
 				AAnimationHandler->GetPossibleAnimationValues();

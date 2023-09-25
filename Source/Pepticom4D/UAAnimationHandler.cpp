@@ -3,7 +3,7 @@
 
 
 // An Initialization of the necessary variables
-void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDimension, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap)
+void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDimension, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FString> ARegexVariableNames, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap)
 {
 	this->AnimationName = AAnimationName;
 	this->AnimationDimension = AAnimationDimension;
@@ -13,7 +13,7 @@ void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDi
 	this->DataType = ADataType;
 	this->TableName = ATableName;
 	this->KeyRegex = AKeyRegex;
-	this->RegexVariableRetrievalInstructions = ARegexVariableRetrievalInstructions;
+	this->RegexVariableNames = ARegexVariableNames;
 	this->UpdateProperties = AUpdateProperties;
 	this->DataTypeHandlerMap = ADataTypeHandlerMap;
 }
