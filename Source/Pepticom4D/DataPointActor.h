@@ -17,14 +17,14 @@ public:
 	// Sets default values for this actor's properties
 	ADataPointActor();
 	void Create();
-	void Initialize(FString ADataType, FString AMetaDataTableName, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataStruct);
+	void Initialize(FString ADataType, FString AMetaDataTableName, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataRow);
 	void ChangeColor(FString ColorHex);
 	void ChangeColor(FColor NewColor);
 	void ChangeScale(const float NewScale) const;
 	void ExtractDataTypes(const TTuple<FString, TSharedPtr<FJsonValue, ESPMode::ThreadSafe>>&);
 	FString GetDataType() const;
 	FSpatialDataStruct* GetSpatialDataStruct() const;
-	FTableRowBase& GetMetadataStruct() const;
+	FTableRowBase& GetMetadataRow() const;
 	FString GetTableName();
 	FString GetMetaDataTableName() const;
 
@@ -55,5 +55,5 @@ private:
 	FString TableName;
 	FString MetaDataTableName;
 	FSpatialDataStruct* SpatialDataStruct;
-	FTableRowBase* MetadataStruct;
+	FTableRowBase* MetadataRow;
 };

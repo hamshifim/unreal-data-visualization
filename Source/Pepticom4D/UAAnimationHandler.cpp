@@ -3,7 +3,7 @@
 
 
 // An Initialization of the necessary variables
-void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDimension, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FString> ARegexVariableNames, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap)
+void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDimension, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString AActorTableName, FString AManyToOneTableName, FString AKeyRegex, TArray<FString> ARegexVariableNames, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap)
 {
 	this->AnimationName = AAnimationName;
 	this->AnimationDimension = AAnimationDimension;
@@ -11,7 +11,8 @@ void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDi
 	this->Max = AMax;
 	this->Interval = AInterval;
 	this->DataType = ADataType;
-	this->TableName = ATableName;
+	this->ActorTableName = AActorTableName;
+	this->OneToManyTableName = AManyToOneTableName;
 	this->KeyRegex = AKeyRegex;
 	this->RegexVariableNames = ARegexVariableNames;
 	this->UpdateProperties = AUpdateProperties;
@@ -38,17 +39,81 @@ TArray<int32> UAAnimationHandler::GetPossibleAnimationValues()
 }
 
 
-FString UAAnimationHandler::GetTableName()
+FString UAAnimationHandler::GetManyToOneTableName()
 {
-	return TableName;;
+	return OneToManyTableName;
+}
+
+
+FString UAAnimationHandler::GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata)
+{
+	FString PropertyName = Property->GetName();
+	FString PropertyValue = "";
+
+	// Check the property type and convert it to a string accordingly
+	FString PropertyTypeName = Property->GetClass()->GetName();
+
+	if (PropertyTypeName.Equals("IntProperty"))
+	{
+		FIntProperty* IntProp = CastField<FIntProperty>(Property);
+		int32 Value = IntProp->GetPropertyValue_InContainer(&Metadata);
+		PropertyValue = FString::Printf(TEXT("%d"), Value);
+	}
+	else if (PropertyTypeName.Equals("FloatProperty"))
+	{
+		FFloatProperty* FloatProp = CastField<FFloatProperty>(Property);
+		float Value = FloatProp->GetPropertyValue_InContainer(&Metadata);
+		PropertyValue = FString::Printf(TEXT("%f"), Value);
+	}
+	else if (PropertyTypeName.Equals("DoubleProperty"))
+	{
+		FDoubleProperty* DoubleProp = CastField<FDoubleProperty>(Property);
+		double Value = DoubleProp->GetPropertyValue_InContainer(&Metadata);
+		PropertyValue = FString::Printf(TEXT("%f"), Value);
+	}
+	else if (PropertyTypeName.Equals("BoolProperty"))
+	{
+		FBoolProperty* BoolProp = CastField<FBoolProperty>(Property);
+		bool Value = BoolProp->GetPropertyValue_InContainer(&Metadata);
+		PropertyValue = Value ? "True" : "False";
+	}
+	else if (PropertyTypeName.Equals("StrProperty"))
+	{
+		FStrProperty* StrProp = CastField<FStrProperty>(Property);
+		FString Value = StrProp->GetPropertyValue_InContainer(&Metadata);
+		PropertyValue = Value;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Struct property %s type not supported. Type: %s"), *PropertyName,
+			   *PropertyTypeName);
+	}
+
+	return PropertyValue;
 }
 
 
 void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 {
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
+
+	UATableHandler* TableHandler = DataTypeHandler->GetTableHandler(this->ActorTableName);
+	UStruct* MetaDataStruct = TableHandler->GetDataTable()->RowStruct;
+
+	//Get the FProperty* corresponding to   "BackboneSize" in MetaDataStruct
+	FProperty* Property = MetaDataStruct->FindPropertyByName("BackboneSize");
 	
-	UATableHandler* ManyToOneTableHandler = DataTypeHandler->GetManyToOneTableHandler(this->TableName);
+	UATableHandler* ManyToOneTableHandler = DataTypeHandler->GetManyToOneTableHandler(this->OneToManyTableName);
+
+	for(ADataPointActor* DataPointActor: DataTypeHandler->GetDataPointActors())
+	{
+		FTableRowBase& MetaDataRow = DataPointActor->GetMetadataRow();
+
+		FString PropertyValue = GetPropertyValueAsString(Property, MetaDataRow);
+
+		UE_LOG(LogTemp, Display, TEXT("Knisch BackboneSize: %s"), *PropertyValue);
+	}
+	
 
 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel"));
 
@@ -85,7 +150,7 @@ void UAAnimationHandler::OnAnimationValueChanged(FString AnimationValue)
 void UAAnimationHandler::LoadData()
 {
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
-	UATableHandler* TableHandler = DataTypeHandler->GetManyToOneTableHandler(this->TableName);
+	UATableHandler* TableHandler = DataTypeHandler->GetManyToOneTableHandler(this->OneToManyTableName);
 	TableHandler->AddDataToDataTableFromSource();
 }
 

@@ -53,13 +53,13 @@ void ADataPointActor::Create() {
     //ParticleComp->SetTemplate(ParticleCompAsset.Object);
 }
 
-void ADataPointActor::Initialize(FString ADataType, FString AMetaDataTableName, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataStruct)
+void ADataPointActor::Initialize(FString ADataType, FString AMetaDataTableName, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataRow)
 {
     //init variables
     this->DataType = ADataType;
     this->MetaDataTableName = AMetaDataTableName;
     this->SpatialDataStruct = ASpatialDataStruct;
-    this->MetadataStruct = AMetadataStruct;
+    this->MetadataRow = AMetadataRow;
 }
 
 // Sets default values
@@ -135,10 +135,10 @@ FSpatialDataStruct* ADataPointActor::GetSpatialDataStruct() const
 }
 
 //create getters for the variables
-FTableRowBase& ADataPointActor::GetMetadataStruct() const
+FTableRowBase& ADataPointActor::GetMetadataRow() const
 {
     //return the metadata struct
-    return *MetadataStruct;
+    return *MetadataRow;
 }
 
 FString ADataPointActor::GetTableName()

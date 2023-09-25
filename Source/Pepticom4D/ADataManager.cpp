@@ -415,6 +415,8 @@ void ADataManager::ExtractAnimations(TSharedPtr<FJsonObject> ViewObject)
 			int32 Interval = ExtractIntField(AnimationObject, "interval");
 
 			FString DataType = ExtractStringField(AnimationObject, "data_type");
+			FString ActorTableName = ExtractStringField(AnimationObject, "regex_variables_table");
+		
 			FString Explain = ExtractStringField(AnimationObject, "explain");
 			TArray<TSharedPtr<FJsonValue>> UpdateProperties = ExtractStringArrayField(AnimationObject, "update");
 
@@ -455,7 +457,7 @@ void ADataManager::ExtractAnimations(TSharedPtr<FJsonObject> ViewObject)
 
 				// Create an animation handler object using the extracted data
 				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
-				AAnimationHandler->Initialize(AnimationName, AnimationDimension, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableNames, UpdateColumnsNames, &DataTypeHandlerMap);
+				AAnimationHandler->Initialize(AnimationName, AnimationDimension, Min, Max, Interval, DataType, ActorTableName, ManyToOneTableName, KeyRegex, RegexVariableNames, UpdateColumnsNames, &DataTypeHandlerMap);
 				// AAnimationHandler->Sanity();
 
 				AAnimationHandler->GetPossibleAnimationValues();

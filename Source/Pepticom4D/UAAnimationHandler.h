@@ -22,7 +22,8 @@ private:
 	int32 Max;
 	int32 Interval;
 	FString DataType;
-	FString TableName;
+	FString ActorTableName;
+	FString OneToManyTableName;
 	FString KeyRegex;
 	TArray<FString> RegexVariableNames;
 	TArray<FString> UpdateProperties;
@@ -33,13 +34,14 @@ private:
 public:
 
 	//An initializer that takes in all the necessary parameters to create an animation handler
-	void Initialize(FString AAnimationName, FString AnimationDimension, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FString> ARegexVariableNames, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap);
+	void Initialize(FString AAnimationName, FString AnimationDimension, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString AActorTableName, FString AManyToOneTableName, FString AKeyRegex, TArray<FString> ARegexVariableNames, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap);
 
 	void Sanity();
 
 	TArray<int32> GetPossibleAnimationValues();
 
-	FString GetTableName();
+	FString GetManyToOneTableName();
+	FString GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata);
 
 	void AnimateActor(TArray<FVarStruct> Variables);
 
