@@ -7,6 +7,8 @@
 #include "Components/PrimitiveComponent.h"
 #include "PlayerCameraPawn.h"
 
+
+
 void ADataPointActor::Create() {
     // Creating our Default Components
     SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
@@ -157,3 +159,4 @@ FString ADataPointActor::GetIndex()
 {
     return this->Index;
 }
+

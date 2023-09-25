@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/PostProcessComponent.h"
 #include "SpatialDataStruct.h"
+#include "UObject/UnrealType.h"
 #include "DataPointActor.generated.h"
 
 UCLASS()

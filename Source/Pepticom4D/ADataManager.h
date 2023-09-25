@@ -7,7 +7,7 @@
 #include "Engine/DataTable.h"
 #include "Components/BoxComponent.h"
 #include "SpatialDataStruct.h"
-#include "UObject/UnrealType.h"
+
 #include "UADataTypeHandler.h"
 #include "UATableHandler.h"
 #include "UAViewHandler.h"

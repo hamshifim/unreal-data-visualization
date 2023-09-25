@@ -67,6 +67,8 @@ FString UAAnimationHandler::GetPropertyValueAsString(FProperty* Property, const 
 	// Check the property type and convert it to a string accordingly
 	FString PropertyTypeName = Property->GetClass()->GetName();
 
+	UE_LOG(LogTemp, Display, TEXT("Baloo Property: %s Type: %s"), *PropertyName, *PropertyTypeName);
+
 	if (PropertyTypeName.Equals("IntProperty"))
 	{
 		FIntProperty* IntProp = CastField<FIntProperty>(Property);
@@ -150,10 +152,41 @@ void UAAnimationHandler::AnimateActors()
 		 	for(FString UpdatePropName: UpdateProperties)
 		 	{
 		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 0 Property: %s"), *UpdatePropName);
-		 		
-		 		FString UpdatePropValue = GetPropertyValueAsString(ManyToOneStruct->FindPropertyByName(*UpdatePropName), *ManyToOneRow);
+
+		 		FProperty* UpdateProp = ManyToOneStruct->FindPropertyByName(*UpdatePropName);
+		 		FString UpdatePropValue = GetPropertyValueAsString(UpdateProp, *ManyToOneRow);
 
 		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 1 Property: %s: %s"), *UpdatePropName, *UpdatePropValue);
+
+		 		if(UpdatePropName.Equals("size"))
+		 		{
+		 			UE_LOG(LogTemp, Display, TEXT("Zuchini 2 attempting to change size"));
+
+		 			FDoubleProperty* DoubleProp = CastField<FDoubleProperty>(UpdateProp);
+		 			UE_LOG(LogTemp, Display, TEXT("Zuchini 2.1"));
+		 			double Radius = DoubleProp->GetPropertyValue_InContainer(ManyToOneRow);
+
+		 			UE_LOG(LogTemp, Display, TEXT("Zuchini 2.2"));
+		 			FString Gomes = FString::Printf(TEXT("%f"), Radius);
+		 			UE_LOG(LogTemp, Display, TEXT("Zuchini 2.3: %s"), *Gomes);
+		 			
+		 			DataPointActor->ChangeScale(Radius);
+		 			UE_LOG(LogTemp, Display, TEXT("Zuchini 2.4: %s"), *Gomes);
+		 		}
+		 		else if(UpdatePropName.Equals("color"))
+		 		{
+		 			UE_LOG(LogTemp, Display, TEXT("Zuchini 2 attempting to change color"));
+		 			
+		 			FStrProperty* StrProp = CastField<FStrProperty>(UpdateProp);
+		 			FString ColorHex = StrProp->GetPropertyValue_InContainer(&ManyToOneRow);
+		 			DataPointActor->ChangeColor(ColorHex);
+		 		}
+		 		else
+		 		{
+		 			UE_LOG(LogTemp, Warning, TEXT("ADataPointActor does not support PropertyName: %s"), *PropertyName);
+		 		}
+
+		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 3"));
 		 	}
 		 }
 	}
