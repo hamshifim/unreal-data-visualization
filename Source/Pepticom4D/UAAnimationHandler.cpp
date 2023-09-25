@@ -17,6 +17,17 @@ void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDi
 	this->RegexVariableNames = ARegexVariableNames;
 	this->UpdateProperties = AUpdateProperties;
 	this->DataTypeHandlerMap = ADataTypeHandlerMap;
+
+	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(DataType);
+	UATableHandler* TableHandler = DataTypeHandler->GetTableHandler(ActorTableName);
+	MetaDataStruct = TableHandler->GetDataTable()->RowStruct;
+
+	//Iterare over RegexVariableNames and add the corresponding FProperty* to KeyProperties
+	for (const auto& RegexVariableName : RegexVariableNames)
+	{
+		FProperty* Property = MetaDataStruct->FindPropertyByName(*RegexVariableName);
+		KeyProperties.Add(RegexVariableName, Property);
+	}
 }
 
 void UAAnimationHandler::Sanity() 
@@ -93,15 +104,9 @@ FString UAAnimationHandler::GetPropertyValueAsString(FProperty* Property, const 
 }
 
 
-void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
+void UAAnimationHandler::AnimateActors()
 {
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
-
-	UATableHandler* TableHandler = DataTypeHandler->GetTableHandler(this->ActorTableName);
-	UStruct* MetaDataStruct = TableHandler->GetDataTable()->RowStruct;
-
-	//Get the FProperty* corresponding to   "BackboneSize" in MetaDataStruct
-	FProperty* Property = MetaDataStruct->FindPropertyByName("BackboneSize");
 	
 	UATableHandler* ManyToOneTableHandler = DataTypeHandler->GetManyToOneTableHandler(this->OneToManyTableName);
 
@@ -109,17 +114,37 @@ void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 	{
 		FTableRowBase& MetaDataRow = DataPointActor->GetMetadataRow();
 
-		FString PropertyValue = GetPropertyValueAsString(Property, MetaDataRow);
+		// Iterate through all properties of the struct and extract the property name and value
+		// for (TFieldIterator<FProperty> PropertyIt(MetaDataStruct); PropertyIt; ++PropertyIt)
+		// {
+		// 	FProperty* Property = *PropertyIt;
+		// 	FString PropertyName = Property->GetName();
+		// 	FString PropertyValue = GetPropertyValueAsString(Property, MetaDataRow);
+		//
+		// 	UE_LOG(LogTemp, Display, TEXT("Pizza Property %s: %s"), *PropertyName,*PropertyValue);
+		// }
+		
+		TArray<FVarStruct> Variables;
+		FString Index = DataPointActor->GetIndex();
+		UE_LOG(LogTemp, Display, TEXT("Zroobabvel 0 Index: %s"), *Index);
+		Variables.Add(FVarStruct("Index", Index));
+		Variables.Add(FVarStruct(AnimationDimension, AnimationValue));
+		
+		// iterate over KeyProperties and set the corresponding property in MetaDataRow
+		 for (const auto& KeyProperty : KeyProperties)
+		 {
+		 	FString PropertyName = KeyProperty.Key;
+		 	FProperty* Property = KeyProperty.Value;
+		 	FString PropertyValue = GetPropertyValueAsString(Property, MetaDataRow);
 
-		UE_LOG(LogTemp, Display, TEXT("Knisch BackboneSize: %s"), *PropertyValue);
+		 	Variables.Add(FVarStruct(PropertyName, PropertyValue));
+
+		 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 1 Property: %s: %s"), *PropertyName, *PropertyValue);
+		 	FTableRowBase* ManyToOneRow = ManyToOneTableHandler->GetTableRow(Variables);
+		 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 2 "));
+		 }
 	}
 	
-
-	UE_LOG(LogTemp, Display, TEXT("Zroobabvel"));
-
-	ManyToOneTableHandler->GetTableRow(Variables);
-
-	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 1"));
 
 	//TODO use the data to animate the actors
 	const UDataTable* ManyToOneTable = ManyToOneTableHandler->GetDataTable();
@@ -131,19 +156,16 @@ void UAAnimationHandler::AnimateActor(TArray<FVarStruct> Variables)
 		UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 3"));
+	UE_LOG(LogTemp, Display, TEXT("Kadlaomer 3"));
 }
 
-void UAAnimationHandler::OnAnimationValueChanged(FString AnimationValue)
+void UAAnimationHandler::OnAnimationValueChanged(FString AAnimationValue)
 {
+	this->AnimationValue = AAnimationValue;
 	//init an array of FVarStruct
-	TArray<FVarStruct> Variables;
-	Variables.Add(FVarStruct("Index", "69973607186440"));
-	Variables.Add(FVarStruct(AnimationDimension, AnimationValue));
-	Variables.Add(FVarStruct("BackboneSize", "5"));
 
 	UE_LOG(LogTemp, Display, TEXT("Wowfull AnimationDimension: %s"), *AnimationDimension);
-	AnimateActor(Variables);
+	AnimateActors();
 	UE_LOG(LogTemp, Display, TEXT("Bombardful AnimationDimension: %s"), *AnimationDimension);
 }
 

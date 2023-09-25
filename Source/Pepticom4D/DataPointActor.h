@@ -17,7 +17,7 @@ public:
 	// Sets default values for this actor's properties
 	ADataPointActor();
 	void Create();
-	void Initialize(FString ADataType, FString AMetaDataTableName, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataRow);
+	void Initialize(FString ADataType, FString AMetaDataTableName, FSpatialDataStruct* ASpatialDataStruct, FTableRowBase* AMetadataRow, FString AIndex);
 	void ChangeColor(FString ColorHex);
 	void ChangeColor(FColor NewColor);
 	void ChangeScale(const float NewScale) const;
@@ -27,6 +27,7 @@ public:
 	FTableRowBase& GetMetadataRow() const;
 	FString GetTableName();
 	FString GetMetaDataTableName() const;
+	FString GetIndex();
 
 protected:
 	// Called when the game starts or when spawned
@@ -43,6 +44,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UMaterialInstanceDynamic* DynamicMaterial;
+	
 
 public:
 	// Called every frame
@@ -56,4 +58,5 @@ private:
 	FString MetaDataTableName;
 	FSpatialDataStruct* SpatialDataStruct;
 	FTableRowBase* MetadataRow;
+	FString Index;
 };

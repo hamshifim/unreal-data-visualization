@@ -30,6 +30,9 @@ private:
 	//probably better to send a table but that would require a lot of refactoring
 	TMap<FString, UADataTypeHandler*>* DataTypeHandlerMap;
 
+	UStruct* MetaDataStruct;
+	TMap<FString, FProperty*> KeyProperties;
+	FString AnimationValue;
 
 public:
 
@@ -43,10 +46,10 @@ public:
 	FString GetManyToOneTableName();
 	FString GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata);
 
-	void AnimateActor(TArray<FVarStruct> Variables);
+	void AnimateActors();
 
 	UFUNCTION()
-	void OnAnimationValueChanged(FString AnimationValue);
+	void OnAnimationValueChanged(FString AAnimationValue);
 	void LoadData();
 
 	UFUNCTION()
