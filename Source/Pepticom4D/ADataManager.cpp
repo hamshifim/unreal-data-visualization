@@ -409,6 +409,7 @@ void ADataManager::ExtractAnimations(TSharedPtr<FJsonObject> ViewObject)
 
 			const TSharedPtr<FJsonObject> AnimationObject = AnimationPair.Value->AsObject();
 
+			FString AnimationDimension = ExtractStringField(AnimationObject, "dimension");
 			int32 Min = ExtractIntField(AnimationObject, "min");
 			int32 Max = ExtractIntField(AnimationObject, "max");
 			int32 Interval = ExtractIntField(AnimationObject, "interval");
@@ -460,7 +461,7 @@ void ADataManager::ExtractAnimations(TSharedPtr<FJsonObject> ViewObject)
 
 				// Create an animation handler object using the extracted data
 				UAAnimationHandler* AAnimationHandler = NewObject<UAAnimationHandler>(this);
-				AAnimationHandler->Initialize(AnimationName, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames, &DataTypeHandlerMap);
+				AAnimationHandler->Initialize(AnimationName, AnimationDimension, Min, Max, Interval, DataType, ManyToOneTableName, KeyRegex, RegexVariableRetrievalInstructions, UpdateColumnsNames, &DataTypeHandlerMap);
 				// AAnimationHandler->Sanity();
 
 				AAnimationHandler->GetPossibleAnimationValues();

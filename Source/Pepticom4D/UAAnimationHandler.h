@@ -17,6 +17,7 @@ class PEPTICOM4D_API UAAnimationHandler : public UObject
 private:
 
 	FString AnimationName;
+	FString AnimationDimension;
 	int32 Min;
 	int32 Max;
 	int32 Interval;
@@ -26,12 +27,13 @@ private:
 	TArray<FVarStruct> RegexVariableRetrievalInstructions;
 	TArray<FString> UpdateProperties;
 	//probably better to send a table but that would require a lot of refactoring
-	TMap<FString, UADataTypeHandler*>* DataTypeHandlerMap; 
-	
+	TMap<FString, UADataTypeHandler*>* DataTypeHandlerMap;
+
+
 public:
 
 	//An initializer that takes in all the necessary parameters to create an animation handler
-	void Initialize(FString AAnimationName, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap);
+	void Initialize(FString AAnimationName, FString AnimationDimension, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap);
 
 	void Sanity();
 

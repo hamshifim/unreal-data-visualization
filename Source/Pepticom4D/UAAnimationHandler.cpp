@@ -3,9 +3,10 @@
 
 
 // An Initialization of the necessary variables
-void UAAnimationHandler::Initialize(FString AAnimationName, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap)
+void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDimension, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString ATableName, FString AKeyRegex, TArray<FVarStruct> ARegexVariableRetrievalInstructions, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap)
 {
 	this->AnimationName = AAnimationName;
+	this->AnimationDimension = AAnimationDimension;
 	this->Min = AMin;
 	this->Max = AMax;
 	this->Interval = AInterval;
@@ -73,12 +74,12 @@ void UAAnimationHandler::OnAnimationValueChanged(FString AnimationValue)
 	//init an array of FVarStruct
 	TArray<FVarStruct> Variables;
 	Variables.Add(FVarStruct("Index", "69973607186440"));
-	Variables.Add(FVarStruct("Cycle", AnimationValue));
+	Variables.Add(FVarStruct(AnimationDimension, AnimationValue));
 	Variables.Add(FVarStruct("BackboneSize", "5"));
 
-	UE_LOG(LogTemp, Display, TEXT("Powerfull"));
+	UE_LOG(LogTemp, Display, TEXT("Powerfull AnimationDimension: %s"), *AnimationDimension);
 	AnimateActor(Variables);
-	UE_LOG(LogTemp, Display, TEXT("Bombardful"));
+	UE_LOG(LogTemp, Display, TEXT("Bombardful AnimationDimension: %s"), *AnimationDimension);
 }
 
 void UAAnimationHandler::LoadData()
