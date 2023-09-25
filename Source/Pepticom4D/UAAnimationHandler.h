@@ -32,6 +32,7 @@ private:
 
 	UStruct* MetaDataStruct;
 	TMap<FString, FProperty*> KeyProperties;
+	UStruct* ManyToOneStruct;
 	FString AnimationValue;
 
 public:

@@ -22,12 +22,15 @@ void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDi
 	UATableHandler* TableHandler = DataTypeHandler->GetTableHandler(ActorTableName);
 	MetaDataStruct = TableHandler->GetDataTable()->RowStruct;
 
-	//Iterare over RegexVariableNames and add the corresponding FProperty* to KeyProperties
+	//Iterate over RegexVariableNames and add the corresponding FProperty* to KeyProperties
 	for (const auto& RegexVariableName : RegexVariableNames)
 	{
 		FProperty* Property = MetaDataStruct->FindPropertyByName(*RegexVariableName);
 		KeyProperties.Add(RegexVariableName, Property);
 	}
+
+	UATableHandler* ManyToOneTableHandler = DataTypeHandler->GetManyToOneTableHandler(OneToManyTableName);
+	ManyToOneStruct = ManyToOneTableHandler->GetDataTable()->RowStruct;
 }
 
 void UAAnimationHandler::Sanity() 
@@ -142,21 +145,31 @@ void UAAnimationHandler::AnimateActors()
 		 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 1 Property: %s: %s"), *PropertyName, *PropertyValue);
 		 	FTableRowBase* ManyToOneRow = ManyToOneTableHandler->GetTableRow(Variables);
 		 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 2 "));
+
+		 	//Iterate over UpdateProperties
+		 	for(FString PropName: UpdateProperties)
+		 	{
+		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 0 Property: %s"), *PropName);
+		 		
+		 		FString PropValue = GetPropertyValueAsString(ManyToOneStruct->FindPropertyByName(*PropName), *ManyToOneRow);
+
+		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 1 Property: %s: %s"), *PropName, *PropValue);
+		 	}
 		 }
 	}
 	
 
 	//TODO use the data to animate the actors
-	const UDataTable* ManyToOneTable = ManyToOneTableHandler->GetDataTable();
-	
-	TArray<FName> SpatialMetadataRowNames = ManyToOneTable->GetRowNames();
-	
-	for (const auto& SpatialMetadataRowName : SpatialMetadataRowNames)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());
-	}
-
-	UE_LOG(LogTemp, Display, TEXT("Kadlaomer 3"));
+	// const UDataTable* ManyToOneTable = ManyToOneTableHandler->GetDataTable();
+	//
+	// TArray<FName> SpatialMetadataRowNames = ManyToOneTable->GetRowNames();
+	//
+	// for (const auto& SpatialMetadataRowName : SpatialMetadataRowNames)
+	// {
+	// 	UE_LOG(LogTemp, Display, TEXT("Balbook SpatialMetadataRowName: %s"), *SpatialMetadataRowName.ToString());
+	// }
+	//
+	// UE_LOG(LogTemp, Display, TEXT("Kadlaomer 3"));
 }
 
 void UAAnimationHandler::OnAnimationValueChanged(FString AAnimationValue)
