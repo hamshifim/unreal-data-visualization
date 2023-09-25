@@ -8,8 +8,8 @@ public:
 	FString VarName;
 
 
-	FString SourceType;
+	FString VarValue;
 
  
-	FVarStruct(FString VarN, FString VarSrc);
+	FVarStruct(FString AVarName, FString AVarValue);
 };

@@ -77,7 +77,7 @@ void UAAnimationHandler::OnAnimationValueChanged(FString AnimationValue)
 	Variables.Add(FVarStruct(AnimationDimension, AnimationValue));
 	Variables.Add(FVarStruct("BackboneSize", "5"));
 
-	UE_LOG(LogTemp, Display, TEXT("Powerfull AnimationDimension: %s"), *AnimationDimension);
+	UE_LOG(LogTemp, Display, TEXT("Wowfull AnimationDimension: %s"), *AnimationDimension);
 	AnimateActor(Variables);
 	UE_LOG(LogTemp, Display, TEXT("Bombardful AnimationDimension: %s"), *AnimationDimension);
 }

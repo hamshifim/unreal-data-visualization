@@ -1,8 +1,8 @@
 #include "FVarStruct.h"
 
 
-FVarStruct::FVarStruct(FString VarN, FString VarSrc)
+FVarStruct::FVarStruct(FString AVarName, FString AVarValue)
 {
-	VarName = VarN;
-	SourceType = VarSrc;
+	VarName = AVarName;
+	VarValue = AVarValue;
 }

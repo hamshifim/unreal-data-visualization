@@ -83,7 +83,7 @@ FName UATableHandler::GetSpecificKey(const TArray<FVarStruct>& Variables)
 		//get the variable name
 		FString VarName = FString::Printf(TEXT("<%s>"), *Variables[i].VarName);
 		//get the variable source type
-		FString VarValue = Variables[i].SourceType;
+		FString VarValue = Variables[i].VarValue;
 
 		SpecificKey = SpecificKey.Replace(*VarName, *VarValue);
 	}
