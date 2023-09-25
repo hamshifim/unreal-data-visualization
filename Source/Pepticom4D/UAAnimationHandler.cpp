@@ -58,7 +58,7 @@ FString UAAnimationHandler::GetManyToOneTableName()
 	return OneToManyTableName;
 }
 
-
+//TODO make sure the redundancy with the same method in DataManager is resolved
 FString UAAnimationHandler::GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata)
 {
 	FString PropertyName = Property->GetName();
@@ -147,13 +147,13 @@ void UAAnimationHandler::AnimateActors()
 		 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 2 "));
 
 		 	//Iterate over UpdateProperties
-		 	for(FString PropName: UpdateProperties)
+		 	for(FString UpdatePropName: UpdateProperties)
 		 	{
-		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 0 Property: %s"), *PropName);
+		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 0 Property: %s"), *UpdatePropName);
 		 		
-		 		FString PropValue = GetPropertyValueAsString(ManyToOneStruct->FindPropertyByName(*PropName), *ManyToOneRow);
+		 		FString UpdatePropValue = GetPropertyValueAsString(ManyToOneStruct->FindPropertyByName(*UpdatePropName), *ManyToOneRow);
 
-		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 1 Property: %s: %s"), *PropName, *PropValue);
+		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 1 Property: %s: %s"), *UpdatePropName, *UpdatePropValue);
 		 	}
 		 }
 	}
