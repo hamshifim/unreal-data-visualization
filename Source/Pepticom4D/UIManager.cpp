@@ -474,7 +474,7 @@ void AUIManager::OnAnimationButtonClick()
 	UE_LOG(LogTemp, Display, TEXT("Bambini chistosas"));
 }
 
-void AUIManager::OnAnimationSliderChange(float AnimationValue)
+void AUIManager::OnAnimationSliderChange(const float AnimationValue)
 {
 	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!"));
 

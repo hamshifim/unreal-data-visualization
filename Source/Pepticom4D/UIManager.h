@@ -67,7 +67,7 @@ public:
 	void OnAnimationButtonClick();
 
 	UFUNCTION()
-	void OnAnimationSliderChange(float NewValue);
+	void OnAnimationSliderChange(float AnimationValue);
 
 	UFUNCTION()
 	void OnControlSwitchButtonClick();
