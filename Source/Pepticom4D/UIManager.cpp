@@ -463,9 +463,22 @@ void AUIManager::ConfigureDataFilteringWidget()
 
 void AUIManager::OnAnimationButtonClick()
 {
+	UE_LOG(LogTemp, Display, TEXT("Madre mia!"));
+
+	// float AnimationValue =  AnimationSlider->GetValue();
+	// // get a string representation of the float animation value
+	// FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
+	//
+	// AnimationHandler->OnAnimationValueChanged(AnimationValueString);
+
+	UE_LOG(LogTemp, Display, TEXT("Bambini chistosas"));
+}
+
+void AUIManager::OnAnimationSliderChange(float AnimationValue)
+{
 	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!"));
 
-	float AnimationValue =  AnimationSlider->GetValue();
+	// float AnimationValue =  AnimationSlider->GetValue();
 	// get a string representation of the float animation value
 	FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
 
@@ -473,6 +486,7 @@ void AUIManager::OnAnimationButtonClick()
 
 	UE_LOG(LogTemp, Display, TEXT("Bambini ferus"));
 }
+
 
 void AUIManager::OnControlSwitchButtonClick()
 {
@@ -541,6 +555,9 @@ void AUIManager:: ConfigureAnimationControlWidget()
 		AnimationSlider->SetValue(AnimationHandler->GetMaxValue());
 		//set the increment of the slider to be the interval of the animation
 		AnimationSlider->SetStepSize(AnimationHandler->GetInterval());
+
+		//set an on slider moved function
+		AnimationSlider->OnValueChanged.AddDynamic(this, &AUIManager::OnAnimationSliderChange);
 	}
 	else
 	{
