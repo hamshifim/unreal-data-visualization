@@ -31,6 +31,9 @@ void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDi
 
 	UATableHandler* ManyToOneTableHandler = DataTypeHandler->GetManyToOneTableHandler(OneToManyTableName);
 	ManyToOneStruct = ManyToOneTableHandler->GetDataTable()->RowStruct;
+
+	this->PossibleAnimationValues = GetPossibleAnimationValues();
+	this->CurrentAnimationIndex = 0;
 }
 
 void UAAnimationHandler::Sanity() 
@@ -42,14 +45,14 @@ void UAAnimationHandler::Sanity()
 //iterate from Min to Max adding Interval adding values to array and return it
 TArray<int32> UAAnimationHandler::GetPossibleAnimationValues()
 {
-	TArray<int32> PossibleAnimationValues;
+	TArray<int32> PPossibleAnimationValues;
 	for (int32 i= Min; i <= Max; i+=Interval)
 	{
-		PossibleAnimationValues.Add(i);
+		PPossibleAnimationValues.Add(i);
 		UE_LOG(LogTemp, Display, TEXT("googalach: %d"), i);
 	}
 
-	return PossibleAnimationValues;
+	return PPossibleAnimationValues;
 }
 
 
@@ -203,6 +206,31 @@ void UAAnimationHandler::AnimateActors()
 	// }
 	//
 	// UE_LOG(LogTemp, Display, TEXT("Kadlaomer 3"));
+}
+
+void UAAnimationHandler::Animate()
+{
+	CurrentAnimationIndex = 0;
+
+	// Start the animation process by triggering the first step
+	GetWorld()->GetTimerManager().SetTimer(AnimationTimerHandle, this, &UAAnimationHandler::AnimateStep, Interval, true);
+}
+
+void UAAnimationHandler::AnimateStep()
+{
+	if (CurrentAnimationIndex < PossibleAnimationValues.Num())
+	{
+		int32 i = PossibleAnimationValues[CurrentAnimationIndex++];
+		const FString AnimationValueString = FString::Printf(TEXT("%d"), i);
+		UE_LOG(LogTemp, Display, TEXT("Pitsootz: AnimationValueString: %s"), *AnimationValueString);
+		this->AnimationValue = *AnimationValueString;
+		AnimateActors();
+	}
+	else
+	{
+		// Stop the timer when all animation steps have been completed
+		GetWorld()->GetTimerManager().ClearTimer(AnimationTimerHandle);
+	}
 }
 
 void UAAnimationHandler::OnAnimationValueChanged(FString AAnimationValue)

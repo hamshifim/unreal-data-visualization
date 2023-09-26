@@ -6,6 +6,7 @@
 #include "Types/SlateEnums.h"
 #include "FVarStruct.h"
 #include "UADataTypeHandler.h"
+#include "TimerManager.h" 
 #include "UAAnimationHandler.generated.h"
 
 UCLASS(BlueprintType)
@@ -35,6 +36,10 @@ private:
 	UStruct* ManyToOneStruct;
 	FString AnimationValue;
 
+	TArray<int32> PossibleAnimationValues;
+	int CurrentAnimationIndex;
+	FTimerHandle AnimationTimerHandle; 
+
 public:
 
 	//An initializer that takes in all the necessary parameters to create an animation handler
@@ -50,6 +55,9 @@ public:
 	void AnimateActors();
 
 	UFUNCTION()
+	void Animate();
+	void AnimateStep();
+	UFUNCTION()
 	void OnAnimationValueChanged(FString AAnimationValue);
 	void LoadData();
 
@@ -59,4 +67,5 @@ public:
 	float GetMaxValue();
 	UFUNCTION()
 	float GetInterval();
+
 };

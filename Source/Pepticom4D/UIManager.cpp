@@ -464,12 +464,8 @@ void AUIManager::ConfigureDataFilteringWidget()
 void AUIManager::OnAnimationButtonClick()
 {
 	UE_LOG(LogTemp, Display, TEXT("Madre mia!"));
-
-	// float AnimationValue =  AnimationSlider->GetValue();
-	// // get a string representation of the float animation value
-	// FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
-	//
-	// AnimationHandler->OnAnimationValueChanged(AnimationValueString);
+	
+	AnimationHandler->Animate();
 
 	UE_LOG(LogTemp, Display, TEXT("Bambini chistosas"));
 }
@@ -478,9 +474,7 @@ void AUIManager::OnAnimationSliderChange(const float AnimationValue)
 {
 	UE_LOG(LogTemp, Display, TEXT("Hi Caramba!"));
 
-	// float AnimationValue =  AnimationSlider->GetValue();
-	// get a string representation of the float animation value
-	FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
+	const FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
 
 	AnimationHandler->OnAnimationValueChanged(AnimationValueString);
 
