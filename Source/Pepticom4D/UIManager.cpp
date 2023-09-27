@@ -465,7 +465,7 @@ void AUIManager::OnAnimationButtonClick()
 {
 	UE_LOG(LogTemp, Display, TEXT("Madre mia!"));
 	
-	AnimationHandler->Animate();
+	AnimationHandler->Animate(AnimationTextBlock);
 
 	UE_LOG(LogTemp, Display, TEXT("Bambini chistosas"));
 }
@@ -476,7 +476,7 @@ void AUIManager::OnAnimationSliderChange(const float AnimationValue)
 
 	const FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
 
-	AnimationHandler->OnAnimationValueChanged(AnimationValueString);
+	AnimationHandler->OnAnimationValueChanged(AnimationValueString, AnimationTextBlock);
 
 	UE_LOG(LogTemp, Display, TEXT("Bambini ferus"));
 }
@@ -518,7 +518,7 @@ void AUIManager:: ConfigureAnimationControlWidget()
 			UE_LOG(LogTemp, Error, TEXT("shoval 3: Failed to set up AnimationSlider"));
 		}
 
-		UTextBlock *AnimationTextBlock = Cast<UTextBlock>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationText")));
+		AnimationTextBlock = Cast<UTextBlock>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationText")));
 		if (AnimationTextBlock)
 		{
 			UE_LOG(LogTemp, Display, TEXT("shoval 4: Set up AnimationTextBlock"));

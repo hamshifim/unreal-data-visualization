@@ -7,6 +7,7 @@
 #include "FVarStruct.h"
 #include "UADataTypeHandler.h"
 #include "TimerManager.h" 
+#include "Components/TextBlock.h"
 #include "UAAnimationHandler.generated.h"
 
 UCLASS(BlueprintType)
@@ -38,7 +39,10 @@ private:
 
 	TArray<int32> PossibleAnimationValues;
 	int CurrentAnimationIndex;
-	FTimerHandle AnimationTimerHandle; 
+	FTimerHandle AnimationTimerHandle;
+
+	UPROPERTY()
+	UTextBlock *AnimationTextBlock;
 
 public:
 
@@ -55,10 +59,10 @@ public:
 	void AnimateActors();
 
 	UFUNCTION()
-	void Animate();
+	void Animate(UTextBlock *AAnimationTextBlock);
 	void AnimateStep();
 	UFUNCTION()
-	void OnAnimationValueChanged(FString AAnimationValue);
+	void OnAnimationValueChanged(FString AAnimationValue, UTextBlock *AAnimationTextBlock);
 	void LoadData();
 
 	UFUNCTION()
@@ -67,5 +71,7 @@ public:
 	float GetMaxValue();
 	UFUNCTION()
 	float GetInterval();
+	UFUNCTION()
+	FString GetAnimationName();
 
 };

@@ -1,5 +1,6 @@
 #include "UAAnimationHandler.h"
 #include "UATableHandler.h"
+#include "Components/TextBlock.h"
 
 
 // An Initialization of the necessary variables
@@ -104,8 +105,7 @@ FString UAAnimationHandler::GetPropertyValueAsString(FProperty* Property, const 
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Struct property %s type not supported. Type: %s"), *PropertyName,
-			   *PropertyTypeName);
+		UE_LOG(LogTemp, Warning, TEXT("Struct property %s type not supported. Type: %s"), *PropertyName, *PropertyTypeName);
 	}
 
 	return PropertyValue;
@@ -114,6 +114,9 @@ FString UAAnimationHandler::GetPropertyValueAsString(FProperty* Property, const 
 
 void UAAnimationHandler::AnimateActors()
 {
+	FString Message = GetAnimationName() + " " + AnimationValue;
+	AnimationTextBlock->SetText(FText::FromString(Message));
+	
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(this->DataType);
 	
 	UATableHandler* ManyToOneTableHandler = DataTypeHandler->GetManyToOneTableHandler(this->OneToManyTableName);
@@ -208,8 +211,14 @@ void UAAnimationHandler::AnimateActors()
 	// UE_LOG(LogTemp, Display, TEXT("Kadlaomer 3"));
 }
 
-void UAAnimationHandler::Animate()
+void UAAnimationHandler::Animate(UTextBlock* AAnimationTextBlock)
 {
+	//This be ugly!!!
+	if(!AnimationTextBlock)
+	{
+		AnimationTextBlock = AAnimationTextBlock;
+	}
+	
 	CurrentAnimationIndex = 0;
 
 	// Start the animation process by triggering the first step
@@ -233,9 +242,15 @@ void UAAnimationHandler::AnimateStep()
 	}
 }
 
-void UAAnimationHandler::OnAnimationValueChanged(FString AAnimationValue)
+void UAAnimationHandler::OnAnimationValueChanged(FString AAnimationValue, UTextBlock *AAnimationTextBlock)
 {
 	this->AnimationValue = AAnimationValue;
+
+	//This be ugly!!!
+	if(!AnimationTextBlock)
+	{
+		AnimationTextBlock = AAnimationTextBlock;
+	}
 	//init an array of FVarStruct
 
 	UE_LOG(LogTemp, Display, TEXT("Wowfull AnimationDimension: %s"), *AnimationDimension);
@@ -264,3 +279,9 @@ float UAAnimationHandler::GetInterval()
 {
 	return Interval * 1.0f;
 }
+
+FString UAAnimationHandler::GetAnimationName()
+{
+	return this->AnimationName;
+}
+
