@@ -60,7 +60,7 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable()
 			{
 				UE_LOG(LogTemp, Error,
 				       TEXT(
-					       "Shivkook The number of rows in the spatial data table (%d) does not match the number of rows in the spatial metadata table (%d). FullDatasetName: %s"
+					       "Shivkook The number of rows in the spatial data table (%d) does not match the number of rows in the spatial metadata table (%d). DataType: %s"
 				       ), NumSpatialDataRows, NumSpatialMetadataRows, *FullTableName);
 				// return;
 				continue;
