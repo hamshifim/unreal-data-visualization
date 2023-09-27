@@ -137,7 +137,7 @@ private:
 	UPROPERTY()
 	USlider* AnimationSlider;
 	UPROPERTY()
-	UTextBlock *AnimationTextBlock;
+	UTextBlock* AnimationTextBlock;
 
 	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject, bool AddToViewport = true);
 	FString GetFriendlyPropertyName(FString PropertyName);

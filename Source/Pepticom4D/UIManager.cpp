@@ -540,19 +540,26 @@ void AUIManager:: ConfigureAnimationControlWidget()
 			// AnimationControlWidget->AddAnimationButton(AnimationName);
 		}
 
-		//Get the first animation in the map
-		FString AnimationName = AnimationNames[0];
-		AnimationHandler = DataManager->AnimationHandlerMap.FindRef(AnimationName);
-		AnimationHandler->SetAnimationTextBlock(AnimationTextBlock);
+		if(!AnimationNames.IsEmpty())
+		{
+			//Get the first animation in the map
+			FString AnimationName = AnimationNames[0];
+			AnimationHandler = DataManager->AnimationHandlerMap.FindRef(AnimationName);
+			AnimationHandler->SetAnimationTextBlock(AnimationTextBlock);
 
-		AnimationSlider->SetMinValue(AnimationHandler->GetMinValue());
-		AnimationSlider->SetMaxValue(AnimationHandler->GetMaxValue());
-		AnimationSlider->SetValue(AnimationHandler->GetMaxValue());
-		//set the increment of the slider to be the interval of the animation
-		AnimationSlider->SetStepSize(AnimationHandler->GetInterval());
+			AnimationSlider->SetMinValue(AnimationHandler->GetMinValue());
+			AnimationSlider->SetMaxValue(AnimationHandler->GetMaxValue());
+			AnimationSlider->SetValue(AnimationHandler->GetMaxValue());
+			//set the increment of the slider to be the interval of the animation
+			AnimationSlider->SetStepSize(AnimationHandler->GetInterval());
 
-		//set an on slider moved function
-		AnimationSlider->OnValueChanged.AddDynamic(this, &AUIManager::OnAnimationSliderChange);
+			//set an on slider moved function
+			AnimationSlider->OnValueChanged.AddDynamic(this, &AUIManager::OnAnimationSliderChange);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("shovav 4: No animation found"));
+		}
 	}
 	else
 	{
