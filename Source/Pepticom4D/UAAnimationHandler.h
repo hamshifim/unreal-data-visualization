@@ -42,7 +42,7 @@ private:
 	FTimerHandle AnimationTimerHandle;
 
 	UPROPERTY()
-	UTextBlock *AnimationTextBlock;
+	UTextBlock* AnimationTextBlock;
 
 public:
 
@@ -59,10 +59,10 @@ public:
 	void AnimateActors();
 
 	UFUNCTION()
-	void Animate(UTextBlock *AAnimationTextBlock);
+	void Animate();
 	void AnimateStep();
 	UFUNCTION()
-	void OnAnimationValueChanged(FString AAnimationValue, UTextBlock *AAnimationTextBlock);
+	void OnAnimationValueChanged(FString AAnimationValue);
 	void LoadData();
 
 	UFUNCTION()
@@ -73,5 +73,6 @@ public:
 	float GetInterval();
 	UFUNCTION()
 	FString GetAnimationName();
-
+	UFUNCTION()
+	void SetAnimationTextBlock(UTextBlock* AAnimationTextBlock);
 };

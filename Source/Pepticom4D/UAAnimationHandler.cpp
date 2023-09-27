@@ -211,14 +211,8 @@ void UAAnimationHandler::AnimateActors()
 	// UE_LOG(LogTemp, Display, TEXT("Kadlaomer 3"));
 }
 
-void UAAnimationHandler::Animate(UTextBlock* AAnimationTextBlock)
+void UAAnimationHandler::Animate()
 {
-	//This be ugly!!!
-	if(!AnimationTextBlock)
-	{
-		AnimationTextBlock = AAnimationTextBlock;
-	}
-	
 	CurrentAnimationIndex = 0;
 
 	// Start the animation process by triggering the first step
@@ -242,15 +236,10 @@ void UAAnimationHandler::AnimateStep()
 	}
 }
 
-void UAAnimationHandler::OnAnimationValueChanged(FString AAnimationValue, UTextBlock *AAnimationTextBlock)
+void UAAnimationHandler::OnAnimationValueChanged(FString AAnimationValue)
 {
 	this->AnimationValue = AAnimationValue;
-
-	//This be ugly!!!
-	if(!AnimationTextBlock)
-	{
-		AnimationTextBlock = AAnimationTextBlock;
-	}
+	
 	//init an array of FVarStruct
 
 	UE_LOG(LogTemp, Display, TEXT("Wowfull AnimationDimension: %s"), *AnimationDimension);
@@ -283,5 +272,10 @@ float UAAnimationHandler::GetInterval()
 FString UAAnimationHandler::GetAnimationName()
 {
 	return this->AnimationName;
+}
+
+void UAAnimationHandler::SetAnimationTextBlock(UTextBlock* AAnimationTextBlock)
+{
+	this->AnimationTextBlock = AAnimationTextBlock;
 }
 

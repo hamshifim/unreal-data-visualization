@@ -465,7 +465,7 @@ void AUIManager::OnAnimationButtonClick()
 {
 	UE_LOG(LogTemp, Display, TEXT("Madre mia!"));
 	
-	AnimationHandler->Animate(AnimationTextBlock);
+	AnimationHandler->Animate();
 
 	UE_LOG(LogTemp, Display, TEXT("Bambini chistosas"));
 }
@@ -476,7 +476,7 @@ void AUIManager::OnAnimationSliderChange(const float AnimationValue)
 
 	const FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
 
-	AnimationHandler->OnAnimationValueChanged(AnimationValueString, AnimationTextBlock);
+	AnimationHandler->OnAnimationValueChanged(AnimationValueString);
 
 	UE_LOG(LogTemp, Display, TEXT("Bambini ferus"));
 }
@@ -543,6 +543,7 @@ void AUIManager:: ConfigureAnimationControlWidget()
 		//Get the first animation in the map
 		FString AnimationName = AnimationNames[0];
 		AnimationHandler = DataManager->AnimationHandlerMap.FindRef(AnimationName);
+		AnimationHandler->SetAnimationTextBlock(AnimationTextBlock);
 
 		AnimationSlider->SetMinValue(AnimationHandler->GetMinValue());
 		AnimationSlider->SetMaxValue(AnimationHandler->GetMaxValue());
