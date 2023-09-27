@@ -3,7 +3,6 @@
 #include "Components/TextBlock.h"
 
 
-// An Initialization of the necessary variables
 void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDimension, int32 AMin, int32 AMax, int32 AInterval, FString ADataType, FString AActorTableName, FString AManyToOneTableName, FString AKeyRegex, TArray<FString> ARegexVariableNames, TArray<FString> AUpdateProperties, TMap<FString, UADataTypeHandler*>* ADataTypeHandlerMap)
 {
 	this->AnimationName = AAnimationName;
@@ -18,6 +17,7 @@ void UAAnimationHandler::Initialize(FString AAnimationName, FString AAnimationDi
 	this->RegexVariableNames = ARegexVariableNames;
 	this->UpdateProperties = AUpdateProperties;
 	this->DataTypeHandlerMap = ADataTypeHandlerMap;
+	this->AnimationValue = FString::Printf(TEXT("%d"), Max);
 
 	UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap->FindRef(DataType);
 	UATableHandler* TableHandler = DataTypeHandler->GetTableHandler(ActorTableName);
@@ -277,5 +277,8 @@ FString UAAnimationHandler::GetAnimationName()
 void UAAnimationHandler::SetAnimationTextBlock(UTextBlock* AAnimationTextBlock)
 {
 	this->AnimationTextBlock = AAnimationTextBlock;
+
+	const FString Message = GetAnimationName() + " " + AnimationValue;
+	AnimationTextBlock->SetText(FText::FromString(Message));
 }
 
