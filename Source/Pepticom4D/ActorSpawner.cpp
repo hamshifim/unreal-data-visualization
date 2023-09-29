@@ -177,6 +177,10 @@ void AActorSpawner::SpawnActorsFromQueue()
 					DataManager->DataTypeHandlerMap.FindRef(DataType)->AddDataPointActor(DataPointActor);
 
 					DataPointActor->Initialize(DataType, MetaDataTableName, SpatialData, Metadata, Index);
+					NumActorsSpawned++;
+
+					//log the number of actors spawned
+					UE_LOG(LogTemp, Display, TEXT("Number of actors spawned: %d"), NumActorsSpawned);
 				}
 				else
 				{
