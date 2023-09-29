@@ -1,0 +1,210 @@
+{
+    "app": "stars",
+    "conf": "/Users/gideonbar/dev/data-wielder/unreal-data-visualization/Config/DataConfig.json",
+    "base_columns": [
+        "x",
+        "y",
+        "z",
+        "type",
+        "color",
+        "size",
+        "opacity"
+    ],
+    "data_types": {
+        "stars": {
+            "data_source": "/Users/gideonbar/dev/data-wielder/unreal-data-visualization/Content/Data/stars.csv",
+            "tables": {
+                "metadata": {
+                    "data_source": "/Users/gideonbar/dev/data-wielder/unreal-data-visualization/Content/Data/stars_metadata.csv",
+                    "columns": [
+                        {
+                            "metadata": {},
+                            "name": "Index",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        {
+                            "metadata": {},
+                            "name": "star_name",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        {
+                            "metadata": {},
+                            "name": "galaxy_name",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        {
+                            "metadata": {},
+                            "name": "size",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        {
+                            "metadata": {},
+                            "name": "color",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        {
+                            "metadata": {},
+                            "name": "distance_from_earth",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        {
+                            "metadata": {},
+                            "name": "likelihood_of_life",
+                            "nullable": true,
+                            "type": "float"
+                        },
+                        {
+                            "metadata": {},
+                            "name": "num_surr_planets",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        {
+                            "metadata": {},
+                            "name": "type_of_star",
+                            "nullable": true,
+                            "type": "string"
+                        },
+                        {
+                            "metadata": {},
+                            "name": "p_life",
+                            "nullable": true,
+                            "type": "long"
+                        }
+                    ]
+                }
+            },
+            "default_table": "metadata"
+        }
+    },
+    "views": {
+        "galaxy": {
+            "data_types": [
+                "stars"
+            ],
+            "boundaries": {
+                "center_x": 4.20556640625,
+                "min_x": -9370.5107421875,
+                "max_x": 9378.921875,
+                "center_y": -195.77685546875,
+                "min_y": -9562.37109375,
+                "max_y": 9170.8173828125,
+                "center_z": 44.626953125,
+                "min_z": -9613.173828125,
+                "max_z": 9702.427734375,
+                "radius": 4851.2138671875
+            },
+            "color_maps": {
+                "p_life": {
+                    "0": "#00ff00",
+                    "1": "#00fc02",
+                    "2": "#00f905",
+                    "3": "#00f707",
+                    "4": "#00f40a",
+                    "5": "#00f20c",
+                    "6": "#00ef0f",
+                    "7": "#00ec12",
+                    "8": "#00ea14",
+                    "9": "#00e717",
+                    "10": "#00e519",
+                    "11": "#00e21c",
+                    "12": "#00e01e",
+                    "13": "#00dd21",
+                    "14": "#00da24",
+                    "15": "#00d826",
+                    "16": "#00d529",
+                    "17": "#00d32b",
+                    "18": "#00d02e",
+                    "19": "#00ce30",
+                    "20": "#00cb33",
+                    "21": "#00c836",
+                    "22": "#00c638",
+                    "23": "#00c33b",
+                    "24": "#00c13d",
+                    "25": "#00be40",
+                    "26": "#00bc42",
+                    "27": "#00b945",
+                    "28": "#00b648",
+                    "29": "#00b44a",
+                    "30": "#00b14d",
+                    "31": "#00af4f",
+                    "32": "#00ac52",
+                    "33": "#00aa55",
+                    "34": "#00a757",
+                    "35": "#00a45a",
+                    "36": "#00a25c",
+                    "37": "#009f5f",
+                    "38": "#009d61",
+                    "39": "#009a64",
+                    "40": "#009767",
+                    "41": "#009569",
+                    "42": "#00926c",
+                    "43": "#00906e",
+                    "44": "#008d71",
+                    "45": "#008b73",
+                    "46": "#008876",
+                    "47": "#008579",
+                    "48": "#00837b",
+                    "49": "#00807e",
+                    "50": "#007e80",
+                    "51": "#007b83",
+                    "52": "#007985",
+                    "53": "#007688",
+                    "54": "#00738b",
+                    "55": "#00718d",
+                    "56": "#006e90",
+                    "57": "#006c92",
+                    "58": "#006995",
+                    "59": "#006797",
+                    "60": "#00649a",
+                    "61": "#00619d",
+                    "62": "#005f9f",
+                    "63": "#005ca2",
+                    "64": "#005aa4",
+                    "65": "#0057a7",
+                    "66": "#0055aa",
+                    "67": "#0052ac",
+                    "68": "#004faf",
+                    "69": "#004db1",
+                    "70": "#004ab4",
+                    "71": "#0048b6",
+                    "72": "#0045b9",
+                    "73": "#0042bc",
+                    "74": "#0040be",
+                    "75": "#003dc1",
+                    "76": "#003bc3",
+                    "77": "#0038c6",
+                    "78": "#0036c8",
+                    "79": "#0033cb",
+                    "80": "#0030ce",
+                    "81": "#002ed0",
+                    "82": "#002bd3",
+                    "83": "#0029d5",
+                    "84": "#0026d8",
+                    "85": "#0024da",
+                    "86": "#0021dd",
+                    "87": "#001ee0",
+                    "88": "#001ce2",
+                    "89": "#0019e5",
+                    "90": "#0017e7",
+                    "91": "#0014ea",
+                    "92": "#0012ec",
+                    "93": "#000fef",
+                    "94": "#000cf2",
+                    "95": "#000af4",
+                    "96": "#0007f7",
+                    "97": "#0005f9",
+                    "98": "#0002fc",
+                    "99": "#0000ff"
+                }
+            }
+        }
+    },
+    "default_view": "galaxy"
+}

@@ -464,9 +464,16 @@ void AUIManager::ConfigureDataFilteringWidget()
 void AUIManager::OnAnimationButtonClick()
 {
 	UE_LOG(LogTemp, Display, TEXT("Madre mia!"));
-	
-	AnimationHandler->Animate();
 
+	if(AnimationHandler)
+	{
+		AnimationHandler->Animate();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AnimationHandler is null"));
+	}
+	
 	UE_LOG(LogTemp, Display, TEXT("Bambini chistosas"));
 }
 
