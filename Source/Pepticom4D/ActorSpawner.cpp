@@ -252,12 +252,15 @@ void AActorSpawner::BeginPlay()
 	UE_LOG(LogTemp, Display, TEXT("shiflif: 1"));
 
 	ForceRefresh();
+
+	// Spawn actors from the queue if the queue is not empty
+	SpawnActorsFromQueue();
+	UIManager->RefreshUI();
 }
 
 // Called every frame
 void AActorSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// Spawn actors from the queue if the queue is not empty
-	SpawnActorsFromQueue();
+
 }

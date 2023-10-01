@@ -83,6 +83,9 @@ public:
 
 	void ConfigureUserControlWidget();
 
+	UFUNCTION()
+	void RefreshUI();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -556,7 +556,7 @@ void AUIManager:: ConfigureAnimationControlWidget()
 
 			AnimationSlider->SetMinValue(AnimationHandler->GetMinValue());
 			AnimationSlider->SetMaxValue(AnimationHandler->GetMaxValue());
-			AnimationSlider->SetValue(AnimationHandler->GetMaxValue());
+			AnimationSlider->SetValue(AnimationHandler->GetMinValue());
 			//set the increment of the slider to be the interval of the animation
 			AnimationSlider->SetStepSize(AnimationHandler->GetInterval());
 
@@ -716,5 +716,13 @@ void AUIManager::ConfigureUserControlWidget()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("shovav 5: Failed to set up ooserControlWidget"));
+	}
+}
+
+void AUIManager::RefreshUI()
+{
+	if(AnimationHandler)
+	{
+		OnAnimationSliderChange(AnimationHandler->GetMinValue());
 	}
 }
