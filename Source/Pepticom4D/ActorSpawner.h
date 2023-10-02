@@ -44,8 +44,7 @@ public:
 private:
 	// Queue of locations at which to spawn actors; stores pairs of metadata to location
 	TQueue<TTuple<FTableRowBase*, FSpatialDataStruct*, FVector, FString, FString, FString>> ActorDataTupleQueue = TQueue<TTuple<FTableRowBase*, FSpatialDataStruct*, FVector, FString, FString, FString>>();
-	// Number of actors to spawn per tick
-	int32 SpawnActorsPerTick = 500; // adjust this value as needed to prevent lag
+	
 	int NumActorsSpawned = 0;
 	// Store a handler to the UI manager
 	UPROPERTY()
