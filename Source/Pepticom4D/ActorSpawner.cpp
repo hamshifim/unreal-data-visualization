@@ -176,7 +176,7 @@ void AActorSpawner::SpawnActorsFromQueue()
 			NumActorsSpawned++;
 
 			//log the number of actors spawned
-			UE_LOG(LogTemp, Display, TEXT("Number of actors spawned: %d"), NumActorsSpawned);
+			UE_LOG(LogTemp, Display, TEXT("Number of actors of data type: %s spawned: %d"), *DataType, NumActorsSpawned);
 		}
 		else
 		{
