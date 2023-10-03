@@ -5,6 +5,7 @@
 
 #include "AnimationControlWidget.h"
 #include "UserControlWidget.h"
+#include "ViewSwitchWidget.h"
 
 // Sets default values
 AUIManager::AUIManager(): AActor()
@@ -34,22 +35,23 @@ void AUIManager::BeginPlay()
 	CreateAndRenderWidget("/Game/ActorDataWidget.ActorDataWidget_C", ActorDataWidgetGeneric);
 	CreateAndRenderWidget("/Game/DataSelectorWidget.DataSelectorWidget_C", DataSelectorWidgetGeneric);
 	CreateAndRenderWidget("/Game/DataFilteringWidget.DataFilteringWidget_C", DataFilteringWidgetGeneric);
-	
+
 	CreateAndRenderWidget("/Game/Materials/UserControlWidget.UserControlWidget_C", UserControlWidget);
-	CreateAndRenderWidget("/Game/Materials/AnimationControlWidget.AnimationControlWidget_C", AnimationControlWidget, false);
-	
+	CreateAndRenderWidget("/Game/Materials/AnimationControlWidget.AnimationControlWidget_C", AnimationControlWidget,false);
+	CreateAndRenderWidget("/Game/Materials/ViewSwitchWidget.ViewSwitchWidget_C", ViewSwitchWidget, false);
+
 	InitializedWidgets = true;
 
-	if(UserControlWidget)
+	if (UserControlWidget)
 	{
 		UserControlWidget = Cast<UUserControlWidget>(UserControlWidget);
 		UE_LOG(LogTemp, Display, TEXT("Boof: UserControlWidget is of type UserControlWidget"));
 
-		if(AnimationControlWidget)
+		if (AnimationControlWidget)
 		{
 			AnimationControlWidget = Cast<UAnimationControlWidget>(AnimationControlWidget);
-	
-			if(AnimationControlWidget)
+
+			if (AnimationControlWidget)
 			{
 				UE_LOG(LogTemp, Display, TEXT("Shanaf: AnimationControlWidget is of type UAnimationControlWidget"));
 			}
@@ -62,12 +64,31 @@ void AUIManager::BeginPlay()
 		{
 			UE_LOG(LogTemp, Error, TEXT("AnimationControlWidget is null"));
 		}
+
+		if (ViewSwitchWidget)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Karnaf 0:"));
+
+			ViewSwitchWidget = Cast<UViewSwitchWidget>(ViewSwitchWidget);
+
+			if (ViewSwitchWidget)
+			{
+				UE_LOG(LogTemp, Display, TEXT("Karnaf: ViewSwitchWidget is of type UViewSwitchWidget"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Karnaf: ViewSwitchWidget is not of type UViewSwitchWidget"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("AnimationControlWidget is null"));
+		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Boof: UserControlWidget is null"));
 	}
-
 
 
 	// By default, the actor data widget is hidden
@@ -133,7 +154,7 @@ void AUIManager::CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetO
 			WidgetObject->SetAlignmentInViewport(FVector2D(0.0f, 0.0f));
 			WidgetObject->SetPositionInViewport(FVector2D(0.0f, 0.0f));
 
-			if(AddToViewport)
+			if (AddToViewport)
 			{
 				// Add the widget to the viewport with z-order 999
 				WidgetObject->AddToViewport(999);
@@ -332,7 +353,8 @@ void AUIManager::ConfigureDataSelectorWidget()
 	{
 		// Generate horizontal boxes containing the data type and a combo box for the sub-dataset name
 		// Get the vertical box which will contain all of these horizontal boxes
-		UVerticalBox* VerticalBox = Cast<UVerticalBox>(DataSelectorWidget->GetWidgetFromName("DataSelectorVerticalBox"));
+		UVerticalBox* VerticalBox = Cast<
+			UVerticalBox>(DataSelectorWidget->GetWidgetFromName("DataSelectorVerticalBox"));
 
 		// get a ViewHandler from DataManager using its current view Name
 		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
@@ -465,7 +487,7 @@ void AUIManager::OnAnimationButtonClick()
 {
 	UE_LOG(LogTemp, Display, TEXT("Madre mia!"));
 
-	if(AnimationHandler)
+	if (AnimationHandler)
 	{
 		AnimationHandler->Animate();
 	}
@@ -473,7 +495,7 @@ void AUIManager::OnAnimationButtonClick()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AnimationHandler is null"));
 	}
-	
+
 	UE_LOG(LogTemp, Display, TEXT("Bambini chistosas"));
 }
 
@@ -492,10 +514,40 @@ void AUIManager::OnAnimationSliderChange(const float AnimationValue)
 void AUIManager::OnControlSwitchButtonClick()
 {
 	UE_LOG(LogTemp, Display, TEXT("Andele! Andele! Arriba! Arriba!"));
-	UE_LOG(LogTemp, Display, TEXT("Move all the user GUI here!"));
+	UE_LOG(LogTemp, Display, TEXT("pichpach: Move all the user GUI here !"));
+
+	if(ControlSwitcherWidget)
+	{
+		//switch ControlSwitcherWidget widget to ViewSwitchWidget
+		int32 CurrentIndex = ControlSwitcherWidget->GetActiveWidgetIndex();
+		int32 NumWidgets = ControlSwitcherWidget->GetNumWidgets();
+		CurrentIndex++;
+
+		UE_LOG(LogTemp, Display, TEXT("pichpach 0: active widget index %d out of %d"), CurrentIndex, NumWidgets);
+
+		
+		// Wrap around if we're past the last widget
+		if(CurrentIndex >= NumWidgets)
+		{
+			CurrentIndex = 0;
+			UE_LOG(LogTemp, Display, TEXT("pichpach 0: active widget index %d"), CurrentIndex);
+		}
+
+		UE_LOG(LogTemp, Display, TEXT("pichpach 0: active widget index %d"), CurrentIndex);
+
+	
+		ControlSwitcherWidget->SetActiveWidgetIndex(CurrentIndex);
+
+		UE_LOG(LogTemp, Display, TEXT("pichpach 1: Move all the user GUI here !"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("pichpach 7: no control !"));
+
+	}
 }
 
-void AUIManager:: ConfigureAnimationControlWidget()
+void AUIManager::ConfigureAnimationControlWidget()
 {
 	if (AnimationControlWidget)
 	{
@@ -503,8 +555,9 @@ void AUIManager:: ConfigureAnimationControlWidget()
 		AnimationControlWidget->SetVisibility(ESlateVisibility::Visible);
 
 		UE_LOG(LogTemp, Display, TEXT("shoval 0"));
-		
-		UButton* AnimationButton = Cast<UButton>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationButton"))); // Name of the button in UMG editor
+
+		UButton* AnimationButton = Cast<UButton>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationButton")));
+		// Name of the button in UMG editor
 		if (AnimationButton)
 		{
 			AnimationButton->OnClicked.AddDynamic(this, &AUIManager::OnAnimationButtonClick);
@@ -515,7 +568,7 @@ void AUIManager:: ConfigureAnimationControlWidget()
 			UE_LOG(LogTemp, Error, TEXT("shoval 2: Failed to set up button click event!"));
 		}
 
-		AnimationSlider = Cast<USlider>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationSlider"))); 
+		AnimationSlider = Cast<USlider>(AnimationControlWidget->GetWidgetFromName(TEXT("AnimationSlider")));
 		if (AnimationSlider)
 		{
 			UE_LOG(LogTemp, Display, TEXT("shoval 3: Set up AnimationSlider"));
@@ -547,7 +600,7 @@ void AUIManager:: ConfigureAnimationControlWidget()
 			// AnimationControlWidget->AddAnimationButton(AnimationName);
 		}
 
-		if(!AnimationNames.IsEmpty())
+		if (!AnimationNames.IsEmpty())
 		{
 			//Get the first animation in the map
 			FString AnimationName = AnimationNames[0];
@@ -594,8 +647,9 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
 	for (const FString DataType : DataManager->GetCurrentDataTypes())
 	{
 		// Iterate through all actors DataPointActors in of the data type and destroy them
-		TArray<ADataPointActor*> DataPointActors = DataManager->DataTypeHandlerMap.FindRef(*DataType)->GetDataPointActors();
-		
+		TArray<ADataPointActor*> DataPointActors = DataManager->DataTypeHandlerMap.FindRef(*DataType)->
+		                                                        GetDataPointActors();
+
 		for (auto& DataPointActor : DataPointActors)
 		{
 			if (SelectedItem.Equals("Default"))
@@ -664,6 +718,58 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
 	}
 }
 
+void AUIManager::ConfigureViewSwitchWidget()
+{
+	if (ViewSwitchWidget)
+	{
+		//make visible
+		ViewSwitchWidget->SetVisibility(ESlateVisibility::Visible);
+
+		UE_LOG(LogTemp, Display, TEXT("kivsa 0"));
+
+		//find ViewSwitcherWidget in ViewSwitchWidget
+		ControlSwitcherWidget = Cast<UWidgetSwitcher>(
+			UserControlWidget->GetWidgetFromName(TEXT("ControlSwitcher")));
+		
+
+		TArray<FString> ViewNames;
+		//iterate Animation Handlers in DataManager->AnimationHandlerMap;
+		for (const auto& AnimationHandlerPair : DataManager->ViewHandlerMap)
+		{
+
+			FString ViewName = AnimationHandlerPair.Key;
+			ViewNames.Add(ViewName);
+			UE_LOG(LogTemp, Display, TEXT("kivsa 4: Animation: %s"), *ViewName);
+			// AnimationControlWidget->AddAnimationButton(AnimationName);
+		}
+
+		if (!ViewNames.IsEmpty())
+		{
+			//Get the first animation in the map
+			// FString AnimationName = ViewNames[0];
+			// AnimationHandler = DataManager->AnimationHandlerMap.FindRef(AnimationName);
+			// AnimationHandler->SetAnimationTextBlock(AnimationTextBlock);
+			//
+			// AnimationSlider->SetMinValue(AnimationHandler->GetMinValue());
+			// AnimationSlider->SetMaxValue(AnimationHandler->GetMaxValue());
+			// AnimationSlider->SetValue(AnimationHandler->GetMinValue());
+			// //set the increment of the slider to be the interval of the animation
+			// AnimationSlider->SetStepSize(AnimationHandler->GetInterval());
+			//
+			// //set an on slider moved function
+			// AnimationSlider->OnValueChanged.AddDynamic(this, &AUIManager::OnAnimationSliderChange);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("kivsa 4: No views found"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("kivsa 5: Failed to set ViewSwitchWidget!"));
+	}
+}
+
 void AUIManager::ConfigureUserControlWidget()
 {
 	UE_LOG(LogTemp, Display, TEXT("shovav: -1"));
@@ -677,7 +783,7 @@ void AUIManager::ConfigureUserControlWidget()
 		UE_LOG(LogTemp, Display, TEXT("shovav 0"));
 		// get a ViewHandler from DataManager using its current view Name
 		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
-		
+
 		if (ViewHandler)
 		{
 			UE_LOG(LogTemp, Display, TEXT("shovav 1: Found ViewHandler"));
@@ -686,8 +792,9 @@ void AUIManager::ConfigureUserControlWidget()
 		{
 			UE_LOG(LogTemp, Error, TEXT("shovav 1: Failed to set up AnimationTextBlock"));
 		}
-		
-		UButton* SwitchButton = Cast<UButton>(UserControlWidget->GetWidgetFromName(TEXT("SwitchButton"))); // Name of the button in UMG editor
+
+		UButton* SwitchButton = Cast<UButton>(UserControlWidget->GetWidgetFromName(TEXT("SwitchButton")));
+		// Name of the button in UMG editor
 		if (SwitchButton)
 		{
 			SwitchButton->OnClicked.AddDynamic(this, &AUIManager::OnControlSwitchButtonClick);
@@ -699,7 +806,8 @@ void AUIManager::ConfigureUserControlWidget()
 		}
 
 		//find a widget switcher called "ControlSwitcher" and cast it to UWidgetSwitcher
-		UWidgetSwitcher* ControlSwitcher = Cast<UWidgetSwitcher>(UserControlWidget->GetWidgetFromName(TEXT("ControlSwitcher")));
+		UWidgetSwitcher* ControlSwitcher = Cast<UWidgetSwitcher>(
+			UserControlWidget->GetWidgetFromName(TEXT("ControlSwitcher")));
 		if (ControlSwitcher)
 		{
 			UE_LOG(LogTemp, Display, TEXT("shovav 3: Found ControlSwitcher"));
@@ -708,10 +816,14 @@ void AUIManager::ConfigureUserControlWidget()
 		{
 			UE_LOG(LogTemp, Error, TEXT("shovav 3: Failed to find ControlSwitcher"));
 		}
-
-		//add animation control widget to the switcher
+		
 		ControlSwitcher->AddChild(AnimationControlWidget);
 		ConfigureAnimationControlWidget();
+
+		UE_LOG(LogTemp, Display, TEXT("shablool: !"));
+		//add animation control widget to the switcher
+		ControlSwitcher->AddChild(ViewSwitchWidget);
+		ConfigureViewSwitchWidget();
 	}
 	else
 	{
@@ -721,7 +833,7 @@ void AUIManager::ConfigureUserControlWidget()
 
 void AUIManager::RefreshUI()
 {
-	if(AnimationHandler)
+	if (AnimationHandler)
 	{
 		OnAnimationSliderChange(AnimationHandler->GetMinValue());
 	}

@@ -81,6 +81,7 @@ public:
 	UFUNCTION()
 	void OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
+	void ConfigureViewSwitchWidget();
 	void ConfigureUserControlWidget();
 
 	UFUNCTION()
@@ -108,6 +109,8 @@ private:
 	UBorder* ActorDataWidgetBorder;
 	UPROPERTY()
 	UUserWidget* UserControlWidget;
+	UPROPERTY()
+	UWidgetSwitcher* ControlSwitcherWidget;
 	UPROPERTY()
 	UUserWidget* DataSelectorWidgetGeneric;
 	UPROPERTY()
@@ -141,6 +144,8 @@ private:
 	USlider* AnimationSlider;
 	UPROPERTY()
 	UTextBlock* AnimationTextBlock;
+	UPROPERTY()
+	UUserWidget* ViewSwitchWidget;
 
 	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject, bool AddToViewport = true);
 	FString GetFriendlyPropertyName(FString PropertyName);
