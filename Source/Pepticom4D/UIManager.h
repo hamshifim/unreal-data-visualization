@@ -82,6 +82,7 @@ public:
 	void OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
 	void ConfigureViewSwitchWidget();
+	void ConfigureDataTypeControlWidget();
 	void ConfigureUserControlWidget();
 
 	UFUNCTION()

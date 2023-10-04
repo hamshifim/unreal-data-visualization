@@ -772,6 +772,33 @@ void AUIManager::ConfigureViewSwitchWidget()
 	}
 }
 
+void AUIManager::ConfigureDataTypeControlWidget()
+{
+	UE_LOG(LogTemp, Display, TEXT("Hnatarish 1: "));
+	if(DataTypeControlWidget)
+	{
+			
+		DataTypeControlWidget->SetVisibility(ESlateVisibility::Visible);
+		UE_LOG(LogTemp, Display, TEXT("Hnatarish 2: "));
+
+		UComboBoxString* DataTypeComboBox = Cast<UComboBoxString>(
+			DataTypeControlWidget->GetWidgetFromName(TEXT("DataTypesComboBox")));
+
+		// get a ViewHandler from DataManager using its current view Name
+		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
+
+		// Iterate through all data types
+		for (const FString& DataType : ViewHandler->GetDataTypes())
+		{
+			DataTypeComboBox->AddOption(DataType);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Hnatarish 2: Failed to set up DataTypeControlsWidget"));
+	}
+}
+
 void AUIManager::ConfigureUserControlWidget()
 {
 	UE_LOG(LogTemp, Display, TEXT("shovav: -1"));
@@ -821,24 +848,11 @@ void AUIManager::ConfigureUserControlWidget()
 		
 		ControlSwitcher->AddChild(AnimationControlWidget);
 		ConfigureAnimationControlWidget();
-
-		UE_LOG(LogTemp, Display, TEXT("shablool 0: "));
-		//add animation control widget to the switcher
 		ControlSwitcher->AddChild(ViewSwitchWidget);
 		ConfigureViewSwitchWidget();
-
-		UE_LOG(LogTemp, Display, TEXT("shablool 1: "));
-		if(DataTypeControlWidget)
-		{
-			ControlSwitcher->AddChild(DataTypeControlWidget);
-			DataTypeControlWidget->SetVisibility(ESlateVisibility::Visible);
-			UE_LOG(LogTemp, Display, TEXT("shablool 2: "));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("shablool 2: Failed to set up DataTypeControlsWidget"));
-		}
-	
+		ControlSwitcher->AddChild(DataTypeControlWidget);
+		ConfigureDataTypeControlWidget();
+		
 		UE_LOG(LogTemp, Display, TEXT("shablool 3: "));
 	}
 	else
