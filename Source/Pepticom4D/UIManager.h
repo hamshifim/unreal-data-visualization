@@ -146,6 +146,8 @@ private:
 	UTextBlock* AnimationTextBlock;
 	UPROPERTY()
 	UUserWidget* ViewSwitchWidget;
+	UPROPERTY()
+	UUserWidget* DataTypeControlWidget;
 
 	void CreateAndRenderWidget(FString WidgetName, UUserWidget*& WidgetObject, bool AddToViewport = true);
 	FString GetFriendlyPropertyName(FString PropertyName);

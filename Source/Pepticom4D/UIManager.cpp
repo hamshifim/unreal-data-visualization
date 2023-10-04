@@ -39,7 +39,9 @@ void AUIManager::BeginPlay()
 	CreateAndRenderWidget("/Game/Materials/UserControlWidget.UserControlWidget_C", UserControlWidget);
 	CreateAndRenderWidget("/Game/Materials/AnimationControlWidget.AnimationControlWidget_C", AnimationControlWidget,false);
 	CreateAndRenderWidget("/Game/Materials/ViewSwitchWidget.ViewSwitchWidget_C", ViewSwitchWidget, false);
-
+	CreateAndRenderWidget("/Game/Materials/ViewSwitchWidget.ViewSwitchWidget_C", ViewSwitchWidget, false);
+	CreateAndRenderWidget("/Game/Materials/DataTypeControlWidget.DataTypeControlWidget_C", DataTypeControlWidget, false);
+	
 	InitializedWidgets = true;
 
 	if (UserControlWidget)
@@ -820,14 +822,28 @@ void AUIManager::ConfigureUserControlWidget()
 		ControlSwitcher->AddChild(AnimationControlWidget);
 		ConfigureAnimationControlWidget();
 
-		UE_LOG(LogTemp, Display, TEXT("shablool: !"));
+		UE_LOG(LogTemp, Display, TEXT("shablool 0: "));
 		//add animation control widget to the switcher
 		ControlSwitcher->AddChild(ViewSwitchWidget);
 		ConfigureViewSwitchWidget();
+
+		UE_LOG(LogTemp, Display, TEXT("shablool 1: "));
+		if(DataTypeControlWidget)
+		{
+			ControlSwitcher->AddChild(DataTypeControlWidget);
+			DataTypeControlWidget->SetVisibility(ESlateVisibility::Visible);
+			UE_LOG(LogTemp, Display, TEXT("shablool 2: "));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("shablool 2: Failed to set up DataTypeControlsWidget"));
+		}
+	
+		UE_LOG(LogTemp, Display, TEXT("shablool 3: "));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("shovav 5: Failed to set up ooserControlWidget"));
+		UE_LOG(LogTemp, Error, TEXT("shovav 5: Failed to set up UserControlWidget"));
 	}
 }
 
