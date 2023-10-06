@@ -33,12 +33,10 @@ void AUIManager::BeginPlay()
 	// Initialize widgets
 	CreateAndRenderWidget("/Game/ViewNameWidget.ViewNameWidget_C", ViewNameWidget);
 	CreateAndRenderWidget("/Game/ActorDataWidget.ActorDataWidget_C", ActorDataWidgetGeneric);
-	CreateAndRenderWidget("/Game/DataSelectorWidget.DataSelectorWidget_C", DataSelectorWidgetGeneric);
 	CreateAndRenderWidget("/Game/DataFilteringWidget.DataFilteringWidget_C", DataFilteringWidgetGeneric);
 
 	CreateAndRenderWidget("/Game/Materials/UserControlWidget.UserControlWidget_C", UserControlWidget);
 	CreateAndRenderWidget("/Game/Materials/AnimationControlWidget.AnimationControlWidget_C", AnimationControlWidget,false);
-	CreateAndRenderWidget("/Game/Materials/ViewSwitchWidget.ViewSwitchWidget_C", ViewSwitchWidget, false);
 	CreateAndRenderWidget("/Game/Materials/ViewSwitchWidget.ViewSwitchWidget_C", ViewSwitchWidget, false);
 	CreateAndRenderWidget("/Game/Materials/DataTypeControlWidget.DataTypeControlWidget_C", DataTypeControlWidget, false);
 	
@@ -110,16 +108,6 @@ void AUIManager::BeginPlay()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("ActorDataWidgetGeneric is null"));
-	}
-
-	// Get the data selector widget from its generic version
-	if (DataSelectorWidgetGeneric)
-	{
-		DataSelectorWidget = Cast<UDataSelectorWidget>(DataSelectorWidgetGeneric);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("DataSelectorWidgetGeneric is null"));
 	}
 
 	// Get the data filtering widget from its generic version
@@ -347,94 +335,6 @@ void AUIManager::StopDrawingConnectingLineToActorDataWidget()
 	DataInteractionHUD->ActorToDrawLineTo = nullptr;
 }
 
-void AUIManager::ConfigureDataSelectorWidget()
-{
-	/* Add options to the data selector widget from the available datasets, bind events to functions */
-	// Initialize variables
-	if (DataSelectorWidget)
-	{
-		// Generate horizontal boxes containing the data type and a combo box for the sub-dataset name
-		// Get the vertical box which will contain all of these horizontal boxes
-		UVerticalBox* VerticalBox = Cast<
-			UVerticalBox>(DataSelectorWidget->GetWidgetFromName("DataSelectorVerticalBox"));
-
-		// get a ViewHandler from DataManager using its current view Name
-		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
-
-		// Iterate through all data types
-		for (const FString& DataType : ViewHandler->GetDataTypes())
-		{
-			// Create a horizontal box element inside the vertical box
-			UHorizontalBox* HorizontalBox = NewObject<UHorizontalBox>(VerticalBox);
-			// Add the horizontal box to the vertical box
-			UVerticalBoxSlot* VerticalBoxSlot = VerticalBox->AddChildToVerticalBox(HorizontalBox);
-			// Give the horizontal box a lower padding of 10
-			FMargin HorizontalBoxPadding = FMargin(0.0f, 0.0f, 0.0f, 10.0f);
-			VerticalBoxSlot->SetPadding(HorizontalBoxPadding);
-			// Create a text block for the data type inside the horizontal box
-			UTextBlock* TextBlock = NewObject<UTextBlock>(HorizontalBox);
-			// Set the text to be the data type
-			TextBlock->SetText(FText::FromString(DataType));
-			// Set the text's font size
-			TextBlock->Font.Size = 14;
-			// Set the name of the text block to be the data type + "TextBlock"
-			FString TextBlockName = DataType + "TextBlock";
-
-			// Add the text block to the horizontal box
-			HorizontalBox->AddChildToHorizontalBox(TextBlock);
-			// Create a combo box for the sub-dataset name inside the horizontal box
-			UComboBoxString* ComboBox = NewObject<UComboBoxString>(HorizontalBox);
-			// Set the name of the combo box to be the data type + "ComboBox"
-			FString ComboBoxName = DataType + "ComboBox";
-		
-			// Add the combo box to the horizontal box
-			UHorizontalBoxSlot* HorizontalBoxSlot = HorizontalBox->AddChildToHorizontalBox(ComboBox);
-			// Give the combo box a left padding of 10
-			FMargin ComboBoxPadding = FMargin(10.0f, 0.0f, 0.0f, 0.0f);
-			HorizontalBoxSlot->SetPadding(ComboBoxPadding);
-			// Set the font size of the combo box
-			ComboBox->Font.Size = 12;
-			// Add the sub-dataset names to the combo box
-
-			TMap<FString, UATableHandler*> TableHandlerMap = DataManager->DataTypeHandlerMap.FindRef(DataType)->
-			                                                              GetTableHandlerMap();
-
-			//iterate through TableHandlerMap
-			for (const auto& TableHandlerPair : TableHandlerMap)
-			{
-				FString TableName = TableHandlerPair.Key;
-				ComboBox->AddOption(TableName);
-			}
-
-			// Set the default selected item
-			FString DefaultSelectedItem = DataManager->GetFullDatasetNameFromDataType(DataType);
-			ComboBox->SetSelectedOption(DefaultSelectedItem);
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Data selector widget not found in the UI Manager"));
-	}
-}
-
-
-void AUIManager::RefreshDataSelectorWidget()
-{
-	// PLACEHOLDER
-
-	//  if (DataSelectorWidget) {
-	//      // Iterate through all data types
-	//      for (const FString& DataType : DataManager->ViewNameToDataTypesMap[DataManager->CurrentViewName]) {
-	//	// Get the text block for the data type
-	//          FString TextBlockName = DataType + "TextBlock";
-	//          UTextBlock* TextBlock = DataSelectorWidgetDataTypeNamesMap[TextBlockName];
-	//          //
-	//}
-	//  }
-	//  else {
-	//      UE_LOG(LogTemp, Error, TEXT("Data selector widget not found in the UI Manager"));
-	//  }
-}
 
 void AUIManager::ConfigureDataFilteringWidget()
 {

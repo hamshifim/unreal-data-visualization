@@ -52,13 +52,6 @@ public:
 	void StopDrawingConnectingLineToActorDataWidget();
 
 	UFUNCTION()
-	void ConfigureDataSelectorWidget();
-
-	UFUNCTION()
-	void RefreshDataSelectorWidget();
-
-
-	UFUNCTION()
 	void ConfigureDataFilteringWidget();
 
 	UFUNCTION()
@@ -111,8 +104,6 @@ private:
 	UUserWidget* UserControlWidget;
 	UPROPERTY()
 	UWidgetSwitcher* ControlSwitcherWidget;
-	UPROPERTY()
-	UUserWidget* DataSelectorWidgetGeneric;
 	UPROPERTY()
 	UDataSelectorWidget* DataSelectorWidget;
 	UPROPERTY()

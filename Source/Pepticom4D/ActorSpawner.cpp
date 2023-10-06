@@ -235,7 +235,7 @@ void AActorSpawner::BeginPlay()
 
 	// Initial dataset setup and UI configuration based on dataset configuration
 	DataManager->ProcessConfig(FString(TEXT("DataConfigFilePath")));
-	UIManager->ConfigureDataSelectorWidget();
+	
 	UIManager->ConfigureDataFilteringWidget();
 	UE_LOG(LogTemp, Display, TEXT("shiflif: 0"));
 	UIManager->ConfigureUserControlWidget();
