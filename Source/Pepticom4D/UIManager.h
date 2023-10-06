@@ -57,8 +57,6 @@ public:
 	UFUNCTION()
 	void RefreshDataSelectorWidget();
 
-	UFUNCTION()
-	void OnDataSelectorWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
 	void ConfigureDataFilteringWidget();
@@ -82,6 +80,7 @@ public:
 	void OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
 	void ConfigureViewSwitchWidget();
+	FComboBoxStyle CreateCustomComboBoxStyle();
 	void ConfigureDataTypeControlWidget();
 	void ConfigureUserControlWidget();
 
@@ -116,10 +115,6 @@ private:
 	UUserWidget* DataSelectorWidgetGeneric;
 	UPROPERTY()
 	UDataSelectorWidget* DataSelectorWidget;
-	UPROPERTY()
-	TMap<FString, UTextBlock*> DataSelectorWidgetDataTypeNamesMap;
-	UPROPERTY()
-	TMap<FString, UComboBoxString*> DataSelectorWidgetTableNameComboBoxesMap;
 	UPROPERTY()
 	UUserWidget* DataFilteringWidgetGeneric;
 	UPROPERTY()

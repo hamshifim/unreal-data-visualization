@@ -379,16 +379,14 @@ void AUIManager::ConfigureDataSelectorWidget()
 			TextBlock->Font.Size = 14;
 			// Set the name of the text block to be the data type + "TextBlock"
 			FString TextBlockName = DataType + "TextBlock";
-			// Add the text block to the list of text blocks
-			DataSelectorWidgetDataTypeNamesMap.Add(TextBlockName, TextBlock);
+
 			// Add the text block to the horizontal box
 			HorizontalBox->AddChildToHorizontalBox(TextBlock);
 			// Create a combo box for the sub-dataset name inside the horizontal box
 			UComboBoxString* ComboBox = NewObject<UComboBoxString>(HorizontalBox);
 			// Set the name of the combo box to be the data type + "ComboBox"
 			FString ComboBoxName = DataType + "ComboBox";
-			// Add the combo box to the list of combo boxes
-			DataSelectorWidgetTableNameComboBoxesMap.Add(ComboBoxName, ComboBox);
+		
 			// Add the combo box to the horizontal box
 			UHorizontalBoxSlot* HorizontalBoxSlot = HorizontalBox->AddChildToHorizontalBox(ComboBox);
 			// Give the combo box a left padding of 10
@@ -408,8 +406,6 @@ void AUIManager::ConfigureDataSelectorWidget()
 				ComboBox->AddOption(TableName);
 			}
 
-			// Bind to the combo box's OnSelectionChanged event
-			ComboBox->OnSelectionChanged.AddDynamic(this, &AUIManager::OnDataSelectorWidgetDropdownChanged);
 			// Set the default selected item
 			FString DefaultSelectedItem = DataManager->GetFullDatasetNameFromDataType(DataType);
 			ComboBox->SetSelectedOption(DefaultSelectedItem);
@@ -421,14 +417,6 @@ void AUIManager::ConfigureDataSelectorWidget()
 	}
 }
 
-void AUIManager::OnDataSelectorWidgetDropdownChanged(FString SelectedItem, ESelectInfo::Type SelectionType)
-{
-	// PLACEHOLDER
-
-	//// Update the current full dataset name
-	//DataManager->CurrentFullDatasetName = SelectedItem;
-	//// 
-}
 
 void AUIManager::RefreshDataSelectorWidget()
 {
@@ -772,6 +760,32 @@ void AUIManager::ConfigureViewSwitchWidget()
 	}
 }
 
+
+#include "Slate/SlateGameResources.h"
+
+FComboBoxStyle AUIManager::CreateCustomComboBoxStyle()
+{
+	// 1. Create a custom text style for the text inside the combo box
+	FTextBlockStyle TextStyle = FTextBlockStyle()
+		.SetColorAndOpacity(FSlateColor(FLinearColor::White)) 
+		.SetFont(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 16));  // Using the Roboto font, size 16
+
+	// 2. Create a custom button style for the dropdown button
+	FButtonStyle BaseButtonStyle = FButtonStyle();
+
+	FComboButtonStyle ButtonStyle = FComboButtonStyle()
+		.SetButtonStyle(BaseButtonStyle);
+
+	// 3. Construct the combo box style using the button and text styles we just created
+	FComboBoxStyle ComboBoxStyle = FComboBoxStyle()
+		.SetContentPadding(FMargin(2.0f))
+		.SetComboButtonStyle(ButtonStyle);
+
+	return ComboBoxStyle;
+}
+
+
+
 void AUIManager::ConfigureDataTypeControlWidget()
 {
 	UE_LOG(LogTemp, Display, TEXT("Hnatarish 1: "));
@@ -784,6 +798,10 @@ void AUIManager::ConfigureDataTypeControlWidget()
 		UComboBoxString* DataTypeComboBox = Cast<UComboBoxString>(
 			DataTypeControlWidget->GetWidgetFromName(TEXT("DataTypesComboBox")));
 
+
+		UWidgetSwitcher* DataTypeSwitcher = Cast<UWidgetSwitcher>(DataTypeControlWidget->GetWidgetFromName(TEXT("DataTypeSwitcher")));
+		DataTypeSwitcher->SetVisibility(ESlateVisibility::Visible);
+
 		// get a ViewHandler from DataManager using its current view Name
 		UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
 
@@ -791,7 +809,69 @@ void AUIManager::ConfigureDataTypeControlWidget()
 		for (const FString& DataType : ViewHandler->GetDataTypes())
 		{
 			DataTypeComboBox->AddOption(DataType);
+
+			//TODO: add a UUserWidget* DataTypeControlWidget; to the Switcher
+			// Create a horizontal box element inside the switcher
+			UHorizontalBox* HorizontalBox = NewObject<UHorizontalBox>(DataTypeSwitcher);
+			// Create a text block for the data type inside the horizontal box
+			UTextBlock* TextBlock = NewObject<UTextBlock>(HorizontalBox);
+			// Set the text to be the data type
+			TextBlock->SetText(FText::FromString(DataType));
+			// Set the text's font size
+			TextBlock->Font.Size = 14;
+			// set the color of the text to white
+			TextBlock->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+
+			HorizontalBox->AddChildToHorizontalBox(TextBlock);
+
+			DataTypeSwitcher->AddChild(HorizontalBox);
+			HorizontalBox->SetVisibility(ESlateVisibility::Visible);
+
+			UE_LOG(LogTemp, Display, TEXT("Hnatarish 3: yosi shirazi ve oded machnes"));
+
+			// Create a combo box for the sub-dataset name inside the horizontal box
+			UComboBoxString* ComboBox = NewObject<UComboBoxString>(HorizontalBox);
+			// Set the name of the combo box to be the data type + "ComboBox"
+			FString ComboBoxName = DataType + "ComboBox";
+		
+			// Add the combo box to the horizontal box
+			UHorizontalBoxSlot* HorizontalBoxSlot = HorizontalBox->AddChildToHorizontalBox(ComboBox);
+			// Give the combo box a left padding of 10
+			FMargin ComboBoxPadding = FMargin(10.0f, 0.0f, 0.0f, 0.0f);
+			HorizontalBoxSlot->SetPadding(ComboBoxPadding);
+			// Set the font size of the combo box
+			ComboBox->Font.Size = 12;
+
+			
+
+			// Create a text style for the ComboBox options
+			FComboBoxStyle ComboBoxStyle = CreateCustomComboBoxStyle();
+
+			// Apply the style to the ComboBox
+			ComboBox->SetWidgetStyle(ComboBoxStyle);
+			
+			// Add the table names to the combo box
+
+			TMap<FString, UATableHandler*> TableHandlerMap = DataManager->DataTypeHandlerMap.FindRef(DataType)->
+																		  GetTableHandlerMap();
+
+			//iterate through TableHandlerMap
+			for (const auto& TableHandlerPair : TableHandlerMap)
+			{
+				FString TableName = TableHandlerPair.Key;
+				ComboBox->AddOption(TableName);
+			}
+
+			// Set the default selected item
+			FString DefaultSelectedItem = DataManager->GetFullDatasetNameFromDataType(DataType);
+			ComboBox->SetSelectedOption(DefaultSelectedItem);
 		}
+
+		//set the first switcher child to be visible
+		DataTypeSwitcher->SetActiveWidgetIndex(0);
+
+		//log the amount of children in the switcher
+		UE_LOG(LogTemp, Display, TEXT("Hnatarish 4: amount of children in the switcher %d"), DataTypeSwitcher->GetNumWidgets());
 	}
 	else
 	{
