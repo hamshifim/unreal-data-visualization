@@ -78,8 +78,11 @@ public:
 	UFUNCTION()
 	FString GetCurrentViewName();
 
+	UFUNCTION()
+	void SetCurrentView(const FString& ViewName);
+
 	FString GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata);
-	
+
 	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.
 	FString CurrentViewName = TEXT("");
 
@@ -109,7 +112,7 @@ public:
 	
 private:
 
-	void ExtractViews(TSharedPtr<FJsonObject> JsonObject);
+	void ExtractViews(TSharedPtr<FJsonObject> JsonObject, FString ViewName);
 	void ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject);
 	TArray<FString> ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 	void ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);

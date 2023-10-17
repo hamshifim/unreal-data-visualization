@@ -62,8 +62,16 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 	ExtractAnimations(JsonObject);
 
 	UE_LOG(LogTemp, Display, TEXT("Splich 1"));
+
+	// Get the default view name
+	FString DefaultViewName = "";
+	if (!JsonObject->TryGetStringField("default_view", DefaultViewName))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
+		return;
+	}
 	
-	ExtractViews(JsonObject);
+	ExtractViews(JsonObject, DefaultViewName);
 
 	UE_LOG(LogTemp, Display, TEXT("Splich 2"));
 
@@ -246,15 +254,9 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 	UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping many to one tables for DataTypeName: %s"), *DataTypeName);
 }
 
-void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
+void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject, FString ExtractViewName)
 {
-	// Get the default view name
-	FString DefaultViewName = "";
-	if (!JsonObject->TryGetStringField("default_view", DefaultViewName))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
-		return;
-	}
+
 
 	// Get the views object and make sure that it is an object that we can iterate over
 	const TSharedPtr<FJsonObject>* ViewsObjectPtr;
@@ -264,7 +266,7 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 		return;
 	}
 
-	CurrentViewName = DefaultViewName;
+	CurrentViewName = ExtractViewName;
 
 	// Iterate over all views
 	for (const auto& ViewPair : (*ViewsObjectPtr)->Values)
@@ -792,6 +794,11 @@ TArray<FString> ADataManager::GetCurrentDataTypes()
 FString ADataManager::GetCurrentViewName()
 {
 	return CurrentViewName;
+}
+
+void ADataManager::SetCurrentView(const FString& ViewName)
+{
+	this->CurrentViewName = ViewName;
 }
 
 FString ADataManager::GetPropertyValueStringFromMetadata(const FTableRowBase& Metadata, UStruct* MetadataStruct,

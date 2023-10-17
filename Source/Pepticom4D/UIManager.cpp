@@ -608,6 +608,8 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
 	}
 }
 
+
+
 void AUIManager::ConfigureViewSwitchWidget()
 {
 	if (ViewSwitchWidget)
@@ -633,10 +635,10 @@ void AUIManager::ConfigureViewSwitchWidget()
 			ViewSwitchCombo->AddOption(ViewName);
 		}
 
-		ViewSwitchCombo->SetSelectedOption(DataManager->GetCurrentViewName());
-
 		if (!ViewNames.IsEmpty())
 		{
+			ViewSwitchCombo->SetSelectedOption(DataManager->GetCurrentViewName());
+			
 			//Get the first animation in the map
 			// FString AnimationName = ViewNames[0];
 			// AnimationHandler = DataManager->AnimationHandlerMap.FindRef(AnimationName);

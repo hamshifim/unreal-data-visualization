@@ -205,6 +205,14 @@ void AActorSpawner::DestroySpawnedActors()
 	}
 }
 
+
+void AActorSpawner::OnViewChange(FString ViewName)
+{
+	DataManager->SetCurrentView(ViewName);
+	ForceRefresh();
+}
+
+
 void AActorSpawner::ForceRefresh()
 {
 	DataManager->ForceRefresh();

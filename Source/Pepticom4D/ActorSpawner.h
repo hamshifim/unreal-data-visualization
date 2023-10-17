@@ -30,6 +30,9 @@ public:
 	UFUNCTION()
 	void ForceRefresh();
 
+	UFUNCTION()
+	void OnViewChange(FString ViewName);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
