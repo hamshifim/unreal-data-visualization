@@ -616,12 +616,11 @@ void AUIManager::ConfigureViewSwitchWidget()
 		ViewSwitchWidget->SetVisibility(ESlateVisibility::Visible);
 
 		UE_LOG(LogTemp, Display, TEXT("kivsa 0"));
-
-		//find ViewSwitcherWidget in ViewSwitchWidget
-		ControlSwitcherWidget = Cast<UWidgetSwitcher>(
-			UserControlWidget->GetWidgetFromName(TEXT("ControlSwitcher")));
 		
 
+		UComboBoxString* ViewSwitchCombo = Cast<UComboBoxString>(
+			ViewSwitchWidget->GetWidgetFromName(TEXT("ViewSwitchCombo")));
+		
 		TArray<FString> ViewNames;
 		//iterate Animation Handlers in DataManager->AnimationHandlerMap;
 		for (const auto& AnimationHandlerPair : DataManager->ViewHandlerMap)
@@ -630,8 +629,11 @@ void AUIManager::ConfigureViewSwitchWidget()
 			FString ViewName = AnimationHandlerPair.Key;
 			ViewNames.Add(ViewName);
 			UE_LOG(LogTemp, Display, TEXT("kivsa 4: Animation: %s"), *ViewName);
-			// AnimationControlWidget->AddAnimationButton(AnimationName);
+
+			ViewSwitchCombo->AddOption(ViewName);
 		}
+
+		ViewSwitchCombo->SetSelectedOption(DataManager->GetCurrentViewName());
 
 		if (!ViewNames.IsEmpty())
 		{
@@ -815,9 +817,10 @@ void AUIManager::ConfigureUserControlWidget()
 		}
 
 		//find a widget switcher called "ControlSwitcher" and cast it to UWidgetSwitcher
-		UWidgetSwitcher* ControlSwitcher = Cast<UWidgetSwitcher>(
+		ControlSwitcherWidget = Cast<UWidgetSwitcher>(
 			UserControlWidget->GetWidgetFromName(TEXT("ControlSwitcher")));
-		if (ControlSwitcher)
+		
+		if (ControlSwitcherWidget)
 		{
 			UE_LOG(LogTemp, Display, TEXT("shovav 3: Found ControlSwitcher"));
 		}
@@ -826,11 +829,11 @@ void AUIManager::ConfigureUserControlWidget()
 			UE_LOG(LogTemp, Error, TEXT("shovav 3: Failed to find ControlSwitcher"));
 		}
 		
-		ControlSwitcher->AddChild(AnimationControlWidget);
+		ControlSwitcherWidget->AddChild(AnimationControlWidget);
 		ConfigureAnimationControlWidget();
-		ControlSwitcher->AddChild(ViewSwitchWidget);
+		ControlSwitcherWidget->AddChild(ViewSwitchWidget);
 		ConfigureViewSwitchWidget();
-		ControlSwitcher->AddChild(DataTypeControlWidget);
+		ControlSwitcherWidget->AddChild(DataTypeControlWidget);
 		ConfigureDataTypeControlWidget();
 		
 		UE_LOG(LogTemp, Display, TEXT("shablool 3: "));

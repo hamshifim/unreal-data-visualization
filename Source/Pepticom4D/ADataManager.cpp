@@ -789,6 +789,11 @@ TArray<FString> ADataManager::GetCurrentDataTypes()
 	return ViewHandlerMap.FindRef(CurrentViewName)->GetDataTypes();
 }
 
+FString ADataManager::GetCurrentViewName()
+{
+	return CurrentViewName;
+}
+
 FString ADataManager::GetPropertyValueStringFromMetadata(const FTableRowBase& Metadata, UStruct* MetadataStruct,
                                                          FString PropertyName)
 {

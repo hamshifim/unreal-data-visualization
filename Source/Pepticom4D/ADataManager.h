@@ -75,8 +75,11 @@ public:
 	UFUNCTION()
 	TArray<FString> GetCurrentDataTypes();
 
-	FString GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata);
+	UFUNCTION()
+	FString GetCurrentViewName();
 
+	FString GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata);
+	
 	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.
 	FString CurrentViewName = TEXT("");
 
