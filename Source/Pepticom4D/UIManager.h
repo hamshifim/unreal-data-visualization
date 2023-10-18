@@ -21,6 +21,11 @@
 #include "Components/ComboBoxString.h"
 #include "UIManager.generated.h"
 
+
+// Add this outside the class declaration.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnViewChangeDelegate, FString, SelectedItem, ESelectInfo::Type, SelectionType);
+
+
 UCLASS()
 class PEPTICOM4D_API AUIManager : public AActor
 {
@@ -61,6 +66,10 @@ public:
 	void OnAnimationSliderChange(float AnimationValue);
 
 	UFUNCTION()
+	void OnViewChange(FString SelectedItem, ESelectInfo::Type SelectionType);
+	
+
+	UFUNCTION()
 	void OnControlSwitchButtonClick();
 
 	UFUNCTION()
@@ -79,6 +88,9 @@ public:
 
 	UFUNCTION()
 	void RefreshUI();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnViewChangeDelegate OnViewChanged;
 
 protected:
 	// Called when the game starts or when spawned

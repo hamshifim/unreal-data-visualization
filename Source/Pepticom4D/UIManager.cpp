@@ -401,6 +401,16 @@ void AUIManager::OnAnimationSliderChange(const float AnimationValue)
 }
 
 
+void AUIManager::OnViewChange(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+
+	UE_LOG(LogTemp, Display, TEXT("Ziggafredo"));
+	UE_LOG(LogTemp, Display, TEXT("Hi Cheroobini!  %s"), *SelectedItem);
+
+	OnViewChanged.Broadcast(SelectedItem, SelectionType);
+}
+
+
 void AUIManager::OnControlSwitchButtonClick()
 {
 	UE_LOG(LogTemp, Display, TEXT("Andele! Andele! Arriba! Arriba!"));
@@ -638,20 +648,8 @@ void AUIManager::ConfigureViewSwitchWidget()
 		if (!ViewNames.IsEmpty())
 		{
 			ViewSwitchCombo->SetSelectedOption(DataManager->GetCurrentViewName());
-			
-			//Get the first animation in the map
-			// FString AnimationName = ViewNames[0];
-			// AnimationHandler = DataManager->AnimationHandlerMap.FindRef(AnimationName);
-			// AnimationHandler->SetAnimationTextBlock(AnimationTextBlock);
-			//
-			// AnimationSlider->SetMinValue(AnimationHandler->GetMinValue());
-			// AnimationSlider->SetMaxValue(AnimationHandler->GetMaxValue());
-			// AnimationSlider->SetValue(AnimationHandler->GetMinValue());
-			// //set the increment of the slider to be the interval of the animation
-			// AnimationSlider->SetStepSize(AnimationHandler->GetInterval());
-			//
-			// //set an on slider moved function
-			// AnimationSlider->OnValueChanged.AddDynamic(this, &AUIManager::OnAnimationSliderChange);
+
+			ViewSwitchCombo->OnSelectionChanged.AddDynamic(this, &AUIManager::OnViewChange);
 		}
 		else
 		{

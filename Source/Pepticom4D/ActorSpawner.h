@@ -28,10 +28,13 @@ public:
 	void DestroySpawnedActors();
 
 	UFUNCTION()
+	void OnViewChange(FString ViewName);
+
+	UFUNCTION()
 	void ForceRefresh();
 
 	UFUNCTION()
-	void OnViewChange(FString ViewName);
+	void HandleViewChange(FString ViewName, ESelectInfo::Type SelectionType);
 
 protected:
 	// Called when the game starts or when spawned

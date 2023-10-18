@@ -193,8 +193,12 @@ void AActorSpawner::DestroySpawnedActors()
 	
 	for (const FString DataType : DataManager->GetCurrentDataTypes())
 	{
+		//Get DataTypeHandler
+		UADataTypeHandler* DataTypeHandler = DataManager->DataTypeHandlerMap.FindRef(*DataType);
+		
 		// Iterate through all actors DataPointActors in of the data type and destroy them
-		TArray<ADataPointActor*> DataPointActors = DataManager->DataTypeHandlerMap.FindRef(*DataType)->GetDataPointActors();
+		
+		TArray<ADataPointActor*> DataPointActors = DataTypeHandler->GetDataPointActors();
 		for (auto& Actor : DataPointActors)
 		{
 			// Destroy the actor
@@ -219,6 +223,15 @@ void AActorSpawner::ForceRefresh()
 	// Destroy all spawned actors and create new ones based on the new data
 	DestroySpawnedActors();
 	EnqueueSpawningActorsFromDataTable();
+}
+
+void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type SelectionType)
+{
+	UE_LOG(LogTemp, Display, TEXT("Paltsef: 1  %s"), *ViewName);
+
+	DataManager->SetCurrentView(ViewName);
+
+	ForceRefresh();
 }
 
 // Called when the game starts or when spawned
@@ -254,6 +267,8 @@ void AActorSpawner::BeginPlay()
 	// Spawn actors from the queue if the queue is not empty
 	SpawnActorsFromQueue();
 	UIManager->RefreshUI();
+
+	UIManager->OnViewChanged.AddDynamic(this, &AActorSpawner::HandleViewChange);
 }
 
 // Called every frame
