@@ -28,9 +28,6 @@ public:
 	void DestroySpawnedActors();
 
 	UFUNCTION()
-	void OnViewChange(FString ViewName);
-
-	UFUNCTION()
 	void ForceRefresh();
 
 	UFUNCTION()

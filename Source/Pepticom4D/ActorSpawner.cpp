@@ -193,6 +193,7 @@ void AActorSpawner::DestroySpawnedActors()
 	
 	for (const FString DataType : DataManager->GetCurrentDataTypes())
 	{
+		UE_LOG(LogTemp, Display, TEXT("Dahlil DataType:  %s"), *DataType);
 		//Get DataTypeHandler
 		UADataTypeHandler* DataTypeHandler = DataManager->DataTypeHandlerMap.FindRef(*DataType);
 		
@@ -210,13 +211,6 @@ void AActorSpawner::DestroySpawnedActors()
 }
 
 
-void AActorSpawner::OnViewChange(FString ViewName)
-{
-	DataManager->SetCurrentView(ViewName);
-	ForceRefresh();
-}
-
-
 void AActorSpawner::ForceRefresh()
 {
 	DataManager->ForceRefresh();
@@ -228,9 +222,9 @@ void AActorSpawner::ForceRefresh()
 void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type SelectionType)
 {
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 1  %s"), *ViewName);
-
+	
+	DestroySpawnedActors();
 	DataManager->SetCurrentView(ViewName);
-
 	ForceRefresh();
 }
 
