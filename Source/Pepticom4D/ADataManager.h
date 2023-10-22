@@ -98,6 +98,9 @@ public:
 	UPROPERTY()
 	TMap<FString, UADataTypeHandler*> DataTypeHandlerMap;
 
+	UPROPERTY()
+	UDataTable* POIDataTable;
+
 
 protected:
 	// Called when the game starts or when spawned

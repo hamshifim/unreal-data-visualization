@@ -226,6 +226,9 @@ void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type Selecti
 	DestroySpawnedActors();
 	DataManager->SetCurrentView(ViewName);
 	ForceRefresh();
+
+	SpawnActorsFromQueue();
+	UIManager->RefreshUI();
 }
 
 // Called when the game starts or when spawned

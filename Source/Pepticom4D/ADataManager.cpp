@@ -19,6 +19,9 @@ ADataManager::ADataManager()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSceneRoot"));
 	SpawnVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnVolume"));
 	SpawnVolume->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	POIDataTable = LoadObject<UDataTable>(NULL, *FString(TEXT("/Game/POIDataTable.POIDataTable")), NULL,
+													  LOAD_None, NULL);
 }
 
 UAViewHandler* ADataManager::GetCurrentViewHandler()
@@ -860,10 +863,11 @@ void ADataManager::ForceRefresh()
 	}
 	
 	// Load the boundary points (POIs) for the current view
+	// This is hard-coded; we will always assume that boundary points will be provided as JSON within the main JSON config file
+
 	FString BoundaryPointsSourceFileContents = GetBoundaryPointsFromViewName(CurrentViewName);
 	FString BoundaryPointsSourceFileType = "JSON";
-	// This is hard-coded; we will always assume that boundary points will be provided as JSON within the main JSON config file
-	UDataTable* POIDataTable = LoadObject<UDataTable>(NULL, *FString(TEXT("/Game/POIDataTable.POIDataTable")), NULL,
-	                                                  LOAD_None, NULL);
+	
+	POIDataTable->EmptyTable();
 	AddDataToDataTableFromSource(POIDataTable, BoundaryPointsSourceFileContents, BoundaryPointsSourceFileType);
 }
