@@ -848,6 +848,6 @@ void AUIManager::RefreshUI()
 {
 	if (AnimationHandler)
 	{
-		OnAnimationSliderChange(AnimationHandler->GetMinValue());
+		OnAnimationSliderChange(AnimationHandler->GetMaxValue());
 	}
 }

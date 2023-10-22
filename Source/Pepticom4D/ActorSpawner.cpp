@@ -205,8 +205,6 @@ void AActorSpawner::DestroySpawnedActors()
 
 		//check if DataPointActors is null or empty
 		
-	
-		
 		for (auto& Actor : DataPointActors)
 		{
 			// Destroy the actor
@@ -230,18 +228,13 @@ void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type Selecti
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 2  %s"), *ViewName);
 	
 	DataManager->EmptyTabularData();
-	UE_LOG(LogTemp, Display, TEXT("Paltsef: 3  %s"), *ViewName);
+	// UE_LOG(LogTemp, Display, TEXT("Paltsef: 3  %s"), *ViewName);
 	
 	DataManager->SetCurrentView(ViewName);
-	
-	DataManager->RefreshTabularData();
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 4  %s"), *ViewName);
 	
-	EnqueueSpawningActorsFromDataTable();
+	VisualizeData();
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 5  %s"), *ViewName);
-
-	SpawnActorsFromQueue();
-	UIManager->RefreshUI();
 }
 
 void AActorSpawner::VisualizeData()
@@ -258,7 +251,8 @@ void AActorSpawner::VisualizeData()
 
 	// Spawn actors from the queue if the queue is not empty
 	SpawnActorsFromQueue();
-	UIManager->RefreshUI();
+
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 5"));
 }
 
 // Called when the game starts or when spawned
@@ -287,13 +281,21 @@ void AActorSpawner::BeginPlay()
 	DataManager->ActivateAnimations();
 	
 	UIManager->ConfigureDataFilteringWidget();
-	UE_LOG(LogTemp, Display, TEXT("shiflif: 0"));
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 0"));
 	UIManager->ConfigureUserControlWidget();
-	UE_LOG(LogTemp, Display, TEXT("shiflif: 1"));
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 1"));
 
 	VisualizeData();
 
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 2"));
+	
+	UIManager->RefreshUI();
+
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 3"));
+
 	UIManager->OnViewChanged.AddDynamic(this, &AActorSpawner::HandleViewChange);
+
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 4"));
 }
 
 // Called every frame
