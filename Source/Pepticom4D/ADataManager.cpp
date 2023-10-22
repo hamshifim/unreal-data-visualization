@@ -65,7 +65,11 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 	ExtractAnimations(JsonObject);
 
 	UE_LOG(LogTemp, Display, TEXT("Splich 1"));
+	
+	ExtractViews(JsonObject);
 
+	UE_LOG(LogTemp, Display, TEXT("Splich 2"));
+	
 	// Get the default view name
 	FString DefaultViewName = "";
 	if (!JsonObject->TryGetStringField("default_view", DefaultViewName))
@@ -75,22 +79,6 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 	}
 
 	CurrentViewName = DefaultViewName;
-	
-	ExtractViews(JsonObject);
-
-	UE_LOG(LogTemp, Display, TEXT("Splich 2"));
-
-	//iterate over AnimationHandlerMap
-	for (const auto& AnimationHandlerPair : AnimationHandlerMap)
-	{
-		FString AnimationName = AnimationHandlerPair.Key;
-		UAAnimationHandler* AAnimationHandler = AnimationHandlerPair.Value;
-		
-		UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
-		
-		AAnimationHandler->Sanity();
-		// AnimationHandler
-	}
 
 	UE_LOG(LogTemp, Display, TEXT("Splich 3"));
 }
@@ -114,9 +102,7 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
 
 		ExtractTables(DataTypeHandler, DataTypeName, DataTypeObj);
-
 		ExtractManyToOneTables(DataTypeHandler, DataTypeName, DataTypeObj);
-		// Store the table names in the map
 
 		// Set the default table to be the first one - set in the default_table property
 		FString DefaultTableName = "";
@@ -258,8 +244,6 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 
 void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 {
-
-
 	// Get the views object and make sure that it is an object that we can iterate over
 	const TSharedPtr<FJsonObject>* ViewsObjectPtr;
 	if (!JsonObject->TryGetObjectField("views", ViewsObjectPtr))
@@ -369,23 +353,8 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 			for (const auto& AnimationValue : *AnimationsArray)
 			{
 				FString AnimationName = AnimationValue->AsString();
-				// Add the data type name to the array
+				
 				ViewHandler->AddAnimation(AnimationName);
-
-				if(ViewName.Equals(CurrentViewName))
-				{
-					//check if animation name is in AnimationHandlerMap
-					UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(AnimationName);
-					if(AAnimationHandler)
-					{
-						AAnimationHandler->LoadData();
-						UE_LOG(LogTemp, Display, TEXT("Shooblong Animation %s found in AnimationHandlerMap."), *AnimationName);
-					}
-					else
-					{
-						UE_LOG(LogTemp, Warning, TEXT("Shooblong Animation %s is Not in AnimationHandlerMap."), *AnimationName);
-					}
-				}
 			}
 		}
 		else
@@ -784,6 +753,44 @@ FString ADataManager::GetPropertyValueAsString(FProperty* Property, const FTable
 	}
 
 	return PropertyValue;
+}
+
+void ADataManager::ActivateAnimations()
+{
+	//get current view handler
+	UAViewHandler* CurrentViewHandler = ViewHandlerMap.FindRef(CurrentViewName);
+
+	//iterate CurrentViewHandler animations and load the data if relevant
+	for(FString AnimationName: CurrentViewHandler->GetAnimations())
+	{
+		//check if animation name is in AnimationHandlerMap
+		UAAnimationHandler* AAnimationHandler = AnimationHandlerMap.FindRef(AnimationName);
+		if(AAnimationHandler)
+		{
+			AAnimationHandler->LoadData();
+			UE_LOG(LogTemp, Display, TEXT("Shooblong Animation %s found in AnimationHandlerMap."), *AnimationName);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Shooblong Animation %s is Not in AnimationHandlerMap."), *AnimationName);
+		}
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("Splich 2"));
+
+	//iterate over AnimationHandlerMap
+	for (const auto& AnimationHandlerPair : AnimationHandlerMap)
+	{
+		FString AnimationName = AnimationHandlerPair.Key;
+		UAAnimationHandler* AAnimationHandler = AnimationHandlerPair.Value;
+		
+		UE_LOG(LogTemp, Display, TEXT("Animation name: %s."), *AnimationName);
+		
+		AAnimationHandler->Sanity();
+		// AnimationHandler
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("Splich 3"));
 }
 
 TArray<FString> ADataManager::GetCurrentDataTypes()

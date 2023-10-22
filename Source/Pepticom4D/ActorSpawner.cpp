@@ -229,8 +229,8 @@ void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type Selecti
 	DestroySpawnedActors();
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 2  %s"), *ViewName);
 	
-	// DataManager->EmptyTabularData();
-	// UE_LOG(LogTemp, Display, TEXT("Paltsef: 3  %s"), *ViewName);
+	DataManager->EmptyTabularData();
+	UE_LOG(LogTemp, Display, TEXT("Paltsef: 3  %s"), *ViewName);
 	
 	DataManager->SetCurrentView(ViewName);
 	
@@ -266,6 +266,8 @@ void AActorSpawner::BeginPlay()
 
 	// Initial dataset setup and UI configuration based on dataset configuration
 	DataManager->ProcessConfig(FString(TEXT("DataConfigFilePath")));
+
+	DataManager->ActivateAnimations();
 	
 	UIManager->ConfigureDataFilteringWidget();
 	UE_LOG(LogTemp, Display, TEXT("shiflif: 0"));
