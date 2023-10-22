@@ -73,8 +73,10 @@ void ADataManager::ProcessConfig(FString ConfigVarName)
 		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'default_view' field."));
 		return;
 	}
+
+	CurrentViewName = DefaultViewName;
 	
-	ExtractViews(JsonObject, DefaultViewName);
+	ExtractViews(JsonObject);
 
 	UE_LOG(LogTemp, Display, TEXT("Splich 2"));
 
@@ -257,7 +259,7 @@ void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FS
 	UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping many to one tables for DataTypeName: %s"), *DataTypeName);
 }
 
-void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject, FString ExtractViewName)
+void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject)
 {
 
 
@@ -268,8 +270,6 @@ void ADataManager::ExtractViews(TSharedPtr<FJsonObject> JsonObject, FString Extr
 		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'views' field."));
 		return;
 	}
-
-	CurrentViewName = ExtractViewName;
 
 	// Iterate over all views
 	for (const auto& ViewPair : (*ViewsObjectPtr)->Values)
@@ -870,4 +870,39 @@ void ADataManager::RefreshTabularData()
 	
 	POIDataTable->EmptyTable();
 	AddDataToDataTableFromSource(POIDataTable, BoundaryPointsSourceFileContents, BoundaryPointsSourceFileType);
+}
+
+
+void ADataManager::EmptyTabularData()
+{
+	TArray<FString> CurrentDataTypes = ViewHandlerMap.FindRef(CurrentViewName)->GetDataTypes();
+	//iterate over CurrentDataTypes
+	for (const FString DataType : CurrentDataTypes)
+	{
+		UADataTypeHandler* DataTypeHandler = DataTypeHandlerMap.FindRef(*DataType);
+		//get default data table handler
+		UATableHandler* DefaultTableHandler = DataTypeHandler->GetDefaultTableHandler();
+		UE_LOG(LogTemp, Display, TEXT("Shimshon 0: %s"), *DefaultTableHandler->GetFullTableName());
+		DefaultTableHandler->ClearData();
+		UE_LOG(LogTemp, Display, TEXT("Shimshon 1: %s"), *DefaultTableHandler->GetFullTableName());
+
+		TMap<FString, UATableHandler*> TableHandlerMap = DataTypeHandler->GetTableHandlerMap();
+
+		//iterate over TableHandlerMap
+		for (const auto& TableHandlerPair : TableHandlerMap)
+		{
+			FString TableName = TableHandlerPair.Key;
+			UATableHandler* TableHandler = TableHandlerPair.Value;
+			TableHandler->ClearData();
+
+			UDataTable* MetadataTable =  TableHandler->GetDataTable();
+			FString FullTableName = GetFullTableName(DataType, TableName);
+			UE_LOG(LogTemp, Display, TEXT("Mamba 0: FullTableName: %s"), *FullTableName);
+			MetadataTable->EmptyTable();
+			
+			UE_LOG(LogTemp, Display, TEXT("Mamba 1: FullTableName: %s"), *FullTableName);
+		}
+	}
+	
+	POIDataTable->EmptyTable();
 }

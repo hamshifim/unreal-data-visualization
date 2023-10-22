@@ -73,6 +73,9 @@ public:
 	void RefreshTabularData();
 
 	UFUNCTION()
+	void EmptyTabularData();
+
+	UFUNCTION()
 	TArray<FString> GetCurrentDataTypes();
 
 	UFUNCTION()
@@ -115,7 +118,7 @@ public:
 	
 private:
 
-	void ExtractViews(TSharedPtr<FJsonObject> JsonObject, FString ViewName);
+	void ExtractViews(TSharedPtr<FJsonObject> JsonObject);
 	void ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject);
 	TArray<FString> ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 	void ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);

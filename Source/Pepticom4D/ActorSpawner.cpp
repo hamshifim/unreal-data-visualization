@@ -193,13 +193,20 @@ void AActorSpawner::DestroySpawnedActors()
 	
 	for (const FString DataType : DataManager->GetCurrentDataTypes())
 	{
-		UE_LOG(LogTemp, Display, TEXT("Dahlil DataType:  %s"), *DataType);
+		UE_LOG(LogTemp, Display, TEXT("Dahlil 1 DataType:  %s"), *DataType);
 		//Get DataTypeHandler
 		UADataTypeHandler* DataTypeHandler = DataManager->DataTypeHandlerMap.FindRef(*DataType);
+
+		UE_LOG(LogTemp, Display, TEXT("Dahlil 2 DataType:  %s"), *DataType);
 		
 		// Iterate through all actors DataPointActors in of the data type and destroy them
 		
 		TArray<ADataPointActor*> DataPointActors = DataTypeHandler->GetDataPointActors();
+
+		//check if DataPointActors is null or empty
+		
+	
+		
 		for (auto& Actor : DataPointActors)
 		{
 			// Destroy the actor
@@ -213,20 +220,25 @@ void AActorSpawner::DestroySpawnedActors()
 
 void AActorSpawner::ForceRefresh()
 {
-	DataManager->RefreshTabularData();
-	// Destroy all spawned actors and create new ones based on the new data
-	DestroySpawnedActors();
-	
-	EnqueueSpawningActorsFromDataTable();
 }
 
 void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type SelectionType)
 {
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 1  %s"), *ViewName);
-	
+
 	DestroySpawnedActors();
+	UE_LOG(LogTemp, Display, TEXT("Paltsef: 2  %s"), *ViewName);
+	
+	// DataManager->EmptyTabularData();
+	// UE_LOG(LogTemp, Display, TEXT("Paltsef: 3  %s"), *ViewName);
+	
 	DataManager->SetCurrentView(ViewName);
-	ForceRefresh();
+	
+	DataManager->RefreshTabularData();
+	UE_LOG(LogTemp, Display, TEXT("Paltsef: 4  %s"), *ViewName);
+	
+	EnqueueSpawningActorsFromDataTable();
+	UE_LOG(LogTemp, Display, TEXT("Paltsef: 5  %s"), *ViewName);
 
 	SpawnActorsFromQueue();
 	UIManager->RefreshUI();
@@ -260,7 +272,15 @@ void AActorSpawner::BeginPlay()
 	UIManager->ConfigureUserControlWidget();
 	UE_LOG(LogTemp, Display, TEXT("shiflif: 1"));
 
-	ForceRefresh();
+	DataManager->RefreshTabularData();
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 2"));
+	// Destroy all spawned actors and create new ones based on the new data
+	DestroySpawnedActors();
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 3"));
+	
+	EnqueueSpawningActorsFromDataTable();
+
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 4"));
 
 	// Spawn actors from the queue if the queue is not empty
 	SpawnActorsFromQueue();
