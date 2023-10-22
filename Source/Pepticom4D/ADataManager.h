@@ -70,7 +70,7 @@ public:
 	FString GetPropertyValueStringFromMetadata(const FTableRowBase& Metadata, UStruct* MetadataStruct, FString PropertyName);
 
 	UFUNCTION()
-	void ForceRefresh();
+	void RefreshTabularData();
 
 	UFUNCTION()
 	TArray<FString> GetCurrentDataTypes();

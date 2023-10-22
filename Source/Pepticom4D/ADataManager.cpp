@@ -826,7 +826,7 @@ void ADataManager::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ADataManager::ForceRefresh()
+void ADataManager::RefreshTabularData()
 {
 	TArray<FString> CurrentDataTypes = ViewHandlerMap.FindRef(CurrentViewName)->GetDataTypes();
 	//iterate over CurrentDataTypes

@@ -213,9 +213,10 @@ void AActorSpawner::DestroySpawnedActors()
 
 void AActorSpawner::ForceRefresh()
 {
-	DataManager->ForceRefresh();
+	DataManager->RefreshTabularData();
 	// Destroy all spawned actors and create new ones based on the new data
 	DestroySpawnedActors();
+	
 	EnqueueSpawningActorsFromDataTable();
 }
 
