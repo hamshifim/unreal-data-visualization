@@ -113,8 +113,7 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 		FString DataTypeName = DataTypePair.Key;
 		TSharedPtr<FJsonObject> DataTypeObj = DataTypePair.Value->AsObject();
 
-		//TODO create Table handlers for each table within the data type deprecating DataTypeToTableNamesMap
-		TArray<FString> TableNames = ExtractTables(DataTypeHandler, DataTypeName, DataTypeObj);
+		ExtractTables(DataTypeHandler, DataTypeName, DataTypeObj);
 
 		ExtractManyToOneTables(DataTypeHandler, DataTypeName, DataTypeObj);
 		// Store the table names in the map
@@ -138,7 +137,7 @@ void ADataManager::ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject)
 	}
 }
 
-TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
+void ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)
 {
 	TArray<FString> TableNames;
 
@@ -153,7 +152,7 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'data_source' field in the 'data_types' -> 'data_type' object."));
-		return TableNames; // or handle the error
+		return;
 	}
 
 	UATableHandler* MainTableHandler = NewObject<UATableHandler>(this);
@@ -166,7 +165,7 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 	if (!DataTypeObj->TryGetObjectField("tables", TablesObjectPtr))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Config file JSON does not contain 'tables' field."));
-		return TableNames; // or handle the error
+		return; // or handle the error
 	}
 	
 	for (const auto& TablePair : (*TablesObjectPtr)->Values)
@@ -204,8 +203,6 @@ TArray<FString> ADataManager::ExtractTables(UADataTypeHandler* DataTypeHandler, 
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Finished extracting and mapping tables for DataTypeName: %s"), *DataTypeName);
-
-	return TableNames;
 }
 
 void ADataManager::ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj)

@@ -120,7 +120,7 @@ private:
 
 	void ExtractViews(TSharedPtr<FJsonObject> JsonObject);
 	void ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject);
-	TArray<FString> ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
+	void ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 	void ExtractManyToOneTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);
 	void ExtractAnimations(TSharedPtr<FJsonObject> ViewObject);
 	int32 ExtractIntField(TSharedPtr<FJsonObject>JsonObject, FString FieldName);
