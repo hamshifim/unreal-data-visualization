@@ -33,6 +33,9 @@ public:
 	UFUNCTION()
 	void HandleViewChange(FString ViewName, ESelectInfo::Type SelectionType);
 
+	UFUNCTION()
+	void VisualizeData();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

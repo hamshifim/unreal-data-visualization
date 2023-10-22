@@ -244,6 +244,23 @@ void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type Selecti
 	UIManager->RefreshUI();
 }
 
+void AActorSpawner::VisualizeData()
+{
+	DataManager->RefreshTabularData();
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 2"));
+	// Destroy all spawned actors and create new ones based on the new data
+	DestroySpawnedActors();
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 3"));
+	
+	EnqueueSpawningActorsFromDataTable();
+
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 4"));
+
+	// Spawn actors from the queue if the queue is not empty
+	SpawnActorsFromQueue();
+	UIManager->RefreshUI();
+}
+
 // Called when the game starts or when spawned
 void AActorSpawner::BeginPlay()
 {
@@ -274,19 +291,7 @@ void AActorSpawner::BeginPlay()
 	UIManager->ConfigureUserControlWidget();
 	UE_LOG(LogTemp, Display, TEXT("shiflif: 1"));
 
-	DataManager->RefreshTabularData();
-	UE_LOG(LogTemp, Display, TEXT("shiflif: 2"));
-	// Destroy all spawned actors and create new ones based on the new data
-	DestroySpawnedActors();
-	UE_LOG(LogTemp, Display, TEXT("shiflif: 3"));
-	
-	EnqueueSpawningActorsFromDataTable();
-
-	UE_LOG(LogTemp, Display, TEXT("shiflif: 4"));
-
-	// Spawn actors from the queue if the queue is not empty
-	SpawnActorsFromQueue();
-	UIManager->RefreshUI();
+	VisualizeData();
 
 	UIManager->OnViewChanged.AddDynamic(this, &AActorSpawner::HandleViewChange);
 }
