@@ -253,6 +253,10 @@ void AActorSpawner::VisualizeData()
 	SpawnActorsFromQueue();
 
 	UE_LOG(LogTemp, Display, TEXT("shiflif: 5"));
+
+	UIManager->ConfigureAnimations();
+
+	UE_LOG(LogTemp, Display, TEXT("shiflif: 6"));
 }
 
 // Called when the game starts or when spawned
@@ -279,23 +283,24 @@ void AActorSpawner::BeginPlay()
 	DataManager->ProcessConfig(FString(TEXT("DataConfigFilePath")));
 
 	DataManager->ActivateAnimations();
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 0"));
 	
 	UIManager->ConfigureDataFilteringWidget();
-	UE_LOG(LogTemp, Display, TEXT("chachchach: 0"));
-	UIManager->ConfigureUserControlWidget();
 	UE_LOG(LogTemp, Display, TEXT("chachchach: 1"));
+	UIManager->ConfigureUserControlWidget();
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 2"));
 
 	VisualizeData();
 
-	UE_LOG(LogTemp, Display, TEXT("chachchach: 2"));
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 3"));
 	
 	UIManager->RefreshUI();
 
-	UE_LOG(LogTemp, Display, TEXT("chachchach: 3"));
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 4"));
 
 	UIManager->OnViewChanged.AddDynamic(this, &AActorSpawner::HandleViewChange);
 
-	UE_LOG(LogTemp, Display, TEXT("chachchach: 4"));
+	UE_LOG(LogTemp, Display, TEXT("chachchach: 5"));
 }
 
 // Called every frame

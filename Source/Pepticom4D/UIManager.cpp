@@ -395,7 +395,14 @@ void AUIManager::OnAnimationSliderChange(const float AnimationValue)
 
 	const FString AnimationValueString = FString::Printf(TEXT("%d"), (int)AnimationValue);
 
-	AnimationHandler->OnAnimationValueChanged(AnimationValueString);
+	if(AnimationHandler)
+	{
+		AnimationHandler->OnAnimationValueChanged(AnimationValueString);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("No AnimationHandler connected for animation value %s"), *AnimationValueString);
+	}
 
 	UE_LOG(LogTemp, Display, TEXT("Bambini ferus"));
 }
@@ -447,6 +454,41 @@ void AUIManager::OnControlSwitchButtonClick()
 	}
 }
 
+void AUIManager::ConfigureAnimations()
+{
+	TArray<FString> ActiveAnimationNames = DataManager->GetCurrentViewHandler()->GetAnimations();
+	//iterate Animation Handlers in DataManager->AnimationHandlerMap;
+	// for (const auto& AnimationHandlerPair : DataManager->AnimationHandlerMap)
+	// {
+	// 	FString AnimationName = AnimationHandlerPair.Key;
+	// 	ActiveAnimationNames.Add(AnimationName);
+	// 	UE_LOG(LogTemp, Display, TEXT("shoval 4: Animation: %s"), *AnimationName);
+	// }
+
+	//TODO initialize multiple animations
+	if (!ActiveAnimationNames.IsEmpty())
+	{
+		FString AnimationName = ActiveAnimationNames[0];
+		AnimationHandler = DataManager->AnimationHandlerMap.FindRef(AnimationName);
+		AnimationHandler->SetAnimationTextBlock(AnimationTextBlock);
+
+		AnimationSlider->SetMinValue(AnimationHandler->GetMinValue());
+		AnimationSlider->SetMaxValue(AnimationHandler->GetMaxValue());
+		AnimationSlider->SetValue(AnimationHandler->GetMinValue());
+		//set the increment of the slider to be the interval of the animation
+		AnimationSlider->SetStepSize(AnimationHandler->GetInterval());
+
+		//set an on slider moved function
+		AnimationSlider->OnValueChanged.AddDynamic(this, &AUIManager::OnAnimationSliderChange);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("shovav 4: No animation found"));
+		//set animation handler to none
+		AnimationHandler = nullptr;
+	}
+}
+
 void AUIManager::ConfigureAnimationControlWidget()
 {
 	if (AnimationControlWidget)
@@ -486,39 +528,6 @@ void AUIManager::ConfigureAnimationControlWidget()
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("shoval 4: Failed to set up AnimationTextBlock"));
-		}
-
-		TArray<FString> AnimationNames;
-		//iterate Animation Handlers in DataManager->AnimationHandlerMap;
-		for (const auto& AnimationHandlerPair : DataManager->AnimationHandlerMap)
-		{
-			//TODO initialize multiple animations
-
-			FString AnimationName = AnimationHandlerPair.Key;
-			AnimationNames.Add(AnimationName);
-			UE_LOG(LogTemp, Display, TEXT("shoval 4: Animation: %s"), *AnimationName);
-			// AnimationControlWidget->AddAnimationButton(AnimationName);
-		}
-
-		if (!AnimationNames.IsEmpty())
-		{
-			//Get the first animation in the map
-			FString AnimationName = AnimationNames[0];
-			AnimationHandler = DataManager->AnimationHandlerMap.FindRef(AnimationName);
-			AnimationHandler->SetAnimationTextBlock(AnimationTextBlock);
-
-			AnimationSlider->SetMinValue(AnimationHandler->GetMinValue());
-			AnimationSlider->SetMaxValue(AnimationHandler->GetMaxValue());
-			AnimationSlider->SetValue(AnimationHandler->GetMinValue());
-			//set the increment of the slider to be the interval of the animation
-			AnimationSlider->SetStepSize(AnimationHandler->GetInterval());
-
-			//set an on slider moved function
-			AnimationSlider->OnValueChanged.AddDynamic(this, &AUIManager::OnAnimationSliderChange);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("shovav 4: No animation found"));
 		}
 	}
 	else

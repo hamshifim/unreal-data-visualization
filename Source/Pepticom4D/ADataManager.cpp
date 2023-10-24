@@ -758,7 +758,7 @@ FString ADataManager::GetPropertyValueAsString(FProperty* Property, const FTable
 void ADataManager::ActivateAnimations()
 {
 	//get current view handler
-	UAViewHandler* CurrentViewHandler = ViewHandlerMap.FindRef(CurrentViewName);
+	UAViewHandler* CurrentViewHandler = GetCurrentViewHandler();
 
 	//iterate CurrentViewHandler animations and load the data if relevant
 	for(FString AnimationName: CurrentViewHandler->GetAnimations())

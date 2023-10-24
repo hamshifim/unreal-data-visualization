@@ -73,6 +73,9 @@ public:
 	void OnControlSwitchButtonClick();
 
 	UFUNCTION()
+	void ConfigureAnimations();
+
+	UFUNCTION()
 	void ConfigureAnimationControlWidget();
 
 	UFUNCTION()
