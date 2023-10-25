@@ -25,6 +25,8 @@ public:
 	void ExtractDataTypes(const TTuple<FString, TSharedPtr<FJsonValue, ESPMode::ThreadSafe>>&);
 	FString GetDataType() const;
 	FSpatialDataStruct* GetSpatialDataStruct() const;
+
+	UFUNCTION()
 	FTableRowBase& GetMetadataRow() const;
 	FString GetTableName();
 	FString GetMetaDataTableName() const;

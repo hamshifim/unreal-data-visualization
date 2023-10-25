@@ -121,8 +121,12 @@ void UAAnimationHandler::AnimateActors()
 	
 	UATableHandler* ManyToOneTableHandler = DataTypeHandler->GetManyToOneTableHandler(this->OneToManyTableName);
 
+	UE_LOG(LogTemp, Display, TEXT("Shikor 0 AnimationDimension: %s"), *AnimationDimension);
+
 	for(ADataPointActor* DataPointActor: DataTypeHandler->GetDataPointActors())
 	{
+
+		UE_LOG(LogTemp, Display, TEXT("Zroobabvel 0 AnimationDimension: %s"), *AnimationDimension);
 		FTableRowBase& MetaDataRow = DataPointActor->GetMetadataRow();
 
 		// Iterate through all properties of the struct and extract the property name and value
@@ -137,7 +141,7 @@ void UAAnimationHandler::AnimateActors()
 		
 		TArray<FVarStruct> Variables;
 		FString Index = DataPointActor->GetIndex();
-		UE_LOG(LogTemp, Display, TEXT("Zroobabvel 0 Index: %s"), *Index);
+		UE_LOG(LogTemp, Display, TEXT("Zroobabvel 1 Index: %s"), *Index);
 		Variables.Add(FVarStruct("Index", Index));
 		Variables.Add(FVarStruct(AnimationDimension, AnimationValue));
 		
@@ -150,9 +154,9 @@ void UAAnimationHandler::AnimateActors()
 
 		 	Variables.Add(FVarStruct(PropertyName, PropertyValue));
 
-		 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 1 Property: %s: %s"), *PropertyName, *PropertyValue);
+		 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 2 Property: %s: %s"), *PropertyName, *PropertyValue);
 		 	FTableRowBase* ManyToOneRow = ManyToOneTableHandler->GetTableRow(Variables);
-		 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 2 "));
+		 	UE_LOG(LogTemp, Display, TEXT("Zroobabvel 3 "));
 
 		 	//Iterate over UpdateProperties
 		 	for(FString UpdatePropName: UpdateProperties)
