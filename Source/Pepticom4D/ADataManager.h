@@ -89,9 +89,6 @@ public:
 	UFUNCTION()
 	void ActivateAnimations();
 
-	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.
-	FString CurrentViewName = TEXT("");
-
 	// map view names to UAViewHandler pointers
 	UPROPERTY()
 	TMap<FString, UAViewHandler*> ViewHandlerMap;
@@ -121,6 +118,8 @@ public:
 	
 private:
 
+	// Each view contains at least one main dataset, and each main dataset contains at least one sub dataset. Multiple main datasets can be viewed at once, but only one sub dataset can be viewed per main dataset.
+	FString CurrentViewName = TEXT("");
 	void ExtractViews(TSharedPtr<FJsonObject> JsonObject);
 	void ExtractDataTypes(TSharedPtr<FJsonObject> JsonObject);
 	void ExtractTables(UADataTypeHandler* DataTypeHandler, FString DataTypeName, TSharedPtr<FJsonObject> DataTypeObj);

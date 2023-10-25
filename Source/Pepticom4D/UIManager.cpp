@@ -595,7 +595,7 @@ void AUIManager::OnDataFilteringWidgetDropdownChanged(FString SelectedItem, ESel
 						Metadata, MetadataStruct, SelectedItem);
 					// Get the color from the color map based on the property value
 
-					UAViewHandler* ViewHandler = DataManager->ViewHandlerMap.FindRef(DataManager->CurrentViewName);
+					UAViewHandler* ViewHandler = DataManager->GetCurrentViewHandler();
 
 					auto ValueColorMap = ViewHandler->GetColorMap()->FindRef(SelectedItem);
 					if (ValueColorMap.Contains(PropertyValue))
