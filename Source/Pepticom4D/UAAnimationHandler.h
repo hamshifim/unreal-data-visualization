@@ -27,16 +27,20 @@ private:
 	FString ActorTableName;
 	FString OneToManyTableName;
 	FString KeyRegex;
+
+	UPROPERTY()
 	TArray<FString> RegexVariableNames;
+	UPROPERTY()
 	TArray<FString> UpdateProperties;
 	//probably better to send a table but that would require a lot of refactoring
-	TMap<FString, UADataTypeHandler*>* DataTypeHandlerMap;
 
+	TMap<FString, UADataTypeHandler*>* DataTypeHandlerMap;
 	UStruct* MetaDataStruct;
 	TMap<FString, FProperty*> KeyProperties;
 	UStruct* ManyToOneStruct;
 	FString AnimationValue;
 
+	UPROPERTY()
 	TArray<int32> PossibleAnimationValues;
 	int CurrentAnimationIndex;
 	FTimerHandle AnimationTimerHandle;
@@ -56,13 +60,16 @@ public:
 	FString GetManyToOneTableName();
 	FString GetPropertyValueAsString(FProperty* Property, const FTableRowBase& Metadata);
 
+	UFUNCTION()
 	void AnimateActors();
 
 	UFUNCTION()
 	void Animate();
+	UFUNCTION()
 	void AnimateStep();
 	UFUNCTION()
 	void OnAnimationValueChanged(FString AAnimationValue);
+	UFUNCTION()
 	void LoadData();
 
 	UFUNCTION()
