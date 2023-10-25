@@ -457,13 +457,6 @@ void AUIManager::OnControlSwitchButtonClick()
 void AUIManager::ConfigureAnimations()
 {
 	TArray<FString> ActiveAnimationNames = DataManager->GetCurrentViewHandler()->GetAnimations();
-	//iterate Animation Handlers in DataManager->AnimationHandlerMap;
-	// for (const auto& AnimationHandlerPair : DataManager->AnimationHandlerMap)
-	// {
-	// 	FString AnimationName = AnimationHandlerPair.Key;
-	// 	ActiveAnimationNames.Add(AnimationName);
-	// 	UE_LOG(LogTemp, Display, TEXT("shoval 4: Animation: %s"), *AnimationName);
-	// }
 
 	//TODO initialize multiple animations
 	if (!ActiveAnimationNames.IsEmpty())

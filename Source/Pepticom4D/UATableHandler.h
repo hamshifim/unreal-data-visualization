@@ -21,7 +21,10 @@ private:
 	FString FullTableName;
 	FString SourcePath;
 	FString StructName;
+
+	UPROPERTY()
 	UDataTable* DataTable;
+	
 	FString StructNameFromFullTableName();
 	void InitTable();
 
@@ -37,7 +40,10 @@ public:
 	void AddDataToDataTableFromSource(int ChunkSize);
 	TArray<FString> GetChunkedContentFromCSVSourceFile(int ChunkSize);
 	FString GetContentFromSourceFile();
+
+	UFUNCTION()
 	void ClearData();
+	
 	FTableRowBase* GetTableRow(const TArray<FVarStruct>& Variables);
 	FString GetFileType();
 	FString GetTableName();

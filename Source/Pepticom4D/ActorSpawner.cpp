@@ -237,7 +237,7 @@ void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type Selecti
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 2  %s"), *ViewName);
 	
 	DataManager->EmptyTabularData();
-	// UE_LOG(LogTemp, Display, TEXT("Paltsef: 3  %s"), *ViewName);
+	UE_LOG(LogTemp, Display, TEXT("Paltsef: 3  %s"), *ViewName);
 	
 	DataManager->SetCurrentView(ViewName);
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 4  %s"), *ViewName);
