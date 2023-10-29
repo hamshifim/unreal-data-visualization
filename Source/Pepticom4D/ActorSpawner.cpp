@@ -200,27 +200,9 @@ void AActorSpawner::DestroySpawnedActors()
 		UE_LOG(LogTemp, Display, TEXT("Dahlil 2 DataType:  %s"), *DataType);
 		
 		// Iterate through all actors DataPointActors in of the data type and destroy them
-		
-		TArray<ADataPointActor*> DataPointActors = DataTypeHandler->GetDataPointActors();
+		DataTypeHandler->PurgeActors();
 
 		UE_LOG(LogTemp, Display, TEXT("Dahlil 3 DataType:  %s"), *DataType);
-
-		//check if DataPointActors is null or empty
-		
-		for (auto& Actor : DataPointActors)
-		{
-			// Destroy the actor
-			if(IsValid(Actor))
-			{
-				Actor->Destroy();
-			}
-		}
-
-		UE_LOG(LogTemp, Display, TEXT("Dahlil 4 DataType:  %s"), *DataType);
-
-		DataPointActors.Empty();
-
-		UE_LOG(LogTemp, Display, TEXT("Dahlil 5 DataType:  %s"), *DataType);
 	}
 }
 

@@ -127,7 +127,10 @@ void UAAnimationHandler::AnimateActors()
 	{
 
 		UE_LOG(LogTemp, Display, TEXT("Zroobabvel 0 AnimationDimension: %s"), *AnimationDimension);
-		FTableRowBase& MetaDataRow = DataPointActor->GetMetadataRow();
+
+		if(IsValid(DataPointActor))
+		{
+			FTableRowBase& MetaDataRow = DataPointActor->GetMetadataRow();
 
 		// Iterate through all properties of the struct and extract the property name and value
 		// for (TFieldIterator<FProperty> PropertyIt(MetaDataStruct); PropertyIt; ++PropertyIt)
@@ -199,6 +202,12 @@ void UAAnimationHandler::AnimateActors()
 		 		UE_LOG(LogTemp, Display, TEXT("Zuchini 3"));
 		 	}
 		 }
+		}
+		else
+		{
+			//WARN the actor is not valid
+			UE_LOG(LogTemp, Warning, TEXT("DataPointActor is not valid"));
+		}
 	}
 	
 

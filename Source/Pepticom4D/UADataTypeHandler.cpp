@@ -62,3 +62,24 @@ TArray<ADataPointActor*> UADataTypeHandler::GetDataPointActors()
 {
 	return this->DataPointActors;
 }
+
+void UADataTypeHandler::PurgeActors()
+{
+	//check if DataPointActors is null or empty
+	UE_LOG(LogTemp, Display, TEXT("Kinjal 0 DataType:  %s"), *Name);
+		
+	for (auto& Actor : DataPointActors)
+	{
+		// Destroy the actor
+		if(IsValid(Actor))
+		{
+			Actor->Destroy();
+		}
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("Kinjal 1 DataType:  %s"), *Name);
+
+	DataPointActors.Empty();
+
+	UE_LOG(LogTemp, Display, TEXT("Kinjal 2 DataType:  %s"), *Name);
+}

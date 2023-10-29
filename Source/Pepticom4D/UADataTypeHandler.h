@@ -38,12 +38,17 @@ public:
 	UATableHandler* GetTableHandler(FString TableName);
 	void AddTableHandler(FString TableName, UATableHandler* TableHandler);
 	void SetDefaultTableHandler(UATableHandler* TableHandler);
+	
 	UFUNCTION()
 	UATableHandler* GetDefaultTableHandler();
+	
 	TMap<FString, UATableHandler*> GetTableHandlerMap();
-	UFUNCTION()
-	TArray<ADataPointActor*> GetDataPointActors();
 
 	UFUNCTION()
 	void AddDataPointActor(ADataPointActor* DataPointActor);
+	UFUNCTION()
+	TArray<ADataPointActor*> GetDataPointActors();
+	UFUNCTION()
+	void PurgeActors();
+	
 };
