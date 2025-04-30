@@ -8,15 +8,15 @@
 #include "Engine/DataTable.h"
 #include "ADataManager.h"
 #include "UIManager.h"
-#include "ActorSpawner.generated.h"
+#include "PepticomActorSpawner.generated.h"
 
 UCLASS()
-class PEPTICOM4D_API AActorSpawner : public AActor
+class PEPTICOM4D_API APepticomActorSpawner : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	AActorSpawner();
+	APepticomActorSpawner();
 
 	UFUNCTION()
 	void EnqueueSpawningActorsFromDataTable();

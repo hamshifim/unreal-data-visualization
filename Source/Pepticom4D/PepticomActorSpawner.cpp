@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ActorSpawner.h"
+#include "PepticomActorSpawner.h"
 #include "Components/BoxComponent.h"
 #include "SpatialDataStruct.h"
 #include "Engine/AssetManager.h"
@@ -12,7 +12,7 @@
 
 
 // Sets default values
-AActorSpawner::AActorSpawner(): AActor()
+APepticomActorSpawner::APepticomActorSpawner(): AActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -22,7 +22,7 @@ AActorSpawner::AActorSpawner(): AActor()
 	SpawnVolume->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
-void AActorSpawner::EnqueueSpawningActorsFromDataTable()
+void APepticomActorSpawner::EnqueueSpawningActorsFromDataTable()
 {
 	// Store a map of actor type name to the number of actors of that type that have been spawned
 	TMap<FString, int32> ActorTypeToNumSpawnedMap;
@@ -124,7 +124,7 @@ void AActorSpawner::EnqueueSpawningActorsFromDataTable()
 	}
 }
 
-void AActorSpawner::SpawnActorsFromQueue()
+void APepticomActorSpawner::SpawnActorsFromQueue()
 {
 	//while ActorDataTupleQueue is not empty
 	while (!ActorDataTupleQueue.IsEmpty())
@@ -187,7 +187,7 @@ void AActorSpawner::SpawnActorsFromQueue()
 	UE_LOG(LogTemp, Warning, TEXT("Spawned all actors"));
 }
 
-void AActorSpawner::DestroySpawnedActors()
+void APepticomActorSpawner::DestroySpawnedActors()
 {
 	/* Destroys all actors which have been spawned by this actor spawner */
 	
@@ -207,11 +207,11 @@ void AActorSpawner::DestroySpawnedActors()
 }
 
 
-void AActorSpawner::ForceRefresh()
+void APepticomActorSpawner::ForceRefresh()
 {
 }
 
-void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type SelectionType)
+void APepticomActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type SelectionType)
 {
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 1  %s"), *ViewName);
 
@@ -228,7 +228,7 @@ void AActorSpawner::HandleViewChange(FString ViewName, ESelectInfo::Type Selecti
 	UE_LOG(LogTemp, Display, TEXT("Paltsef: 5  %s"), *ViewName);
 }
 
-void AActorSpawner::VisualizeData()
+void APepticomActorSpawner::VisualizeData()
 {
 	DataManager->RefreshTabularData();
 	UE_LOG(LogTemp, Display, TEXT("shiflif: 2"));
@@ -251,7 +251,7 @@ void AActorSpawner::VisualizeData()
 }
 
 // Called when the game starts or when spawned
-void AActorSpawner::BeginPlay()
+void APepticomActorSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -289,13 +289,13 @@ void AActorSpawner::BeginPlay()
 
 	UE_LOG(LogTemp, Display, TEXT("chachchach: 4"));
 
-	UIManager->OnViewChanged.AddDynamic(this, &AActorSpawner::HandleViewChange);
+	UIManager->OnViewChanged.AddDynamic(this, &APepticomActorSpawner::HandleViewChange);
 
 	UE_LOG(LogTemp, Display, TEXT("chachchach: 5"));
 }
 
 // Called every frame
-void AActorSpawner::Tick(float DeltaTime)
+void APepticomActorSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }

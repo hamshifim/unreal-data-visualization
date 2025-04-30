@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "ActorSpawner.h"
+#include "PepticomActorSpawner.h"
 #include "ADataManager.h"
 #include "UIManager.h"
 #include "DataInteractionGameInstance.generated.h"
@@ -26,5 +26,5 @@ private:
 	UPROPERTY()
 	AUIManager* UIManager;
 	UPROPERTY()
-	AActorSpawner* ActorSpawner;
+	APepticomActorSpawner* ActorSpawner;
 };

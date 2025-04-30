@@ -9,7 +9,7 @@ void UDataInteractionGameInstance::Init() {
     // Spawn and initialize actors here, which are responsible for performing a wide range of tasks. They are initialized in a specific order to avoid any errors.
     DataManager = GetWorld()->SpawnActor<ADataManager>(ADataManager::StaticClass());
     UIManager = GetWorld()->SpawnActor<AUIManager>(AUIManager::StaticClass());
-    ActorSpawner = GetWorld()->SpawnActor<AActorSpawner>(AActorSpawner::StaticClass());
+    ActorSpawner = GetWorld()->SpawnActor<APepticomActorSpawner>(APepticomActorSpawner::StaticClass());
 
     // Store the DataManager instance somewhere (like a UPROPERTY) where AActorSpawner can access it
 }
